@@ -22,8 +22,6 @@ Development for the backend project can be done inside a devcontainer. The conta
 Jupyter Lab will be run automatically inside `litreview.devcontainer`. Use the `python 3.11.11` kernel to run Jupyter notebooks.
 
 ## Frontend
-The frontend application can be deployed in two ways: as static HTML and JS files served by `nginx` in the `litreview.frontend` container, or in Angular development server mode.
-
 ### First Time Deployment
 1. Install [NVM](https://github.com/nvm-sh/nvm) for your platform (Linux is much easier)
 2. Install [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
