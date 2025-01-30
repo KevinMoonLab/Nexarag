@@ -7,7 +7,6 @@ Nexarag is a tool for interacting with research literature.
 # Run
 First copy `Nexarag/.env.example` to `Nexarag/.env`, modifying the settings as needed.
 
-To run the application stack, from `Nexarag` run
 ```
 docker compose up -d --build
 ```
