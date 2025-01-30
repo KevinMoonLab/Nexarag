@@ -1,0 +1,164 @@
+[
+    {
+        "title": "Latent Space Editing in Transformer-Based Flow Matching",
+        "paperId": "ca743e75ce090bbf686307e41bd8747661768fbe",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Diffusion Models: A Comprehensive Survey of Methods and Applications",
+        "paperId": "e342165a614588878ad0f4bc9bacf3905df34d08",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Paint by Example: Exemplar-based Image Editing with Diffusion Models",
+        "paperId": "4f1502111d35aa6651dfaedfeb1184b3c3dd2fcb",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Smooth Diffusion: Crafting Smooth Latent Spaces in Diffusion Models",
+        "paperId": "3333fa6dc9d39cad3d5cd87da9ae39e5a6aefe27",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Unifying Diffusion Models' Latent Space, with Applications to CycleDiffusion and Guidance",
+        "paperId": "36a5328c337697b96c9e6a9a04df0c924aa421f7",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Learned Representation-Guided Diffusion Models for Large-Image Generation",
+        "paperId": "0bbd619ad6dfb69114735d6d8ca166c20301188b",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "GDUI: Guided Diffusion Model for Unlabeled Images",
+        "paperId": "2cfb086b6414e990a2203da746c05ba0c0638134",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Nested Diffusion Models Using Hierarchical Latent Priors",
+        "paperId": "5a613652d700f9a271b6d01c7d9e4223e9883300",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Self-Guided Diffusion Models",
+        "paperId": "b798c925a4c43ea09e76a1c748491ef70067c0c6",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "DiffMat: Latent diffusion models for image-guided material generation",
+        "paperId": "019abc8974dd46d7eec9a51818f64cc896c66499",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Adding Conditional Control to Text-to-Image Diffusion Models",
+        "paperId": "efbe97d20c4ffe356e8826c01dc550bacc405add",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Diffusion Models already have a Semantic Latent Space",
+        "paperId": "a02313d56a6f71be9aafe43628e0f3a1d0cb858e",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Understanding the Latent Space of Diffusion Models through the Lens of Riemannian Geometry",
+        "paperId": "d7074976c2609568902a6b6ca45f6c71d9cb66bf",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Unifying Diffusion Models' Latent Space, with Applications to CycleDiffusion and Guidance",
+        "paperId": "36a5328c337697b96c9e6a9a04df0c924aa421f7",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Prompt-to-Prompt Image Editing with Cross Attention Control",
+        "paperId": "04e541391e8dce14d099d00fb2c21dbbd8afe87f",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "More Control for Free! Image Synthesis with Semantic Diffusion Guidance",
+        "paperId": "dc563ae2179a79a3b58749bc142a719e009d6cc5",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Motion Guidance: Diffusion-Based Image Editing with Differentiable Motion Estimators",
+        "paperId": "c27da349811cbbafd5896befb0bb138d87583873",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "LatentCLR: A Contrastive Learning Approach for Unsupervised Discovery of Interpretable Directions",
+        "paperId": "e993d5d057af8993e89c73500cb0bc89b851b225",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Seeing and Hearing: Open-domain Visual-Audio Generation with Diffusion Latent Aligners",
+        "paperId": "d9822d11ae4ead1f1d32c43124a6a0eb80ea4f0c",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Discovering Interpretable Directions in the Semantic Latent Space of Diffusion Models",
+        "paperId": "a64e9fe44051d93202853a43656def4b44f84883",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Uncovering the Disentanglement Capability in Text-to-Image Diffusion Models",
+        "paperId": "b916302feec5be76fc4aa935202008f6ae638efa",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Pretraining is All You Need for Image-to-Image Translation",
+        "paperId": "f8d56373df3023f36af2a0c45cd371bf9fe924a8",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Cross-Domain Correspondence Learning for Exemplar-Based Image Translation",
+        "paperId": "62f1ba6f5a7ad125dd62261fb5fec1a125232c8c",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Retrieval-Augmented Diffusion Models",
+        "paperId": "33f3f31f871070f19b0c3e967a24e322bfc178f2",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Diffusion Autoencoders: Toward a Meaningful and Decodable Representation",
+        "paperId": "b582edb16f5425642767cb6c26839111f867f4dc",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Plug-and-Play Diffusion Features for Text-Driven Image-to-Image Translation",
+        "paperId": "b000d6865db824af1563708fb7a545ddd65c6b3a",
+        "url_path": null,
+        "pdf_path": null
+    },
+    {
+        "title": "Pivotal Tuning for Latent-based Editing of Real Images",
+        "paperId": "e27b881192cd14a04018c372352b12e531870fc1",
+        "url_path": null,
+        "pdf_path": null
+    }
+]
