@@ -5,9 +5,9 @@ Nexarag is a tool for interacting with research literature.
 - [Docker](https://docs.docker.com/engine/install/)
 
 # Run
-First copy `litreview/.env.example` to `litreview/.env`, modifying the settings as needed.
+First copy `Nexarag/.env.example` to `Nexarag/.env`, modifying the settings as needed.
 
-To run the application stack, from `litreview` run
+To run the application stack, from `Nexarag` run
 ```
 docker compose up -d --build
 ```
@@ -16,8 +16,8 @@ docker compose up -d --build
 ## Backend
 Development for the backend project can be done inside a devcontainer. The container will be automatically provisioned with a `neo4j` database and a `rabbitmq` instance. 
 
-1. Copy the `.env.example` file into `litreview/.devcontainer/.env`, modifying the values for your system
-2. Open `litreview` in VS Code
+1. Copy the `.env.example` file into `Nexarag/.devcontainer/.env`, modifying the values for your system
+2. Open `Nexarag` in VS Code
 3. Press `Ctrl+Shift+P` and type `Open Folder in Container`
 
 Jupyter Lab will be run automatically inside `litreview.devcontainer`. You may have to install the Jupyter notebook extension again when prompted to access the kernel. 
@@ -32,7 +32,7 @@ The frontend application can be deployed in two ways: as static HTML and JS file
 
 ### Running the Development Server
 1. Run the application stack from the root using `docker compose`. The API will be served at `http://localhost:8000`
-2. In `litreview/frontend`, run `npx nx s`. The application will be available (with live reloads) at `http://localhost:4200`
+2. In `Nexarag/frontend`, run `npx nx s`. The application will be available (with live reloads) at `http://localhost:4200`
 
 # Useful Commands
 |Command|Description|
