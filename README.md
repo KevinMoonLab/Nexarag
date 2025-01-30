@@ -1,5 +1,5 @@
 # Overview
-LitReview is a tool for interacting with research literature.
+Nexarag is a tool for interacting with research literature.
 
 # Pre-Requisites
 - [Docker](https://docs.docker.com/engine/install/)
