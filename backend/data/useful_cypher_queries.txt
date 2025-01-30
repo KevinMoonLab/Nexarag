@@ -1,0 +1,43 @@
+"""
+MATCH (n)
+DETACH DELETE n
+"""
+
+"""
+MATCH (n) 
+RETURN n LIMIT 25
+"""
+
+"""
+MATCH (a:Author)-[r:Authored]->(p:Paper)
+WITH a, COUNT(*) AS ac
+ORDER BY ac DESC LIMIT 10
+RETURN ac
+"""
+
+"""
+MATCH (a:Author)
+OPTIONAL MATCH (a)-[r:Authored]-()
+WITH a, COLLECT(r) as publications, COUNT(r) as relCount
+WHERE relCount >= 2
+
+OPTIONAL MATCH (p)<-[authRel:Authored]-(a:Author)
+RETURN
+    p,
+    a,
+    authRel,
+    publications
+"""
+
+"""
+MATCH (p:Paper)
+OPTIONAL MATCH (p)-[r:Cited]-()
+WITH p, COLLECT(r) as citations, COUNT(r) as relCount
+WHERE p.level = 1 OR (p.level = 2 AND p.citationCount < 500 AND relCount >= 3)
+
+OPTIONAL MATCH (p)<-[authRel:Authored]-(a:Author)
+RETURN
+    p,
+    authRel,
+    citations
+"""

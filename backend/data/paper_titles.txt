@@ -1,0 +1,27 @@
+Latent Space Editing in Transformer-Based Flow Matching
+A Survey of Multimodal Controllable Diffusion Models
+Paint by Example: Exemplar-based Image Editing with Diffusion Model
+Smooth Diffusion: Crafting Smooth Latent Spaces in Diffusion Models
+Unifying Diffusion Models' Latent Space, with Applications to CycleDiffusion and Guidance
+Learned representation-guided diffusion models for large-image generation
+GDUI: Guided Diffusion Model for Unlabeled Images
+Nested Diffusion Models Using Hierarchical Latent Priors
+Self-Guided Diffusion Models
+DiffMat: Latent diffusion models for image-guided material generation
+Adding Conditional Control to Text-to-Image Diffusion Models
+DIFFUSION MODELS ALREADY HAVE A SEMANTIC LATENT SPACE
+Understanding the Latent Space of Diffusion Models through the Lens of Riemannian Geometry
+UNIFYING DIFFUSION MODELS' LATENT SPACE, WITH APPLICATIONS TO CYCLEDIFFUSION AND GUIDANCE
+Prompt-to-Prompt Image Editing with Cross Attention Control
+More Control for Free! Image Synthesis with Semantic Diffusion Guidance
+MOTION GUIDANCE: DIFFUSION-BASED IMAGE EDITING WITH DIFFERENTIABLE MOTION ESTIMATORS
+LatentCLR: A Contrastive Learning Approach for Unsupervised Discovery of Interpretable Directions
+Seeing and Hearing: Open-domain Visual-Audio Generation with Diffusion Latent Aligners
+Discovering Interpretable Directions in the Semantic Latent Space of Diffusion Models
+Uncovering the Disentanglement Capability in Text-to-Image Diffusion Models
+Pretraining is All You Need for Image-to-Image Translation
+Cross-Domain Correspondence Learning for Exemplar-Based Image Translation
+Retrieval-Augmented Diffusion Models
+Diffusion Autoencoders: Toward a Meaningful and Decodable Representation
+Plug-and-Play Diffusion Features for Text-Driven Image-to-Image Translation
+Pivotal Tuning for Latent-based Editing of Real Images
