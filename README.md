@@ -19,7 +19,7 @@ Development for the backend project can be done inside a devcontainer. The conta
 2. Open `Nexarag` in VS Code
 3. Press `Ctrl+Shift+P` and type `Open Folder in Container`
 
-Jupyter Lab will be run automatically inside `litreview.devcontainer`. You may have to install the Jupyter notebook extension again when prompted to access the kernel. 
+Jupyter Lab will be run automatically inside `litreview.devcontainer`. Use the `python 3.11.11` kernel to run Jupyter notebooks.
 
 ## Frontend
 The frontend application can be deployed in two ways: as static HTML and JS files served by `nginx` in the `litreview.frontend` container, or in Angular development server mode.
