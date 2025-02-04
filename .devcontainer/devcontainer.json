@@ -1,0 +1,26 @@
+{
+    "name": "Python DevContainer",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "litreview.devcontainer",
+    "workspaceFolder": "/app",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+				"ms-python.python",
+				"ms-toolsai.jupyter",
+        		"GitHub.copilot",
+				"ms-toolsai.data-wrangler",
+				"yzhang.markdown-all-in-one",
+				"ms-python.vscode-pylance",
+				"ms-toolsai.datawrangler"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python"
+            }
+        }
+    },
+    "remoteEnv": {
+        "PYTHONPATH": "/app"
+    },
+    "forwardPorts": [8888, 7687]
+}
