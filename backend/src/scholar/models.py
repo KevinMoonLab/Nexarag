@@ -1,73 +1,70 @@
-from typing import List, Optional, Any, Dict
 from dataclasses import dataclass, field
+from typing import List, Optional
+from dataclasses_json import dataclass_json
 
+@dataclass_json
 @dataclass
-class ScholarAuthor:
-    author_id: str
+class PartialAuthor:
+    authorId: str
+    name: str
+
+@dataclass_json
+@dataclass
+class Author:
+    authorId: str
     url: str
     name: str
-    affiliations: Optional[List[str]]
-    homepage: Optional[str]
-    paper_count: Optional[int]
-    citation_count: Optional[int]
-    h_index: Optional[int]
+    affiliations: List[str] = field(default_factory=list)
+    homepage: Optional[str] = None
+    paperCount: Optional[int] = 0
+    citationCount: Optional[int] = 0
+    hIndex: Optional[int] = 0
 
-    @classmethod
-    def from_dict(cls, data: dict):
-        return cls(
-            author_id=data.get("authorId"),
-            url=data.get("url", ""),
-            name=data.get("name", "Unknown Author"),
-            affiliations=data.get("affiliations", []),
-            homepage=data.get("homepage"),
-            paper_count=data.get("paperCount", 0),
-            citation_count=data.get("citationCount", 0),
-            h_index=data.get("hIndex", 0),
-        )
-
-    @classmethod
-    def from_list(cls, data: List[dict]):
-        return [cls.from_dict(item) for item in data]
-
+@dataclass_json
 @dataclass
-class ScholarPaper:
-    paper_id: str
-    url: str
-    title: str
-    abstract: Optional[str]
-    venue: Optional[str]
-    publication_venue: Optional[Dict[str, Any]]
-    year: Optional[int]
-    reference_count: Optional[int]
-    citation_count: int
-    influential_citation_count: Optional[int]
-    fields_of_study: List[str]
-    publication_types: List[str]
-    publication_date: str
-    journal: Optional[Dict[str, Any]]
-    authors: List["ScholarAuthor"] = field(default_factory=list)
+class PublicationVenue:
+    id: str
+    name: str
+    type: Optional[str] = None
+    alternate_names: Optional[List[str]] = field(default_factory=list)
+    issn: Optional[str] = None
+    alternate_issns: Optional[List[str]] = field(default_factory=list) 
+    url: Optional[str] = None
+    alternate_urls: Optional[List[str]] = field(default_factory=list)
 
-    @classmethod
-    def from_dict(cls, data: dict):
-        authors = [ScholarAuthor.from_dict(author) for author in data.get("authors", [])]
-        return cls(
-            paper_id=data.get("paperId") or data.get("id") or "",
-            url=data.get("url", ""),
-            title=data.get("title", ""),
-            abstract=data.get("abstract", ""),
-            venue=data.get("venue"),
-            publication_venue=data.get("publicationVenue", {}),
-            year=data.get("year"),
-            reference_count=data.get("referenceCount", 0),
-            citation_count=data.get("citationCount", 0),
-            influential_citation_count=data.get("influentialCitationCount", 0),
-            fields_of_study=data.get("fieldsOfStudy", []),
-            publication_types=data.get("publicationTypes", []),
-            publication_date=data.get("publicationDate", ""),
-            journal=data.get("journal", {}),
-            authors=authors
-        )
-    
-    @classmethod
-    def from_list(cls, data: List[dict]):
-        return [cls.from_dict(item) for item in data]
+@dataclass_json
+@dataclass
+class Journal:
+    name: Optional[str] = None
+    pages: Optional[str] = None
+    volume: Optional[str] = None
+
+@dataclass_json
+@dataclass
+class PartialPaper:
+    id: str
+    authorsYear: Optional[str] = None
+    title: Optional[str] = None
+
+@dataclass_json
+@dataclass
+class Citation:
+    paperId: str
+    title: str
+
+@dataclass_json
+@dataclass
+class Paper:
+    paperId: str
+    title: str
+    venue: str
+    referenceCount: int
+    citationCount: int
+    influentialCitationCount: int
+    abstract: Optional[str]
+    year: Optional[int] = None
+    publicationTypes: Optional[List[str]] = field(default_factory=list)
+    publicationDate: Optional[str] = None
+    journal: Optional[Journal] = None
+    publicationVenue: Optional[PublicationVenue] = None
+    authors: List[PartialAuthor] = field(default_factory=list)
