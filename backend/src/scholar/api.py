@@ -1,6 +1,7 @@
 from .models import Paper, Author, PartialPaper, Citation
-from shared.utils import RateLimitExceededError
+from rabbit.utils import RateLimitExceededError
 import requests
+import json
 
 DEFAULT_PAPER_FIELDS = "title,abstract,venue,publicationVenue,year,referenceCount,citationCount,influentialCitationCount,publicationTypes,publicationDate,journal,authors"
 DEFAULT_AUTHOR_FIELDS = "authorId,url,name,affiliations,homepage,paperCount,citationCount,hIndex"
@@ -83,3 +84,17 @@ def get_references(paper_id: str) -> list[Citation]:
     else:
         print(f"Error {response.status_code}: Unable to fetch citations for paper ID {paper_id}")
         return None
+    
+def get_recommendations(positive_paper_ids, negative_paper_ids, limit = 100) -> list[Citation]:
+    url = f"http://api.semanticscholar.org/recommendations/v1/papers?fields=paperId,title&limit={limit}"
+    params = {
+        "positivePaperIds": positive_paper_ids,
+        "negativePaperIds": negative_paper_ids
+    }
+    response = requests.post(url, data=json.dumps(params))
+    if response.status_code == 200:
+        data = response.json()
+        return Citation.schema().load(data.get("recommendedPapers", []), many=True)
+    else:
+        print(f"Failed to get recommendations: {response.status_code} {response.text}")
+        return []
