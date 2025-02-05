@@ -2,7 +2,7 @@ from db.models import Paper, PublicationVenue, Journal, Author
 from scholar.models import Paper as ScholarPaper
 from typing import List
 from neomodel import adb
-from scholar.api import enrich_papers, enrich_authors
+from scholar.api import enrich_papers, enrich_authors, get_citations, get_references
 
 async def create_paper_graph(paper_ids: List[str]):
     paper_dicts = []
@@ -13,7 +13,14 @@ async def create_paper_graph(paper_ids: List[str]):
     paper_journal_relations = []
     paper_venue_relations = []
 
-    papers = enrich_papers(paper_ids)
+    existing_paper_ids = [paper.paper_id for paper in await Paper.nodes.filter(paper_id__in=paper_ids)]
+    new_paper_ids = set(paper_ids) - set(existing_paper_ids)
+    new_paper_ids = list(map(str, new_paper_ids))
+
+    if len(new_paper_ids) == 0:
+        return
+
+    papers = enrich_papers(new_paper_ids)
 
     await adb.begin()
     try:
@@ -103,3 +110,52 @@ async def create_paper_graph(paper_ids: List[str]):
     except Exception as e:
         await adb.rollback()
         raise e
+
+
+async def add_citations(paper_ids):
+    # Create paper graph
+    await create_paper_graph(paper_ids)
+
+    paper_dict = {}
+
+    # Add references to paper
+    for paper_id in paper_ids:
+        citations = get_citations(paper_id)
+        citation_ids = [reference.paperId for reference in citations]
+        
+        # Add to graph
+        await create_paper_graph(citation_ids)
+
+        for citation_id in citation_ids:
+            if citation_id not in paper_dict:
+                paper_dict[citation_id] = paper_id
+    
+    # Add relationships
+    for paper_id, citation_id in paper_dict.items():
+        paper = Paper.get(id=paper_id)
+        reference = Paper.get(id=citation_id)
+        paper.citations.add(reference)
+
+async def add_references(paper_ids):
+    # Create paper graph
+    await create_paper_graph(paper_ids)
+
+    paper_dict = {}
+
+    # Add citations to paper
+    for paper_id in paper_ids:
+        references = get_references(paper_id)
+        reference_ids = [reference.paperId for reference in references]
+        
+        # Add to graph
+        await create_paper_graph(reference_ids)
+
+        for reference_id in reference_ids:
+            if reference_id not in paper_dict:
+                paper_dict[reference_id] = paper_id
+    
+    # Add relationships
+    for paper_id, reference_id in paper_dict.items():
+        paper = Paper.get(id=paper_id)
+        reference = Paper.get(id=reference_id)
+        paper.references.add(reference)

@@ -70,7 +70,7 @@ def get_citations(paper_id: str) -> list[Citation]:
         print(f"Error {response.status_code}: Unable to fetch citations for paper ID {paper_id}")
         return []
     
-def get_references(paper_id: str) -> list[Paper]:
+def get_references(paper_id: str) -> list[Citation]:
     base_url = f"https://api.semanticscholar.org/graph/v1/paper/{paper_id}/references"
     params = {}
     response = requests.get(base_url, params=params)

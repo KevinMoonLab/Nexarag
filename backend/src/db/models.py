@@ -51,6 +51,8 @@ class Paper(AsyncStructuredNode):
     publication_date = StringProperty()
     
     # Relationships
+    references = AsyncRelationshipFrom("Paper", "CITES")
+    citations = AsyncRelationshipTo("Paper", "CITES")
     authors = AsyncRelationshipFrom("Author", "AUTHORED")
     journal = AsyncRelationshipTo("Journal", "PUBLISHED_IN")
     publication_venue = AsyncRelationshipTo("PublicationVenue", "PUBLISHED_AT")
