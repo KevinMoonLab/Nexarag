@@ -1,3 +1,9 @@
+import uuid
+import time
+
+def create_id():
+    return str(uuid.uuid4())
+
 def transform_for_cytoscape(data):
     nodes = []
     edges = []

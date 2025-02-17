@@ -9,5 +9,5 @@ import { ShellComponent } from './shell.component';
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  title = 'litreview';
+  title = 'Nexarag';
 }

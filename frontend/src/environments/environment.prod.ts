@@ -1,3 +1,4 @@
 export const environment = {
-    apiBaseUrl: '/api'
+    apiBaseUrl: '/api',
+    webSocketUrl: '/api/ws/events',
 }

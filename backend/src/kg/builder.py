@@ -3,6 +3,7 @@ from scholar.models import Paper as ScholarPaper
 from typing import List
 from neomodel import adb
 from scholar.api import enrich_papers, enrich_authors, get_citations, get_references
+from scholar.util import retry
 
 async def create_paper_graph(paper_ids: List[str]):
     paper_dicts = []
@@ -20,7 +21,7 @@ async def create_paper_graph(paper_ids: List[str]):
     if len(new_paper_ids) == 0:
         return
 
-    papers = enrich_papers(new_paper_ids)
+    papers = retry(enrich_papers, new_paper_ids)
 
     await adb.begin()
     try:
@@ -39,7 +40,7 @@ async def create_paper_graph(paper_ids: List[str]):
 
             # Create Author dict & relationships
             author_ids = [author.authorId for author in paper_data.authors]
-            authors = enrich_authors(author_ids)
+            authors = retry(enrich_authors, author_ids)
             for author_data in authors:
                 if author_data.authorId not in author_dicts:
                     author_dicts[author_data.authorId] = {

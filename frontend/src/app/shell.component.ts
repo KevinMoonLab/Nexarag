@@ -1,6 +1,5 @@
-import { Component, inject, model, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GraphStore } from './graph/graph.store';
 import { GraphComponent } from './graph/graph.component';
 
 @Component({
@@ -13,5 +12,4 @@ import { GraphComponent } from './graph/graph.component';
   encapsulation: ViewEncapsulation.None,
 })
 export class ShellComponent {
-  graphStore = inject(GraphStore);
 }

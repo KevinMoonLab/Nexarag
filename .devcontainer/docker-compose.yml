@@ -1,7 +1,7 @@
 services:
-  neo4j.devcontainer:
+  neo4j.dev:
     image: neo4j:latest
-    container_name: neo4j.devcontainer
+    container_name: neo4j.dev
     environment:
       NEO4J_AUTH: ${NEO4J_USERNAME}/${NEO4J_PASSWORD}
       NEO4J_dbms_memory_heap_max__size: 2G
@@ -11,9 +11,9 @@ services:
     volumes:
       - ${NEO4J_VOLUME}:/data
 
-  rabbitmq.devcontainer:
+  rabbitmq.dev:
     image: rabbitmq:3.11-management
-    container_name: rabbitmq.devcontainer
+    container_name: rabbitmq.dev
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
@@ -23,8 +23,8 @@ services:
     volumes:
       - ${RABBITMQ_VOLUME}:/var/lib/rabbitmq
 
-  litreview.devcontainer:
-    container_name: litreview.devcontainer
+  nexarag.dev:
+    container_name: nexarag.dev
     build:
       context: ../backend
       dockerfile: ../.devcontainer/Dockerfile
@@ -33,7 +33,7 @@ services:
     env_file:
       - .env
     depends_on:
-      - neo4j.devcontainer
-      - rabbitmq.devcontainer
+      - neo4j.dev
+      - rabbitmq.dev
     ports:
       - "8888:8888"

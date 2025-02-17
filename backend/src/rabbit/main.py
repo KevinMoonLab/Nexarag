@@ -4,7 +4,7 @@ import logging
 from enum import Enum, auto
 import json
 from pydantic import BaseModel
-from typing import Callable, Type
+from typing import Awaitable, Callable, Type
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -73,7 +73,7 @@ async def get_publisher(channel_type: ChannelType):
 
 async def subscribe_to_queue(
     channel_type: ChannelType,
-    callback: Callable[[BaseModel], None],
+    callback: Callable[[BaseModel], Awaitable[None]],
     model: Type[BaseModel],
 ):
     queue_name = channel_type.name
@@ -85,4 +85,6 @@ async def subscribe_to_queue(
             async for message in queue_iter:
                 async with message.process():
                     deserialized_message = deserialize_message(message.body, model)
+                    logger.info(f"✅ Deserialized message: {deserialized_message}")
+
                     await callback(deserialized_message)

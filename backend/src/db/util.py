@@ -12,13 +12,13 @@ class NeomodelConnectionResult:
     success: bool
     message: str
 
-async def neomodel_connect():
+async def neomodel_connect(uri = 'neo4j.dev'):
     # Extract environment variables
     neo4j_user = os.getenv("NEO4J_USERNAME", "neo4j")
     neo4j_password = os.getenv("NEO4J_PASSWORD", "password")
 
     # Create URL
-    neo4j_url = f"bolt://{neo4j_user}:{neo4j_password}@neo4j.devcontainer:7687"
+    neo4j_url = f"bolt://{neo4j_user}:{neo4j_password}@{uri}:7687"
 
     # Connect to Neo4j
     config.DATABASE_URL = neo4j_url

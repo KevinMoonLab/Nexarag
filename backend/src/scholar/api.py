@@ -1,18 +1,34 @@
-from .models import Paper, Author, PartialPaper, Citation
-from rabbit.utils import RateLimitExceededError
+from .models import Paper, Author, PartialPaper, Citation, PaperRelevanceResult
+from .util import RateLimitExceededError
 import requests
 import json
 
 DEFAULT_PAPER_FIELDS = "title,abstract,venue,publicationVenue,year,referenceCount,citationCount,influentialCitationCount,publicationTypes,publicationDate,journal,authors"
 DEFAULT_AUTHOR_FIELDS = "authorId,url,name,affiliations,homepage,paperCount,citationCount,hIndex"
 
+def relevance_search(text, limit = 100) -> list[PaperRelevanceResult]:
+    url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={text}&fields=title,authors,year&limit={limit}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        if data.get("data"):
+            return PaperRelevanceResult.schema().load(data.get("data"), many=True)
+        else:
+            return []
+    elif response.status_code == 429:
+        raise RateLimitExceededError("Rate limit exceeded. Please wait before retrying.")
+    else:
+        response.raise_for_status()
+
 def partial_search(text) -> list[PartialPaper]:
-    url = f"https://api.semanticscholar.org/graph/v1/paper/autocomplete?query={text}"
+    url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={text}"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
         if data.get("matches"):
             return PartialPaper.schema().load(data.get("matches"), many=True)
+        else:
+            return []
     elif response.status_code == 429:
         raise RateLimitExceededError("Rate limit exceeded. Please wait before retrying.")
     else:
