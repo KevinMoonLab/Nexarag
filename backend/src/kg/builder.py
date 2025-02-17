@@ -119,18 +119,20 @@ async def add_citations(paper_ids):
 
     paper_dict = {}
 
-    # Add references to paper
+    # Add citations to paper
+    all_citations = []
     for paper_id in paper_ids:
-        citations = get_citations(paper_id)
+        citations = retry(get_citations, paper_id)
         citation_ids = [reference.paperId for reference in citations]
-        
-        # Add to graph
-        await create_paper_graph(citation_ids)
+        all_citations.extend(citation_ids)
 
         for citation_id in citation_ids:
             if citation_id not in paper_dict:
                 paper_dict[citation_id] = paper_id
     
+    # Add to graph
+    await create_paper_graph(all_citations)
+
     # Add relationships
     for paper_id, citation_id in paper_dict.items():
         paper = Paper.get(id=paper_id)

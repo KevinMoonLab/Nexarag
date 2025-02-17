@@ -4,11 +4,12 @@ import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
 import { AddDataComponent } from "./add-data.component";
 import { FilterComponent } from './filter.component';
+import { SettingsComponent } from './settings.component';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, ButtonModule, DividerModule, AddDataComponent, FilterComponent],
+  imports: [CommonModule, ButtonModule, DividerModule, AddDataComponent, FilterComponent, SettingsComponent],
   template: `
     <div class="h-screen bg-gray-800 text-white flex transition-all duration-300" [ngClass]="{'w-[40rem]': expanded(), 'w-16': !expanded()}">
       <div *ngIf="expanded()" class="flex-grow p-6">
@@ -24,6 +25,8 @@ import { FilterComponent } from './filter.component';
         </ng-container>
         <ng-container *ngIf="selectedTab() === 2">
           <p class="text-lg">Settings</p>
+          <p-divider />
+          <app-settings />
         </ng-container>
       </div>
 
@@ -41,7 +44,7 @@ import { FilterComponent } from './filter.component';
   styles: [],
 })
 export class MenuComponent {
-  expanded = signal(true);
+  expanded = signal(false);
   selectedTab = signal(0);
 
   icon = computed(() => !this.expanded() ? 'pi pi-angle-right' : 'pi pi-angle-left');

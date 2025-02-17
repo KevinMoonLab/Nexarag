@@ -2,8 +2,8 @@ from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDiscon
 from typing import List
 from db.util import check_connection as check_neo4j_connection, load_kg_db
 from db.queries import search_papers_by_id, get_all_papers, get_graph
-from rabbit.schemas import AddPapersById, ClearGraph, PapersAdded
-from scholar.api import partial_search, relevance_search
+from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated
+from scholar.api import relevance_search
 from scholar.util import retry
 from rabbit import publish_message, ChannelType, check_connection as check_rabbit_connection, subscribe_to_queue
 from .upload import upload_many
@@ -25,14 +25,13 @@ manager = ConnectionManager()
 def get_connection_manager():
     return manager
 
-async def handle_add_result(message: PapersAdded):
-    logger.info(f"Received add result: {message}")
-    await manager.broadcast("add_papers_result", {})
+async def handle_update_result(message: GraphUpdated):
+    await manager.broadcast("graph_updated", {})
 
 async def subscribe_to_rabbitmq():
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
-        subscribe_to_queue(ChannelType.PAPERS_ADDED, handle_add_result, PapersAdded)
+        subscribe_to_queue(ChannelType.GRAPH_UPDATED, handle_update_result, GraphUpdated)
     )
 
 @asynccontextmanager
@@ -66,19 +65,13 @@ app.add_middleware(
     allow_headers=["*"], 
 )
 
-######################## API ########################
+######################## General ########################
 
 @app.get("/", tags=["General"])
 def welcome():
     return {"message": "Thanks for using Nexarag!"}
 
-@app.post("/docs/upload/", tags=["Documents"])
-async def upload_docs(docs: List[UploadFile] = File(...)):
-    upload_info = await upload_many(docs)
-    return {
-        "message": "Files uploaded successfully",
-        "files": upload_info
-    }
+######################## Papers ########################
 
 @app.post("/papers/add/", tags=["Papers"])
 async def add_papers(papers: List[str]):
@@ -103,7 +96,6 @@ async def search_papers_by_id(id: str = Query(default=None)):
 def handle_rate_limit_exceeded(manager:ConnectionManager, e):
     manager.broadcast("error", { "message": "Rate limit exceeded. Re-attempting..."})
 
-
 @app.get("/papers/search/relevance/", tags=["Papers"])
 async def relevance_search_papers(query: str = Query(default=''), manager: ConnectionManager = Depends(get_connection_manager)):
     results = retry(relevance_search, query, cb=lambda e: handle_rate_limit_exceeded(manager, e))
@@ -122,6 +114,20 @@ async def get_papers():
         papers = get_all_papers(db)
     return papers
 
+@app.post("/papers/citations/add", tags=["Papers"])
+async def add_citations(paperIds: List[str]):
+    message = AddPaperCitations(paperIds=paperIds)
+    await publish_message(ChannelType.ADD_CITATIONS, message)
+    return { "message": "Citations added to the queue" }
+
+@app.post("/papers/references/add", tags=["Papers"])
+async def add_references(paperIds: List[str]):
+    message = AddPaperReferences(paperIds=paperIds)
+    await publish_message(ChannelType.ADD_REFERENCES, message)
+    return { "message": "Citations added to the queue" }
+
+######################## Graph ########################
+
 @app.get("/graph/get/", tags=["Graph"])
 def get_whole_graph():
     loader = load_kg_db()
@@ -129,11 +135,23 @@ def get_whole_graph():
         graph = get_graph(db)
     return transform_for_cytoscape(graph)
 
-@app.post("/graph/remove/all", tags=["Graph"])
+@app.post("/graph/clear", tags=["Graph"])
 async def remove_whole_graph():
     message = ClearGraph(reason="User requested")
     await publish_message(ChannelType.CLEAR_GRAPH, message)
     return { "message": "Graph removal request sent" }
+
+######################## Documents ########################
+
+@app.post("/docs/upload/", tags=["Documents"])
+async def upload_docs(docs: List[UploadFile] = File(...)):
+    upload_info = await upload_many(docs)
+    return {
+        "message": "Files uploaded successfully",
+        "files": upload_info
+    }
+
+######################## Health ########################
 
 @app.get("/neo4j/health/", tags=["Health"])
 def test_neo4j_connection():

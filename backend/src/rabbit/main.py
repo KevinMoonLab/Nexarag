@@ -1,5 +1,5 @@
 import os
-from aio_pika import connect_robust, Message, ExchangeType
+from aio_pika import connect_robust, Message
 import logging
 from enum import Enum, auto
 import json
@@ -15,7 +15,9 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 
 class ChannelType(Enum):
     ADD_PAPER = auto()
-    PAPERS_ADDED = auto()
+    ADD_REFERENCES = auto()
+    ADD_CITATIONS = auto()
+    GRAPH_UPDATED = auto()
     CLEAR_GRAPH = auto()
 
 def serialize_message(message: BaseModel) -> bytes:

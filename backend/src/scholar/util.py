@@ -13,6 +13,28 @@ def retry(
     cb=None,
     **kwargs
 ):
+    for attempt in range(1, max_retries + 1):
+        try:
+            return func(*args, **kwargs)
+        except RateLimitExceededError as e:
+            if attempt == max_retries:
+                cb(e)
+                raise 
+            else:
+                time.sleep(1.1)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            raise
+
+def exponential_retry(
+    func,
+    *args,
+    max_retries=6,
+    base_delay=1,
+    max_delay=32,
+    cb=None,
+    **kwargs
+):
     """
     Retries a function with exponential backoff.
 

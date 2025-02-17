@@ -82,9 +82,41 @@ export class GraphStore {
             tooltipText: 'View Node Details',
             selector: 'node',
             onClickFunction: () => this.showNodeDialog.set(true),
-            show: false,
+            show: true,
         },
+        {
+            id: 'add-citations',
+            content: 'Add Citations',
+            tooltipText: 'Add Citations',
+            selector: 'node',
+            onClickFunction: () => this.addCitations(),
+            show: true,
+        },        
+        {
+            id: 'add-references',
+            content: 'Add References',
+            tooltipText: 'Add References',
+            selector: 'node',
+            onClickFunction: () => this.addReferences(),
+            show: true,
+        }
     ]
+
+    addCitations() {
+        const selectedNode = this.selectedNode();
+        if (!selectedNode) return;
+        if (selectedNode.label !== 'Paper') return;
+        const paperId = (selectedNode.properties as PaperData).paper_id;
+        const url = `${environment.apiBaseUrl}/papers/citations/add`;
+        this.http.post(url, [paperId]).subscribe(() => {
+            console.log('Citations added');
+        });
+    }
+
+    addReferences() {
+        const selectedNode = this.selectedNode();
+        console.log('adding references', selectedNode);
+    }
 
     getNodeName(n: KnowledgeNode) {
         if (n.label === 'Author') {
@@ -117,7 +149,7 @@ export class GraphStore {
         this.fetchGraph();
 
         this.events.events$.subscribe((event) => {
-            if (event.type === 'add_papers_result') {
+            if (event.type === 'graph_updated') {
                 this.fetchGraph();
             }
         });

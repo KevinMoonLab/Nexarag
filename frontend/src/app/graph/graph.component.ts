@@ -174,7 +174,6 @@ export class GraphComponent {
       }  
 
       const cy: Core = cytoscape(options);
-      console.log('cytoscape options', options);
       this.#graphStore.addContextMenu(cy);
       return cy;
     });
