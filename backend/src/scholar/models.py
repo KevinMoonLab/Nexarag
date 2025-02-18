@@ -12,9 +12,9 @@ class PartialAuthor:
 @dataclass
 class Author:
     authorId: str
-    url: str
     name: str
-    affiliations: List[str] = field(default_factory=list)
+    url: Optional[str] = None
+    affiliations: Optional[List[str]] = field(default_factory=list)
     homepage: Optional[str] = None
     paperCount: Optional[int] = 0
     citationCount: Optional[int] = 0

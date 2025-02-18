@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ShellComponent } from './shell.component';
+import { ToastComponent } from './toast/toast.component';
 
 @Component({
-  imports: [ShellComponent, RouterModule],
+  imports: [ShellComponent, RouterModule, ToastComponent],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

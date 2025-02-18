@@ -159,7 +159,7 @@ export class GraphComponent {
         elements: this.cytoscapeGraph(),
         layout: {
             name: 'cose',
-            nodeRepulsion: () => 40000,
+            nodeRepulsion: () => 70000,
         } as CoseLayoutOptions,
         style: this.styleSheet(),
       };

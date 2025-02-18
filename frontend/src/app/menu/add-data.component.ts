@@ -6,6 +6,7 @@ import { TableModule } from 'primeng/table';
 import { FormsModule } from '@angular/forms';
 import { CheckboxModule } from 'primeng/checkbox';
 import { AddDataStore } from './add-data.store';
+import { ToastService } from '../toast/toast.service';
 
 @Component({
   selector: 'app-add-data',
@@ -61,6 +62,7 @@ import { AddDataStore } from './add-data.store';
 })
 export class AddDataComponent {
   #store = inject(AddDataStore);
+  #toastService = inject(ToastService);
   loading = this.#store.loading;
 
   query = model('');
@@ -81,6 +83,7 @@ export class AddDataComponent {
     const paperIds = this.selectedPapers().map(p => p.paperId);
     this.#store.addPapersToGraph(paperIds).subscribe(() => {
       this.clearSearch();
+      this.#toastService.show('Adding data to graph...');
     });
   }
 

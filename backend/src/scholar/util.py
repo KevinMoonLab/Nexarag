@@ -7,7 +7,7 @@ class RateLimitExceededError(Exception):
 def retry(
     func,
     *args,
-    max_retries=6,
+    max_retries=1000,
     base_delay=1,
     max_delay=32,
     cb=None,

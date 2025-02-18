@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { computed, inject, Injectable, model, signal } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import { Observable, Subject, switchMap } from "rxjs";
 import { AuthorData, Edge, JournalData, KnowledgeGraph, KnowledgeNode, PaperData, PublicationVenueData } from "./types";
 import { environment } from "src/environments/environment";
@@ -7,6 +7,7 @@ import {
     Core,
   } from 'cytoscape';
 import { EventStore } from "../events.store";
+import { ToastService } from "../toast/toast.service";
 
 
 @Injectable({
@@ -14,6 +15,7 @@ import { EventStore } from "../events.store";
 })
 export class GraphStore {
     http = inject(HttpClient);
+    toastService = inject(ToastService);
     events = inject(EventStore);
     graph = signal({
         nodes: [] as KnowledgeNode[],
@@ -109,13 +111,20 @@ export class GraphStore {
         const paperId = (selectedNode.properties as PaperData).paper_id;
         const url = `${environment.apiBaseUrl}/papers/citations/add`;
         this.http.post(url, [paperId]).subscribe(() => {
-            console.log('Citations added');
+            this.toastService.show('Building citation graph...');
         });
     }
 
     addReferences() {
         const selectedNode = this.selectedNode();
-        console.log('adding references', selectedNode);
+        if (!selectedNode) return;
+        if (selectedNode.label !== 'Paper') return;
+        const paperId = (selectedNode.properties as PaperData).paper_id;
+        const url = `${environment.apiBaseUrl}/papers/references/add`;
+        this.http.post(url, [paperId]).subscribe(() => {
+            this.toastService.show('Building reference graph...');
+
+        });
     }
 
     getNodeName(n: KnowledgeNode) {
@@ -150,6 +159,7 @@ export class GraphStore {
 
         this.events.events$.subscribe((event) => {
             if (event.type === 'graph_updated') {
+                this.toastService.show('Graph updated!');
                 this.fetchGraph();
             }
         });
