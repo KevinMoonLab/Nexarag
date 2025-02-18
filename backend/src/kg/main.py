@@ -1,51 +1,55 @@
-from shared.rabbit import subscribe_to_queue, ChannelType
-from shared.schemas import AddPapersByTitle, ClearGraph
 import asyncio
 import logging
-from .semantic_scholar_api import extract_paper_data
-from .kg_builder import create_citation_graph
-from db.util import load_kg_db, initialize
+from db.util import load_kg_db
 from db.commands import clear_graph
-from shared.rabbit import publish_message, ChannelType
-from shared.schemas import PapersAdded, PaperRef
+from rabbit import publish_message, subscribe_to_queue, ChannelType
+from rabbit.schemas import AddPaperCitations, AddPaperReferences, GraphUpdated, AddPapersById, ClearGraph
+from kg.builder import create_paper_graph, add_citations, add_references
+from db.util import neomodel_connect
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def create_paper_refs(paper_data):
-    data = paper_data['papers'][0]['p']
-    db_id = data['id']
-    paper_id = data['properties']['paperId']
-    return PaperRef(paperId=paper_id, paperDbId=db_id)
+async def handle_add_papers(message: AddPapersById):
+    logger.info(f"Received add paper request: {message}")
+    await create_paper_graph(message.paperIds)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
 
-async def handle_add_papers(message: AddPapersByTitle):
-    logger.info(f"Received paper titles: {message}")
-    paper_data = extract_paper_data(message.titles)
-    loader = load_kg_db()
-    with loader() as db:
-        data = create_citation_graph(db, paper_data)
-    refs = list(map(create_paper_refs, data))
-    await publish_message(ChannelType.PAPERS_ADDED, PapersAdded(paperRefs=refs))
-    logger.info(f"Added {len(refs)} paper references.")
+async def handle_add_references(message: AddPaperReferences):
+    logger.info(f"Received add references request: {message}")
+    await add_references(message.paperIds)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
 
-def handle_clear_graph(message: ClearGraph):
+async def handle_add_citations(message: AddPaperCitations):
+    logger.info(f"Received add citations request: {message}")
+    await add_citations(message.paperIds)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
+
+async def handle_clear_graph(message: ClearGraph):
     loader = load_kg_db()
     with loader() as db:
         clear_graph(db)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=[]))
     logger.info("Graph cleared.")
 
 async def main():
+    logger.info("Initializing Neo4j database...")
+    result = await neomodel_connect('neo4j')
+    if result.success:
+        logger.info(result.message)
+    else:
+        logger.error(result.message)
+        exit(1)
+
+    logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
-        subscribe_to_queue(ChannelType.ADD_PAPER, handle_add_papers, AddPapersByTitle),
+        subscribe_to_queue(ChannelType.ADD_PAPER, handle_add_papers, AddPapersById),
+        subscribe_to_queue(ChannelType.ADD_CITATIONS, handle_add_citations, AddPaperCitations),
+        subscribe_to_queue(ChannelType.ADD_REFERENCES, handle_add_references, AddPaperReferences),
         subscribe_to_queue(ChannelType.CLEAR_GRAPH, handle_clear_graph, ClearGraph)
     )
 
 if __name__ == "__main__":
     logger.info("Starting Knowledge Graph worker...")
-    logger.info("Initializing Neo4j database...")
-    loader = load_kg_db()
-    with loader() as db:
-        initialize(db)
-    logger.info("Subscribing to ADD_PAPER queue...")
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())

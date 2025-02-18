@@ -19,13 +19,13 @@ Development for the backend project can be done inside a devcontainer. The conta
 2. Open `Nexarag` in VS Code
 3. Press `Ctrl+Shift+P` and type `Open Folder in Container`
 
-Jupyter Lab will be run automatically inside `litreview.devcontainer`. Use the `python 3.11.11` kernel to run Jupyter notebooks.
+Jupyter Lab will be run automatically inside `nexarag.dev`. Use the `python 3.11.11` kernel to run Jupyter notebooks.
 
 ## Frontend
 ### First Time Deployment
 1. Install [NVM](https://github.com/nvm-sh/nvm) for your platform (Linux is much easier)
 2. Install [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
-3. In the `litreview` root, run `npm install`
+3. In `Nexarag/frontend`, run `npm install`
 
 ### Running the Development Server
 1. Run the application stack from the root using `docker compose`. The API will be served at `http://localhost:8000`
