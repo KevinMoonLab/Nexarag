@@ -26,7 +26,7 @@ export class AddDataStore {
     }
 
     searchPapers(searchTerm: string): Observable<PaperRelevanceResult[]> {
-        return this.#http.get<PaperRelevanceResult[]>(`${environment.apiBaseUrl}/papers/search/relevance?query=${searchTerm}`);
+        return this.#http.get<PaperRelevanceResult[]>(`${environment.apiBaseUrl}/papers/search/relevance/?query=${searchTerm}`);
     }
 
     search(searchTerm: string) {
