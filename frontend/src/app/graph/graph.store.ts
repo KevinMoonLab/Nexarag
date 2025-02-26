@@ -1,11 +1,13 @@
 import { HttpClient } from "@angular/common/http";
-import { computed, effect, inject, Injectable, signal } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import { Observable, Subject, switchMap } from "rxjs";
-import { AuthorData, Edge, KnowledgeGraph, KnowledgeNode, NodeLabel, PaperData } from "./types";
+import { AuthorData, Edge, JournalData, KnowledgeGraph, KnowledgeNode, PaperData, PublicationVenueData } from "./types";
 import { environment } from "src/environments/environment";
 import {
     Core,
   } from 'cytoscape';
+import { EventStore } from "../events.store";
+import { ToastService } from "../toast/toast.service";
 
 
 @Injectable({
@@ -13,31 +15,67 @@ import {
 })
 export class GraphStore {
     http = inject(HttpClient);
+    toastService = inject(ToastService);
+    events = inject(EventStore);
     graph = signal({
         nodes: [] as KnowledgeNode[],
         edges: [] as Edge[],
     });
-
-
-    logger = effect(() => console.log(this.graph()));
-
     searchTerm = signal('');
-    filteredGraph = computed(() => {
-        const searchTerm = this.searchTerm().toLowerCase();
-        if (searchTerm.length === 0) {
-            return this.graph();
-        }
+    weightNodes = signal(false);
 
-        const nodes = this.graph().nodes.filter((node) => {
-            return (node.label === 'Author' && (node.properties as AuthorData).name.toLowerCase().includes(searchTerm)) 
-                || (node.label == 'Paper' && (node.properties as PaperData).title.toLowerCase().includes(searchTerm));
+    filteredGraph = computed(() => {
+        const selectedNodeTypes = this.selectedDisplayFilters();
+        const searchTerm = this.searchTerm();
+        let nodes = [] as KnowledgeNode[];
+        if (searchTerm) {
+            const searchTermLower = searchTerm.toLowerCase();
+            nodes = this.graph().nodes.filter((node) => {
+                const nodeName = this.getNodeName(node).toLowerCase();
+                return selectedNodeTypes.includes(node.label) && nodeName.includes(searchTermLower);
+            });
+        } else {
+            nodes = this.graph().nodes.filter(n => selectedNodeTypes.includes(n.label));
+        }
+        const nodeIds = new Set(nodes.map((node) => node.id));
+        const edges = this.graph().edges.filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target));
+        return { nodes, edges } as KnowledgeGraph;
+    });
+
+    degreeMap = computed(() => {
+        const degreeMap = new Map<string, number>();
+        const parentNodes = this.parentMap();
+        const childNodes = this.childMap();
+
+        this.graph().nodes.forEach((node) => {
+            const parents = parentNodes.get(node.id) || [];
+            const children = childNodes.get(node.id) || [];
+            const allIds = [...parents.map(p => p.id), ...children.map(c => c.id)];
+            const uniqueIds = new Set(allIds);
+            degreeMap.set(node.id, uniqueIds.size);
         });
 
-        return {
-            nodes,
-            edges: []
-        };
-    }) 
+        return degreeMap;
+    });
+
+    maxDegree = computed(() => this.degreeMap() ? Math.max(...Array.from(this.degreeMap().values())) : 0);
+
+    selectedDisplayFilters = signal(['Paper', 'Journal' ]);
+    displayFilterOptions = signal([
+      { label: 'Author', value: 'Author' },
+      { label: 'Paper', value: 'Paper' },
+      { label: 'Journal', value: 'Journal' },
+      { label: 'Publication Venue', value: 'PublicationVenue' },
+    ]);
+
+    selectedAuthors = signal([] as string[]);
+    authorOptions = computed(() => {
+        const authors = this.typeMap().get('Author') || [];
+        return authors.map((author) => ({
+            label: (author.properties as AuthorData).name,
+            value: author.id,
+        }));
+    })
 
     menuItems = [
         {
@@ -46,9 +84,62 @@ export class GraphStore {
             tooltipText: 'View Node Details',
             selector: 'node',
             onClickFunction: () => this.showNodeDialog.set(true),
-            show: false,
+            show: true,
         },
+        {
+            id: 'add-citations',
+            content: 'Add Citations',
+            tooltipText: 'Add Citations',
+            selector: 'node',
+            onClickFunction: () => this.addCitations(),
+            show: true,
+        },        
+        {
+            id: 'add-references',
+            content: 'Add References',
+            tooltipText: 'Add References',
+            selector: 'node',
+            onClickFunction: () => this.addReferences(),
+            show: true,
+        }
     ]
+
+    addCitations() {
+        const selectedNode = this.selectedNode();
+        if (!selectedNode) return;
+        if (selectedNode.label !== 'Paper') return;
+        const paperId = (selectedNode.properties as PaperData).paper_id;
+        const url = `${environment.apiBaseUrl}/papers/citations/add`;
+        this.http.post(url, [paperId]).subscribe(() => {
+            this.toastService.show('Building citation graph...');
+        });
+    }
+
+    addReferences() {
+        const selectedNode = this.selectedNode();
+        if (!selectedNode) return;
+        if (selectedNode.label !== 'Paper') return;
+        const paperId = (selectedNode.properties as PaperData).paper_id;
+        const url = `${environment.apiBaseUrl}/papers/references/add`;
+        this.http.post(url, [paperId]).subscribe(() => {
+            this.toastService.show('Building reference graph...');
+
+        });
+    }
+
+    getNodeName(n: KnowledgeNode) {
+        if (n.label === 'Author') {
+            return (n.properties as AuthorData).name;
+        } else if (n.label === 'Paper') {
+            return (n.properties as PaperData).title
+        } else if (n.label === 'Journal') {
+            return (n.properties as JournalData).name;
+        } else if (n.label === 'PublicationVenue') {
+            return (n.properties as PublicationVenueData).name;
+        } else {
+            return 'No Name';
+        }
+    }
 
     showNodeDialog = signal(false);
     selectedNodeKey = signal('');
@@ -65,6 +156,13 @@ export class GraphStore {
             });
 
         this.fetchGraph();
+
+        this.events.events$.subscribe((event) => {
+            if (event.type === 'graph_updated') {
+                this.toastService.show('Graph updated!');
+                this.fetchGraph();
+            }
+        });
     }
 
     fetchGraph(): void {
@@ -80,6 +178,7 @@ export class GraphStore {
         const nodeMap = new Map<string, KnowledgeNode>();
         const typeMap = new Map<string, KnowledgeNode[]>(); 
         const childMap = new Map<string, KnowledgeNode[]>();
+        const parentMap = new Map<string, KnowledgeNode[]>();
 
         this.graph().nodes.forEach((node) => {
             nodeMap.set(node.id, node);
@@ -102,18 +201,28 @@ export class GraphStore {
             else if (node) {
                 childMap.set(source, [node]);
             }
+
+            const parent = nodeMap.get(source);
+            if (parentMap.has(target)) {
+                if (parent) parentMap.get(target)?.push(parent);
+            }
+            else if (parent) {
+                parentMap.set(target, [parent]);
+            }
         });
 
         return {
             nodeMap,
             typeMap,
             childMap,
+            parentMap,
         };
     });
 
     nodeMap = computed(() => this.graphNodeRepresentations().nodeMap);
     typeMap = computed(() => this.graphNodeRepresentations().typeMap);
     childMap = computed(() => this.graphNodeRepresentations().childMap);
+    parentMap = computed(() => this.graphNodeRepresentations().parentMap);
 
     getNode(id: string): KnowledgeNode | undefined {
         return this.nodeMap().get(id);
@@ -136,4 +245,6 @@ export class GraphStore {
           ctx.showMenuItem('show-node');
         });
     }
+
+
 }

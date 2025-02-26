@@ -1,6 +1,6 @@
 import pymupdf4llm
 from fastapi import UploadFile, HTTPException
-from shared.utils import create_id
+from .util import create_id
 import tempfile
 import os
 from typing import List

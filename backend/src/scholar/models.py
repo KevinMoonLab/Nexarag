@@ -5,16 +5,16 @@ from dataclasses_json import dataclass_json
 @dataclass_json
 @dataclass
 class PartialAuthor:
-    authorId: str
     name: str
+    authorId: Optional[str] = None
 
 @dataclass_json
 @dataclass
 class Author:
     authorId: str
-    url: str
     name: str
-    affiliations: List[str] = field(default_factory=list)
+    url: Optional[str] = None
+    affiliations: Optional[List[str]] = field(default_factory=list)
     homepage: Optional[str] = None
     paperCount: Optional[int] = 0
     citationCount: Optional[int] = 0
@@ -45,6 +45,15 @@ class PartialPaper:
     id: str
     authorsYear: Optional[str] = None
     title: Optional[str] = None
+
+@dataclass_json
+@dataclass
+class PaperRelevanceResult:
+    paperId: str
+    title: str
+    authors: List[PartialAuthor] = field(default_factory=list)
+    year: Optional[int] = None
+
 
 @dataclass_json
 @dataclass

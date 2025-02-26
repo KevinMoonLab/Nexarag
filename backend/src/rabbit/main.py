@@ -1,10 +1,10 @@
 import os
-from aio_pika import connect_robust, Message, ExchangeType
+from aio_pika import connect_robust, Message
 import logging
 from enum import Enum, auto
 import json
 from pydantic import BaseModel
-from typing import Callable, Type
+from typing import Awaitable, Callable, Type
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -15,7 +15,9 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 
 class ChannelType(Enum):
     ADD_PAPER = auto()
-    PAPERS_ADDED = auto()
+    ADD_REFERENCES = auto()
+    ADD_CITATIONS = auto()
+    GRAPH_UPDATED = auto()
     CLEAR_GRAPH = auto()
 
 def serialize_message(message: BaseModel) -> bytes:
@@ -73,7 +75,7 @@ async def get_publisher(channel_type: ChannelType):
 
 async def subscribe_to_queue(
     channel_type: ChannelType,
-    callback: Callable[[BaseModel], None],
+    callback: Callable[[BaseModel], Awaitable[None]],
     model: Type[BaseModel],
 ):
     queue_name = channel_type.name
@@ -85,4 +87,6 @@ async def subscribe_to_queue(
             async for message in queue_iter:
                 async with message.process():
                     deserialized_message = deserialize_message(message.body, model)
+                    logger.info(f"✅ Deserialized message: {deserialized_message}")
+
                     await callback(deserialized_message)
