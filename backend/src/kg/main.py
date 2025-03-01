@@ -9,11 +9,12 @@ logger = logging.getLogger(__name__)
 
 # Example: Echo response
 async def handle_request(message: ChatMessage, response_callback: Callable, completion_callback: Callable):
-    await response_callback(f"You said: {message.message}.")
+    await asyncio.sleep(2)
+    await response_callback("Hi! I'm a Nexarag.")
     await asyncio.sleep(1)
-    await response_callback("I'm a bot! Thanks for using Nexarag.")
+    await response_callback(f"Thanks for asking about '{message.message}'!")
     await asyncio.sleep(1)
-    await response_callback("I can help you with papers, authors, and more!")
+    await response_callback("I can help you with papers, authors, and more.")
     await asyncio.sleep(1)
     await completion_callback()
 

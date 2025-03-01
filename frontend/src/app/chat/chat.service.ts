@@ -3,25 +3,7 @@ import { computed, inject, Injectable, signal } from "@angular/core";
 import { Observable, Subject, switchMap } from "rxjs";
 import { environment } from "src/environments/environment";
 import { Event, EventService } from "../events.service";
-
-export type ChatMessage = {
-    message: string;
-    chatId: string;
-    messageId: string;
-}
-
-export type ChatResponse = {
-    responseId: string;
-    userMessageId: string;
-    message: string;
-    chatId: string;
-}
-
-export type ViewChatMessage = {
-    text: string;
-    isUser: boolean;
-    messageId: string;
-}
+import { ChatMessage, ChatResponse } from "./types";
 
 @Injectable({
     providedIn: 'root',
@@ -32,7 +14,7 @@ export type ViewChatMessage = {
 
     // Chat context
     chatId = signal('');
-
+    responseComplete = signal(true);
     userMessages = signal([] as ChatMessage[]);
     responseMessageList = signal([] as ChatResponse[]);
     responseMessages = computed(() => {
@@ -50,7 +32,7 @@ export type ViewChatMessage = {
       const result = paired.map(pair => ([
         { text: pair.userMessage.message, isUser: true, messageId: pair.userMessage.messageId },
         { text: pair.responseMessage?.message || '', isUser: false, messageId: pair.responseMessage?.responseId || '' }
-      ])).flat();
+      ])).flat().filter(f => f.text.length > 0);
       return result;
     });
 
@@ -85,7 +67,7 @@ export type ViewChatMessage = {
     }
 
     private handleResponseCompleted(data: any) {
-      console.log('response completed', data)
+      this.responseComplete.set(true);
     }
   
     public send(message: ChatMessage): Observable<any> {
@@ -97,6 +79,7 @@ export type ViewChatMessage = {
       // Update msg state
       this.userMessages.update(prev => [...prev, newMessage]);
       this.message.set('');
+      this.responseComplete.set(false);
 
       // Start thinking
       this.startThinking();

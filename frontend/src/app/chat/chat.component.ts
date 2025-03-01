@@ -41,7 +41,7 @@ import { DividerModule } from 'primeng/divider';
           placeholder="Type a message..."
           [(ngModel)]="chat.message"
         ></textarea>
-        <button pButton [disabled]="!chat.message().length" icon="pi pi-arrow-circle-up" class="p-button-primary" (click)="handleNewMessage()"> </button>
+        <button pButton [disabled]="!chat.message().length || !chat.responseComplete()" icon="pi pi-arrow-circle-up" class="p-button-primary" (click)="handleNewMessage()"> </button>
       </div>
     </div>
   `,
@@ -58,9 +58,13 @@ export class ChatComponent {
     if (thinking) this.scrollToBottom();
   });
 
+  newMessageEffect = effect(() => {
+    const messages = this.chat.messages();
+    if (messages.length) this.scrollToBottom();
+  })
+
   handleNewMessage() {
     this.chat.sendMessage();
-    setTimeout(() => this.scrollToBottom(), 200);
   }
 
   private scrollToBottom() {
