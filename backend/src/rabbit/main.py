@@ -22,6 +22,8 @@ class ChannelType(Enum):
     CHAT_MESSAGE = auto()
     CHAT_RESPONSE = auto()
     RESPONSE_COMPLETED = auto()
+    CHAT_MESSAGE_CREATED = auto()
+    CHAT_RESPONSE_CREATED = auto()
 
 def serialize_message(message: BaseModel) -> bytes:
     return message.json().encode("utf-8")

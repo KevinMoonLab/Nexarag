@@ -38,7 +38,7 @@ import { ChatComponent } from "./chat.component";
   encapsulation: ViewEncapsulation.None,
 })
 export class ChatMenuComponent {
-    expanded = signal(true);
+    expanded = signal(false);
     selectedTab = signal(0);
   
     icon = computed(() => this.expanded() ? 'pi pi-angle-right' : 'pi pi-angle-left');

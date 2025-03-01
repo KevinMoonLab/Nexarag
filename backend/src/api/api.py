@@ -40,7 +40,7 @@ async def subscribe_to_rabbitmq():
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
         subscribe_to_queue(ChannelType.GRAPH_UPDATED, handle_update_result, GraphUpdated),
-        subscribe_to_queue(ChannelType.CHAT_RESPONSE, handle_chat_response, ChatResponse),
+        subscribe_to_queue(ChannelType.CHAT_RESPONSE_CREATED, handle_chat_response, ChatResponse),
         subscribe_to_queue(ChannelType.RESPONSE_COMPLETED, handle_response_completed, ResponseCompleted)
     )
 

@@ -8,15 +8,17 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Example: Echo response
-async def handle_request(message: ChatMessage, response_callback: Callable, completion_callback: Callable):
+async def handle_request(message: ChatMessage, cb: Callable, complete: Callable):
+    # Your code here
+    # Example: Echo response
     await asyncio.sleep(2)
-    await response_callback("Hi! I'm a Nexarag.")
+    await cb("Hi! I'm a Nexarag.")
     await asyncio.sleep(1)
-    await response_callback(f"Thanks for asking about '{message.message}'!")
+    await cb(f"Thanks for asking about '{message.message}'!")
     await asyncio.sleep(1)
-    await response_callback("I can help you with papers, authors, and more.")
+    await cb("I can help you with papers, authors, and more.")
     await asyncio.sleep(1)
-    await completion_callback()
+    await complete()
 
 def callbacks(message: ChatMessage):
     first_response = ChatResponse(message="", chatId=message.chatId, userMessageId=message.messageId)
@@ -35,7 +37,7 @@ async def handle_chat_message(message: ChatMessage):
 async def main():
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
-        subscribe_to_queue(ChannelType.CHAT_MESSAGE, handle_chat_message, ChatMessage),
+        subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message, ChatMessage),
     )
 
 if __name__ == "__main__":
