@@ -7,21 +7,25 @@ import { GraphStore } from './graph.store';
 import { Core, CoseLayoutOptions, CytoscapeOptions, StylesheetJson } from 'cytoscape';
 import cytoscape from 'cytoscape';
 import coseBilkent from 'cytoscape-cose-bilkent';
-import { AuthorData, JournalData, KnowledgeNode, PaperData, PublicationVenueData } from './types';
+import { KnowledgeNode } from './types';
 import { NodeDialogComponent } from './node-dialog.component';
 import contextMenus from 'cytoscape-context-menus';
 import { MenuComponent } from "../menu/menu.component";
+import { ChatMenuComponent } from "../chat/chat-menu.component";
 
 cytoscape.use(coseBilkent);
 cytoscape.use(contextMenus);
 
 @Component({
   selector: 'app-graph',
-  imports: [CommonModule, InputTextModule, FormsModule, ButtonModule, MenuComponent, NodeDialogComponent],
+  imports: [CommonModule, InputTextModule, FormsModule, ButtonModule, MenuComponent, NodeDialogComponent, ChatMenuComponent],
   template: `
         <div class="relative h-screen w-full flex">
           <div class="absolute top-0 left-0 h-full z-50">
             <app-menu />
+          </div>
+          <div class="absolute top-0 right-0 h-full z-50">
+            <app-chat-menu />
           </div>
           <div class="flex-grow h-screen w-full" #graph id="graph"></div>
         </div>

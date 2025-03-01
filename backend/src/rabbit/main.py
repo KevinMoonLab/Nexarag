@@ -19,6 +19,7 @@ class ChannelType(Enum):
     ADD_CITATIONS = auto()
     GRAPH_UPDATED = auto()
     CLEAR_GRAPH = auto()
+    CHAT_MESSAGE = auto()
 
 def serialize_message(message: BaseModel) -> bytes:
     return message.json().encode("utf-8")
@@ -27,7 +28,7 @@ def deserialize_message(data: bytes, model: type[BaseModel]) -> BaseModel:
     return model.parse_raw(data)
 
 def get_rabbitmq_url():
-    return f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@rabbitmq:5672/"
+    return f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@nexarag.rabbitmq:5672/"
 
 async def create_connection():
     # Construct the RabbitMQ connection URL
@@ -87,6 +88,4 @@ async def subscribe_to_queue(
             async for message in queue_iter:
                 async with message.process():
                     deserialized_message = deserialize_message(message.body, model)
-                    logger.info(f"✅ Deserialized message: {deserialized_message}")
-
                     await callback(deserialized_message)

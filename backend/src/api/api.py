@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDiscon
 from typing import List
 from db.util import check_connection as check_neo4j_connection, load_kg_db
 from db.queries import search_papers_by_id, get_all_papers, get_graph
-from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated
+from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated, ChatMessage, ChatResponse
 from scholar.api import relevance_search
 from scholar.util import retry
 from rabbit import publish_message, ChannelType, check_connection as check_rabbit_connection, subscribe_to_queue
@@ -140,6 +140,12 @@ async def remove_whole_graph():
     message = ClearGraph(reason="User requested")
     await publish_message(ChannelType.CLEAR_GRAPH, message)
     return { "message": "Graph removal request sent" }
+
+######################## Chat ########################
+@app.post("/chat/send/", tags=["Chat"])
+async def send_chat_message(request: ChatMessage):
+    await publish_message(ChannelType.CHAT_MESSAGE, request)
+    return ChatResponse(message="Message sent.", chatId=request.chatId, messageId=request.messageId)
 
 ######################## Documents ########################
 
