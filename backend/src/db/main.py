@@ -4,7 +4,7 @@ from db.util import load_kg_db
 from db.commands import clear_graph
 from rabbit import publish_message, subscribe_to_queue, ChannelType
 from rabbit.schemas import AddPaperCitations, AddPaperReferences, GraphUpdated, AddPapersById, ClearGraph
-from kg.builder import create_paper_graph, add_citations, add_references
+from db.builder import create_paper_graph, add_citations, add_references
 from db.util import neomodel_connect
 
 logging.basicConfig(level=logging.INFO)
@@ -50,6 +50,6 @@ async def main():
     )
 
 if __name__ == "__main__":
-    logger.info("Starting Knowledge Graph worker...")
+    logger.info("Starting Neo4J graph database worker...")
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())

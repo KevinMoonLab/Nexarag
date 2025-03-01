@@ -71,6 +71,27 @@ services:
     depends_on:
       - nexarag.api
 
+  nexarag.db:
+    image: nexarag.db:latest
+    build:
+      context: ./backend/src
+      dockerfile: db/Dockerfile
+    container_name: nexarag.db
+    restart: unless-stopped
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USERNAME: ${NEO4J_USERNAME}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
+      NEO4J_DATABASE: neo4j
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      nexarag.rabbitmq:
+        condition: service_healthy
+
+
   nexarag.kg:
     image: nexarag.kg:latest
     build:

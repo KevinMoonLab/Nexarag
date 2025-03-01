@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDiscon
 from typing import List
 from db.util import check_connection as check_neo4j_connection, load_kg_db
 from db.queries import search_papers_by_id, get_all_papers, get_graph
-from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated, ChatMessage, ChatResponse
+from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted
 from scholar.api import relevance_search
 from scholar.util import retry
 from rabbit import publish_message, ChannelType, check_connection as check_rabbit_connection, subscribe_to_queue
@@ -28,10 +28,20 @@ def get_connection_manager():
 async def handle_update_result(message: GraphUpdated):
     await manager.broadcast("graph_updated", {})
 
+async def handle_chat_response(message: ChatResponse):
+    logger.info(f"Chat response: {message}")
+    await manager.broadcast("chat_response", message.model_dump())
+
+async def handle_response_completed(message: ResponseCompleted):
+    logger.info(f"Response completed: {message.responseId}")
+    await manager.broadcast("response_completed", message.model_dump())
+
 async def subscribe_to_rabbitmq():
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
-        subscribe_to_queue(ChannelType.GRAPH_UPDATED, handle_update_result, GraphUpdated)
+        subscribe_to_queue(ChannelType.GRAPH_UPDATED, handle_update_result, GraphUpdated),
+        subscribe_to_queue(ChannelType.CHAT_RESPONSE, handle_chat_response, ChatResponse),
+        subscribe_to_queue(ChannelType.RESPONSE_COMPLETED, handle_response_completed, ResponseCompleted)
     )
 
 @asynccontextmanager
@@ -145,7 +155,7 @@ async def remove_whole_graph():
 @app.post("/chat/send/", tags=["Chat"])
 async def send_chat_message(request: ChatMessage):
     await publish_message(ChannelType.CHAT_MESSAGE, request)
-    return ChatResponse(message="Message sent.", chatId=request.chatId, messageId=request.messageId)
+    return request
 
 ######################## Documents ########################
 

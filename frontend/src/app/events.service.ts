@@ -2,12 +2,17 @@ import { Injectable, inject } from "@angular/core";
 import { Subject, Observable, BehaviorSubject } from "rxjs";
 import { environment } from "src/environments/environment";
 
+export type Event = {
+    type: 'graph_updated' | 'chat_response' | 'response_completed';
+    body: any;
+}
+
 @Injectable({
     providedIn: "root",
 })
-export class EventStore {
+export class EventService {
     private socket!: WebSocket;
-    private eventSubject = new Subject<any>();
+    private eventSubject = new Subject<Event>();
     private connectionStatus = new BehaviorSubject<boolean>(false);
 
     constructor() {
@@ -23,9 +28,7 @@ export class EventStore {
         };
 
         this.socket.onmessage = (event) => {
-            console.log("Received message:", event);
             const data = JSON.parse(event.data);
-            console.log("Received WebSocket event:", data);
             this.eventSubject.next(data);
         };
 
@@ -40,7 +43,7 @@ export class EventStore {
         };
     }
 
-    get events$(): Observable<any> {
+    get events$(): Observable<Event> {
         return this.eventSubject.asObservable();
     }
 

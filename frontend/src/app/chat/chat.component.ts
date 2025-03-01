@@ -11,11 +11,10 @@ import { DividerModule } from 'primeng/divider';
   imports: [CommonModule, ButtonModule, DividerModule, ButtonModule, FormsModule],
   template: `
     <div class="flex flex-col h-full">
-      <!-- Scrollable chat area -->
+      <!-- Chat message area -->
       <div #scrollContainer class="flex-1 overflow-y-auto space-y-4 p-6">
         <ng-container *ngFor="let message of chat.messages()">
           <div [ngClass]="{'justify-start': !message.isUser, 'justify-end': message.isUser}" class="flex items-start gap-2">
-            <!-- Chat head (user or other person) -->
             <span *ngIf="!message.isUser" class="pi pi-sparkles text-2xl bg-gray-700 rounded-full p-2"></span>
             <div class="max-w-[80%] p-3 rounded-lg shadow-md"
                  [ngClass]="{'bg-blue-500 text-white': message.isUser, 'bg-gray-700 text-white': !message.isUser}">
@@ -33,7 +32,7 @@ import { DividerModule } from 'primeng/divider';
         </div>
       </div>
 
-      <!-- Fixed input area -->
+      <!-- Input area -->
       <div class="p-4 flex items-center gap-2">
         <textarea
           pInputTextarea

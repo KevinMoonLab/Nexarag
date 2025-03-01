@@ -20,6 +20,8 @@ class ChannelType(Enum):
     GRAPH_UPDATED = auto()
     CLEAR_GRAPH = auto()
     CHAT_MESSAGE = auto()
+    CHAT_RESPONSE = auto()
+    RESPONSE_COMPLETED = auto()
 
 def serialize_message(message: BaseModel) -> bytes:
     return message.json().encode("utf-8")

@@ -12,4 +12,4 @@ RUN pip install -e /app
 
 ENV PYTHONPATH=/app
 
-CMD ["python", "db/main.py"]
+CMD ["python", "kg/main.py"]

@@ -20,6 +20,7 @@ class ConnectionManager:
             connection.close()
 
     async def broadcast(self, event_type: str, data: Dict):
+        print(f"Broadcasting {event_type} with data {data} to {len(self.active_connections)} connections")
         message = {"type": event_type, "body": data}
         for connection in self.active_connections:
             await connection.send_json(message)

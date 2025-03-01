@@ -1,0 +1,43 @@
+import asyncio
+import logging
+from rabbit import get_publisher, publish_message, subscribe_to_queue, ChannelType
+from rabbit.schemas import ChatMessage, ChatResponse, ResponseCompleted
+from typing import Callable, Awaitable
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Example: Echo response
+async def handle_request(message: ChatMessage, response_callback: Callable, completion_callback: Callable):
+    await response_callback(f"You said: {message.message}.")
+    await asyncio.sleep(1)
+    await response_callback("I'm a bot! Thanks for using Nexarag.")
+    await asyncio.sleep(1)
+    await response_callback("I can help you with papers, authors, and more!")
+    await asyncio.sleep(1)
+    await completion_callback()
+
+def callbacks(message: ChatMessage):
+    first_response = ChatResponse(message="", chatId=message.chatId, userMessageId=message.messageId)
+    make_response = lambda msg: ChatResponse(message=msg, chatId=message.chatId, userMessageId=message.messageId, responseId=first_response.responseId)
+    async def async_chat_callback(msg: str):
+        await publish_message(ChannelType.CHAT_RESPONSE, make_response(msg))
+    async def async_completion_callback():
+        await publish_message(ChannelType.RESPONSE_COMPLETED, ResponseCompleted(chatId = message.chatId, responseId = first_response.responseId))
+    return (async_chat_callback, async_completion_callback)
+
+async def handle_chat_message(message: ChatMessage):
+    logger.info(f"Received chat message: {message}")
+    response_callback, completion_callback = callbacks(message)
+    await handle_request(message, response_callback, completion_callback)
+
+async def main():
+    logger.info("Subscribing to RabbitMQ events...")
+    await asyncio.gather(
+        subscribe_to_queue(ChannelType.CHAT_MESSAGE, handle_chat_message, ChatMessage),
+    )
+
+if __name__ == "__main__":
+    logger.info("Starting Knowledge Graph worker...")
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())

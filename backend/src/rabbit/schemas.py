@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 import uuid
 
 class AddPapersById(BaseModel):
@@ -24,9 +24,14 @@ class GraphUpdated(BaseModel):
 class ChatMessage(BaseModel):
     message: str 
     chatId: str
-    messageId: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    messageId: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
 
 class ChatResponse(BaseModel):
     message: str
     chatId: str
-    messageId: str
+    userMessageId: str
+    responseId: str = Field(default_factory=lambda: str(uuid.uuid4()))
+
+class ResponseCompleted(BaseModel):
+    chatId: str
+    responseId: str
