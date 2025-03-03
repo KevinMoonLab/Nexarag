@@ -35,3 +35,18 @@ class ChatResponse(BaseModel):
 class ResponseCompleted(BaseModel):
     chatId: str
     responseId: str
+
+class DocumentCreated(BaseModel):
+    id: str
+    node_id: str
+    path: str
+
+class DocumentGraphUpdated(BaseModel):
+    doc: DocumentCreated
+
+class DocumentsCreated(BaseModel):
+    documents: List[DocumentCreated]
+
+class DocumentUploaded(BaseModel):
+    id: str
+    

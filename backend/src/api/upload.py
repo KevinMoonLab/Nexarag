@@ -4,17 +4,23 @@ from .util import create_id
 import tempfile
 import os
 from typing import List
+from pydantic import BaseModel
 
 ALLOWED_FILE_TYPES = {"application/pdf", "text/markdown", "text/plain"}
+class UploadFileResponse(BaseModel):
+    id: str
+    path: str
+    message: str
+    size: int
 
-async def upload_many(docs: List[UploadFile]):
+async def upload_many(docs: List[UploadFile]) -> List[UploadFileResponse]:
     upload_info = []
     for doc in docs:
         result = await upload(doc)
         upload_info.append(result)
     return upload_info
 
-async def upload(doc: UploadFile):
+async def upload(doc: UploadFile) -> UploadFileResponse:
     if doc.content_type not in ALLOWED_FILE_TYPES:
         raise HTTPException(
             status_code=400,
@@ -52,12 +58,12 @@ async def upload(doc: UploadFile):
         with open(f"/docs/{markdown_filename}", "w", encoding="utf-8") as md_file:
             md_file.write(markdown_content)
         
-        return {
-            "id": file_id,
-            "path": markdown_filename,
-            "message": "PDF uploaded and converted to markdown successfully",
-            "size": len(markdown_content)
-        }
+        return UploadFileResponse(
+            id=file_id,
+            path=markdown_filename,
+            message="PDF uploaded and converted to markdown successfully",
+            size=len(markdown_content)
+        )
     # Handle text/markdown files
     else:
         file_id = create_id()
@@ -65,11 +71,11 @@ async def upload(doc: UploadFile):
         filename = f"/docs/{file_id}.{file_extension}"
         with open(filename, "wb") as file:
             file.write(content)
-        return {
-            "id": file_id,
-            "path": filename,
-            "message": "File uploaded successfully",
-            "size": len(content)
-        }
+        return UploadFileResponse(
+            id=file_id,
+            path=filename,
+            message="File uploaded successfully",
+            size=len(content)
+        )
         
         

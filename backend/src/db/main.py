@@ -3,13 +3,24 @@ import logging
 from db.util import load_kg_db
 from db.commands import clear_graph
 from rabbit import publish_message, subscribe_to_queue, ChannelType
-from rabbit.schemas import AddPaperCitations, AddPaperReferences, GraphUpdated, AddPapersById, ClearGraph, ChatMessage, ChatResponse
+from rabbit.schemas import AddPaperCitations, AddPaperReferences, DocumentGraphUpdated, GraphUpdated, AddPapersById, ClearGraph, ChatMessage, ChatResponse, DocumentsCreated, DocumentCreated
 from db.builder import create_paper_graph, add_citations, add_references
 from db.util import neomodel_connect
 from db.chat import create_chat_message, update_chat_response
+from db.docs import add_document_refs
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+async def handle_documents_created(docs: DocumentsCreated):
+    logger.info(f"Received documents: {docs}")
+    saved_docs = await add_document_refs(docs)
+    for result, new_doc in zip(saved_docs, docs.documents):
+        if not result.success:
+            logger.error(result.message)
+        else:
+            logger.info(result.message)
+            await publish_message(ChannelType.DOCUMENT_GRAPH_UPDATED, DocumentGraphUpdated(doc=new_doc))
 
 async def handle_add_papers(message: AddPapersById):
     logger.info(f"Received add paper request: {message}")
@@ -61,6 +72,7 @@ async def main():
         subscribe_to_queue(ChannelType.CLEAR_GRAPH, handle_clear_graph, ClearGraph),
         subscribe_to_queue(ChannelType.CHAT_MESSAGE, handle_chat_message, ChatMessage),
         subscribe_to_queue(ChannelType.CHAT_RESPONSE, handle_chat_response, ChatResponse),
+        subscribe_to_queue(ChannelType.DOCUMENTS_CREATED, handle_documents_created, DocumentsCreated)
     )
 
 if __name__ == "__main__":

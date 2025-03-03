@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDiscon
 from typing import List
 from db.util import check_connection as check_neo4j_connection, load_kg_db
 from db.queries import search_papers_by_id, get_all_papers, get_graph
-from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted
+from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated
 from scholar.api import relevance_search
 from scholar.util import retry
 from rabbit import publish_message, ChannelType, check_connection as check_rabbit_connection, subscribe_to_queue
@@ -159,9 +159,12 @@ async def send_chat_message(request: ChatMessage):
 
 ######################## Documents ########################
 
-@app.post("/docs/upload/", tags=["Documents"])
-async def upload_docs(docs: List[UploadFile] = File(...)):
+@app.post("/docs/upload/{paper_id}", tags=["Documents"])
+async def upload_docs(paper_id:str, docs: List[UploadFile] = File(...)):
     upload_info = await upload_many(docs)
+    documents = [DocumentCreated(id=doc.id, node_id=paper_id, path=doc.path) for doc in upload_info]
+    message = DocumentsCreated(documents=documents)
+    await publish_message(ChannelType.DOCUMENTS_CREATED, message)
     return {
         "message": "Files uploaded successfully",
         "files": upload_info

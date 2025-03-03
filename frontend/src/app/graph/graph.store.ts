@@ -101,8 +101,20 @@ export class GraphStore {
             selector: 'node',
             onClickFunction: () => this.addReferences(),
             show: true,
+        },
+        {
+            id: 'add-documents',
+            content: 'Add Documents',
+            tooltipText: 'Add Documents',
+            selector: 'node',
+            onClickFunction: () => this.showAddDocuments(),
+            show: true,
         }
     ]
+
+    showAddDocuments() {
+        this.showDocumentDialog.set(true);
+    }
 
     addCitations() {
         const selectedNode = this.selectedNode();
@@ -142,6 +154,7 @@ export class GraphStore {
     }
 
     showNodeDialog = signal(false);
+    showDocumentDialog = signal(false);
     selectedNodeKey = signal('');
     selectedNode = computed(() => {
         const key = this.selectedNodeKey();

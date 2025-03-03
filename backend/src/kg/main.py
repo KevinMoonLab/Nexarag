@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from rabbit import get_publisher, publish_message, subscribe_to_queue, ChannelType
-from rabbit.schemas import ChatMessage, ChatResponse, ResponseCompleted
+from rabbit.schemas import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
 from typing import Callable, Awaitable
 
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +19,17 @@ async def handle_request(message: ChatMessage, cb: Callable, complete: Callable)
     await cb("I can help you with papers, authors, and more.")
     await asyncio.sleep(1)
     await complete()
+
+async def handle_documents_created(update: DocumentGraphUpdated):
+    doc = update.doc
+    logger.info(f"Received documents created: {doc}")
+    # Your code here
+    # Example: Load file content
+    doc_path = f"/docs/{doc.path}"
+    with open(doc_path, "r") as f:
+        content = f.read()
+        logger.info(f"Received document for {doc.node_id}")
+        logger.info(f"Loaded document {doc.id} with content: {content}")
 
 def callbacks(message: ChatMessage):
     first_response = ChatResponse(message="", chatId=message.chatId, userMessageId=message.messageId)
@@ -38,6 +49,7 @@ async def main():
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
         subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message, ChatMessage),
+        subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, handle_documents_created, DocumentGraphUpdated)
     )
 
 if __name__ == "__main__":

@@ -12,13 +12,14 @@ import { NodeDialogComponent } from './node-dialog.component';
 import contextMenus from 'cytoscape-context-menus';
 import { MenuComponent } from "../menu/menu.component";
 import { ChatMenuComponent } from "../chat/chat-menu.component";
+import { DocumentDialogComponent } from "./doc-dialog.component";
 
 cytoscape.use(coseBilkent);
 cytoscape.use(contextMenus);
 
 @Component({
   selector: 'app-graph',
-  imports: [CommonModule, InputTextModule, FormsModule, ButtonModule, MenuComponent, NodeDialogComponent, ChatMenuComponent],
+  imports: [CommonModule, InputTextModule, FormsModule, ButtonModule, MenuComponent, NodeDialogComponent, ChatMenuComponent, DocumentDialogComponent],
   template: `
         <div class="relative h-screen w-full flex">
           <div class="absolute top-0 left-0 h-full z-50">
@@ -30,6 +31,7 @@ cytoscape.use(contextMenus);
           <div class="flex-grow h-screen w-full" #graph id="graph"></div>
         </div>
         <app-node-dialog />
+        <app-doc-dialog />
     `,
   styles: [`
     #graph {
