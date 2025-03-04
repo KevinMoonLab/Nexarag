@@ -64,17 +64,6 @@ def enrich_papers(paper_ids: list[str], fields: str = DEFAULT_PAPER_FIELDS) -> l
         raise RateLimitExceededError("Rate limit exceeded. Please wait before retrying.")
     return Paper.schema().load(response.json(), many=True)
 
-# def enrich_authors(author_ids: list[str], fields: str = DEFAULT_AUTHOR_FIELDS) -> list[Author]:
-#     url = f"https://api.semanticscholar.org/graph/v1/author/batch"
-#     params = { 'fields': fields }
-#     author_ids = { 'ids': author_ids }
-#     response = requests.post(url, params=params, json=author_ids)
-#     if response.status_code == 429:
-#         raise RateLimitExceededError("Rate limit exceeded. Please wait before retrying.")
-#     data = response.json()
-#     print(data)
-#     return Author.schema().load(data, many=True)
-
 def enrich_authors(author_ids: list[str], fields: str = DEFAULT_AUTHOR_FIELDS) -> list[Author]:
     url = f"https://api.semanticscholar.org/graph/v1/author/batch"
     params = {'fields': fields}

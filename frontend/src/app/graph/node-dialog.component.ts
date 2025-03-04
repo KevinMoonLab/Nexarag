@@ -62,8 +62,6 @@ export class NodeDialogComponent {
   state = inject(GraphStore);
   visible = this.state.showNodeDialog;
 
-  logger = effect(() => console.log(this.state.selectedNode()))
-
   selectedLabel = computed(() => this.state.selectedNode()?.label ?? '');
   selectedAuthor = computed(() => this.state.selectedNode()?.properties as AuthorData);
   selectedPaper = computed(() => this.state.selectedNode()?.properties as PaperData);

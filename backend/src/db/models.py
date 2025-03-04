@@ -56,6 +56,26 @@ class Paper(AsyncStructuredNode):
     authors = AsyncRelationshipFrom("Author", "AUTHORED")
     journal = AsyncRelationshipTo("Journal", "PUBLISHED_IN")
     publication_venue = AsyncRelationshipTo("PublicationVenue", "PUBLISHED_AT")
+    documents = AsyncRelationshipTo("Document", "BELONGS_TO")
+
+class Document(AsyncStructuredNode):
+    document_id = UniqueIdProperty()
+    path = StringProperty()
+    paper = AsyncRelationshipFrom("Paper", "BELONGS_TO")
+
+class Chat(AsyncStructuredNode):
+    chat_id = UniqueIdProperty()
+    messages = AsyncRelationshipTo("ChatMessage", "BELONGS_TO")
+    
+class ChatMessage(AsyncStructuredNode):
+    message_id = UniqueIdProperty()
+    message = StringProperty()
+    response = AsyncRelationshipFrom("ChatResponse", "RESPONSE_TO")
+
+class ChatResponse(AsyncStructuredNode):
+    response_id = UniqueIdProperty()
+    message = StringProperty()
+    response_to = AsyncRelationshipTo("ChatMessage", "RESPONSE_TO")
 
 class Workspace(AsyncStructuredNode):
     uid = UniqueIdProperty()

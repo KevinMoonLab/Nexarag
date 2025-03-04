@@ -22,7 +22,7 @@ import { ToastService } from '../toast/toast.service';
       <p-table 
         *ngIf="searchResults().length > 0 || loading()" 
         [scrollable]="true" 
-        [scrollHeight]="'50rem'" 
+        [scrollHeight]="'40rem'" 
         [value]="searchResults()" 
         [loading]="loading()"
         class="shadow-md rounded-lg">

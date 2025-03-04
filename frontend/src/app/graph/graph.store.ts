@@ -6,8 +6,8 @@ import { environment } from "src/environments/environment";
 import {
     Core,
   } from 'cytoscape';
-import { EventStore } from "../events.store";
 import { ToastService } from "../toast/toast.service";
+import { EventService } from "../events.service";
 
 
 @Injectable({
@@ -16,7 +16,7 @@ import { ToastService } from "../toast/toast.service";
 export class GraphStore {
     http = inject(HttpClient);
     toastService = inject(ToastService);
-    events = inject(EventStore);
+    events = inject(EventService);
     graph = signal({
         nodes: [] as KnowledgeNode[],
         edges: [] as Edge[],
@@ -101,8 +101,20 @@ export class GraphStore {
             selector: 'node',
             onClickFunction: () => this.addReferences(),
             show: true,
+        },
+        {
+            id: 'add-documents',
+            content: 'Add Documents',
+            tooltipText: 'Add Documents',
+            selector: 'node',
+            onClickFunction: () => this.showAddDocuments(),
+            show: true,
         }
     ]
+
+    showAddDocuments() {
+        this.showDocumentDialog.set(true);
+    }
 
     addCitations() {
         const selectedNode = this.selectedNode();
@@ -142,6 +154,7 @@ export class GraphStore {
     }
 
     showNodeDialog = signal(false);
+    showDocumentDialog = signal(false);
     selectedNodeKey = signal('');
     selectedNode = computed(() => {
         const key = this.selectedNodeKey();
@@ -158,6 +171,7 @@ export class GraphStore {
         this.fetchGraph();
 
         this.events.events$.subscribe((event) => {
+            console.log('graph update')
             if (event.type === 'graph_updated') {
                 this.toastService.show('Graph updated!');
                 this.fetchGraph();

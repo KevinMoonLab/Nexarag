@@ -38,7 +38,6 @@ import { SettingsComponent } from './settings.component';
                   (click)="selectTab(i)">
         </p-button>
       </div>
-      
     </div>
   `,
   styles: [],

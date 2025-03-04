@@ -1,52 +1,55 @@
 import asyncio
 import logging
-from db.util import load_kg_db
-from db.commands import clear_graph
-from rabbit import publish_message, subscribe_to_queue, ChannelType
-from rabbit.schemas import AddPaperCitations, AddPaperReferences, GraphUpdated, AddPapersById, ClearGraph
-from kg.builder import create_paper_graph, add_citations, add_references
-from db.util import neomodel_connect
+from rabbit import get_publisher, publish_message, subscribe_to_queue, ChannelType
+from rabbit.schemas import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
+from typing import Callable, Awaitable
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def handle_add_papers(message: AddPapersById):
-    logger.info(f"Received add paper request: {message}")
-    await create_paper_graph(message.paperIds)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
+# Example: Echo response
+async def handle_request(message: ChatMessage, cb: Callable, complete: Callable):
+    # Your code here
+    # Example: Echo response
+    await asyncio.sleep(2)
+    await cb("Hi! I'm a Nexarag.")
+    await asyncio.sleep(1)
+    await cb(f"Thanks for asking about '{message.message}'!")
+    await asyncio.sleep(1)
+    await cb("I can help you with papers, authors, and more.")
+    await asyncio.sleep(1)
+    await complete()
 
-async def handle_add_references(message: AddPaperReferences):
-    logger.info(f"Received add references request: {message}")
-    await add_references(message.paperIds)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
+async def handle_documents_created(update: DocumentGraphUpdated):
+    doc = update.doc
+    logger.info(f"Received documents created: {doc}")
+    # Your code here
+    # Example: Load file content
+    doc_path = f"/docs/{doc.path}"
+    with open(doc_path, "r") as f:
+        content = f.read()
+        logger.info(f"Received document for {doc.node_id}")
+        logger.info(f"Loaded document {doc.id} with content: {content}")
 
-async def handle_add_citations(message: AddPaperCitations):
-    logger.info(f"Received add citations request: {message}")
-    await add_citations(message.paperIds)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
+def callbacks(message: ChatMessage):
+    first_response = ChatResponse(message="", chatId=message.chatId, userMessageId=message.messageId)
+    make_response = lambda msg: ChatResponse(message=msg, chatId=message.chatId, userMessageId=message.messageId, responseId=first_response.responseId)
+    async def async_chat_callback(msg: str):
+        await publish_message(ChannelType.CHAT_RESPONSE, make_response(msg))
+    async def async_completion_callback():
+        await publish_message(ChannelType.RESPONSE_COMPLETED, ResponseCompleted(chatId = message.chatId, responseId = first_response.responseId))
+    return (async_chat_callback, async_completion_callback)
 
-async def handle_clear_graph(message: ClearGraph):
-    loader = load_kg_db()
-    with loader() as db:
-        clear_graph(db)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=[]))
-    logger.info("Graph cleared.")
+async def handle_chat_message(message: ChatMessage):
+    logger.info(f"Received chat message: {message}")
+    response_callback, completion_callback = callbacks(message)
+    await handle_request(message, response_callback, completion_callback)
 
 async def main():
-    logger.info("Initializing Neo4j database...")
-    result = await neomodel_connect('neo4j')
-    if result.success:
-        logger.info(result.message)
-    else:
-        logger.error(result.message)
-        exit(1)
-
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
-        subscribe_to_queue(ChannelType.ADD_PAPER, handle_add_papers, AddPapersById),
-        subscribe_to_queue(ChannelType.ADD_CITATIONS, handle_add_citations, AddPaperCitations),
-        subscribe_to_queue(ChannelType.ADD_REFERENCES, handle_add_references, AddPaperReferences),
-        subscribe_to_queue(ChannelType.CLEAR_GRAPH, handle_clear_graph, ClearGraph)
+        subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message, ChatMessage),
+        subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, handle_documents_created, DocumentGraphUpdated)
     )
 
 if __name__ == "__main__":
