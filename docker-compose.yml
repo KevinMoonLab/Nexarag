@@ -108,7 +108,14 @@ services:
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
     volumes:
       - ${DOCS_VOLUME}:/docs
-    gpus: all
+      - ${MODELS_VOLUME}:/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     depends_on:
       neo4j:
         condition: service_healthy

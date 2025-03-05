@@ -86,7 +86,7 @@ class HuggingFaceAdapter(BaseLLM):
         max_seq_len = llm_config.get("max_seq_len", 4096)
         self.max_seq_len = max_seq_len
         self.temperature = llm_config.get("temperature", 0.5)
-        model_config = AutoConfig.from_pretrained(llm_config["model_id"], trust_remote_code=True)
+        model_config = AutoConfig.from_pretrained(llm_config["model_id"], trust_remote_code=True, cache_dir="/model/huggingface")
         model_config.max_seq_len = max_seq_len
         self.model = AutoModelForCausalLM.from_pretrained(
             llm_config["model_id"],
