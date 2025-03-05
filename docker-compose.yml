@@ -108,6 +108,7 @@ services:
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
     volumes:
       - ${DOCS_VOLUME}:/docs
+    gpus: all
     depends_on:
       neo4j:
         condition: service_healthy

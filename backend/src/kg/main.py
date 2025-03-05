@@ -3,22 +3,81 @@ import logging
 from rabbit import get_publisher, publish_message, subscribe_to_queue, ChannelType
 from rabbit.schemas import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
 from typing import Callable, Awaitable
+import os
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    filename="app.log", 
+    filemode="w", 
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
-# Example: Echo response
+config = {
+    "llm": {
+        "provider": "huggingface",    # options: "ollama", "openai", "huggingface", etc.
+        'model_id': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-7B',
+        "max_seq_len": 16384,
+        "num_predict": 16384,
+        "temperature": 0.5,
+        "api_key": "YOUR_API_KEY_IF_NEEDED"  # only used for some providers
+    },
+    'database': {
+        'uri': os.getenv("NEO4J_URI"),
+        'username': os.getenv("NEO4J_USERNAME"),
+        'password': os.getenv("NEO4J_PASSWORD"),
+        'database': os.getenv("NEO4J_DATABASE")
+    },
+    "embedding": {
+        "provider": "huggingface",
+        "model_id": 'sentence-transformers/multi-qa-mpnet-base-dot-v1'
+    },
+    'rag': {
+        'index_name': 'paper_chunks',
+        'embedding_node_property': 'textEmbedding',
+        'text_node_property': 'text'
+    }
+}
+
+import sys
+sys.path.append("/app/src") 
+from rag import rag_utils as rag
+
+from langchain.memory import ConversationSummaryBufferMemory
+from langchain.chains import ConversationChain
+
+def load_model():
+    logger.info("Starting model load...")
+    # Run the blocking model loader in a thread.
+    model = rag.get_llm_with_memory(config)
+    logger.info("Model loaded!")
+    return model
+
+def startup():
+    global llm_adapter, memory, conversation
+    llm_adapter = load_model()
+    memory = ConversationSummaryBufferMemory(
+        llm=llm_adapter, 
+        memory_key='history', 
+        max_token_limit=4096
+    )
+    conversation = ConversationChain(
+        llm=llm_adapter, 
+        memory=memory,
+        verbose=True
+    )
+    logger.info("Conversation initialized")
+
 async def handle_request(message: ChatMessage, cb: Callable, complete: Callable):
-    # Your code here
-    # Example: Echo response
-    await asyncio.sleep(2)
-    await cb("Hi! I'm a Nexarag.")
-    await asyncio.sleep(1)
-    await cb(f"Thanks for asking about '{message.message}'!")
-    await asyncio.sleep(1)
-    await cb("I can help you with papers, authors, and more.")
-    await asyncio.sleep(1)
-    await complete()
+    try:
+        response = conversation.predict(f"User message: {message.message}\nRespond helpfully:")
+        await cb(response.strip())
+        await complete()
+        
+    except Exception as e:
+        logger.error(f"LLM Error: {str(e)}")
+        await cb("Sorry, I'm having trouble processing your request")
+        await complete()
 
 async def handle_documents_created(update: DocumentGraphUpdated):
     doc = update.doc
@@ -47,6 +106,7 @@ async def handle_chat_message(message: ChatMessage):
 
 async def main():
     logger.info("Subscribing to RabbitMQ events...")
+    startup()
     await asyncio.gather(
         subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message, ChatMessage),
         subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, handle_documents_created, DocumentGraphUpdated)
