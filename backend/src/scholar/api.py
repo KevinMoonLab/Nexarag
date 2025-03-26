@@ -40,7 +40,7 @@ def title_search(title, year=None, fields = DEFAULT_PAPER_FIELDS) -> list[Paper]
         "query": f"title:({title})",
         "fields": fields
     }
-    if year:
+    if year and year > 0:
         params['year'] = year
 
     response = requests.get(url, params=params)

@@ -3,16 +3,19 @@ from typing import List
 from db.util import check_connection as check_neo4j_connection, load_kg_db
 from db.queries import search_papers_by_id, get_all_papers, get_graph
 from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated
-from scholar.api import relevance_search
+from scholar.api import relevance_search, title_search
+from scholar.models import Paper
 from scholar.util import retry
 from rabbit import publish_message, ChannelType, check_connection as check_rabbit_connection, subscribe_to_queue
 from .upload import upload_many
 from .util import transform_for_cytoscape
 from fastapi.middleware.cors import CORSMiddleware
 from .sockets import ConnectionManager
+import bibtexparser
 from contextlib import asynccontextmanager
 import asyncio
 import logging
+from .types import BibTexPaper, BibTexRequest
 
 ######################## Configuration ########################
 
@@ -123,6 +126,40 @@ async def get_papers():
     with loader() as db:
         papers = get_all_papers(db)
     return papers
+
+def search_papers_by_title(papers: List[BibTexPaper]) -> List[Paper]:
+    results = []
+    for paper in papers:
+        res = retry(title_search, paper.title, paper.year)
+        if len(res) > 0:
+            results.append(res[0])
+    return results
+
+@app.post("/papers/bibtex", tags=["Papers"])
+async def add_papers_bibtex(req: BibTexRequest):
+    parser = bibtexparser.bparser.BibTexParser(common_strings=True)
+    bib_database = bibtexparser.loads(req.bibtex, parser=parser)
+
+    # Parse paper data
+    papers = [
+        BibTexPaper(
+            title=entry.get("title", "").strip(),
+            author=entry.get("author", "").strip(),
+            journal=entry.get("journal", "").strip(),
+            year=int(entry.get("year", 0))
+        )
+        for entry in bib_database.entries
+    ]
+
+    # Query API for papers
+    results = search_papers_by_title(papers)
+
+    # Submit for processing
+    message = AddPapersById(paperIds=[r.paperId for r in results])
+    await publish_message(ChannelType.ADD_PAPER, message)
+
+    return results
+
 
 @app.post("/papers/citations/add", tags=["Papers"])
 async def add_citations(paperIds: List[str]):
