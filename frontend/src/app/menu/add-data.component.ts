@@ -18,7 +18,7 @@ import { ImportComponent } from './import.component';
     <p-tabs value="0" class="h-full">
       <p-tablist>
           <p-tab value="0">Search</p-tab>
-          <p-tab value="1">Import</p-tab>
+          <p-tab value="1">BibTeX</p-tab>
       </p-tablist>
       <p-tabpanels class="h-full">
           <p-tabpanel class="h-full" value="0">

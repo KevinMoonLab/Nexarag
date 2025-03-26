@@ -50,6 +50,7 @@ export class ImportComponent {
     const uri = environment.apiBaseUrl + "/papers/bibtex";
     this.http.post<any[]>(uri, { bibtex: this.bibtexData() })
       .subscribe(res => {
+        this.clear();
         this.toastService.show(`Successfully added ${res.length} papers.`);
       });
   }
