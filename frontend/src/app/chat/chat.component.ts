@@ -12,8 +12,8 @@ import { TabsModule } from 'primeng/tabs';
   template: `
     <p-tabs value="0" class="h-full">
       <p-tablist>
-          <p-tab value="0">Chat Area 1</p-tab>
-          <p-tab value="1">Chat Area 2</p-tab>
+          <p-tab value="0">Chat</p-tab>
+          <p-tab value="1">Research Assistant</p-tab>
       </p-tablist>
       <p-tabpanels class="h-full">
           <p-tabpanel class="h-full" value="0">
