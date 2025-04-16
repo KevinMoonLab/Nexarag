@@ -45,7 +45,7 @@ The backend is composed of three core services:
 - Built with **Angular**
 - Visualizes knowledge graphs using **Cytoscape.js**
 - Renders semantic plots using **D3.js**
-- Connects to the backend via REST endpoints provided by the FastAPI service
+- Connects to the backend via REST endpoints and web sockets provided by the FastAPI service
 
 ---
 
