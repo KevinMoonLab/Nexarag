@@ -25,7 +25,7 @@ The backend is composed of three core services:
 - **Role in System**: Acts as the interface layer, dispatching tasks to other backend services and coordinating responses to the frontend.
 
 #### 2. **Database Service (Neo4j)**
-- **Purpose**: Stores the core knowledge graph, including relationships like _cited by_, _authored by_, and _published in_, as well as semantic embeddings for node content and associated documents. Uses `neomodel` as the Object-Graph Mapper (OGM).
+- **Purpose**: Stores the core knowledge graph, including relationships like _cited by_, _authored by_, and _published in_, as well as semantic embeddings for node content and associated documents. Uses `neomodel` as the Object-Graph Mapper (OGM) to simplify the research literature domain-specific language (DSL). 
 - **Why Neo4j?**: Graphs are the natural data model for this domain. Neo4j allows efficient traversal, querying, and expansion of literature networks.
 - **Semantic Embedding Support**: Embeddings from the LLM are stored alongside graph nodes, enabling vector similarity search and semantic clustering.
 
