@@ -2,7 +2,12 @@ from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDiscon
 from typing import List
 from db.util import check_connection as check_neo4j_connection, load_kg_db
 from db.queries import search_papers_by_id, get_all_papers, get_graph
-from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated
+from rabbit.schemas import (
+    AddPaperCitations, AddPaperReferences, AddPapersById, 
+    AddPapersByTitle, ClearGraph, GraphUpdated, ChatMessage, 
+    ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated,
+    PaperTitleWithYear
+)
 from scholar.api import relevance_search, title_search
 from scholar.models import Paper
 from scholar.util import retry
@@ -127,14 +132,6 @@ async def get_papers():
         papers = get_all_papers(db)
     return papers
 
-def search_papers_by_title(papers: List[BibTexPaper]) -> List[Paper]:
-    results = []
-    for paper in papers:
-        res = retry(title_search, paper.title, paper.year)
-        if len(res) > 0:
-            results.append(res[0])
-    return results
-
 @app.post("/papers/bibtex", tags=["Papers"])
 async def add_papers_bibtex(req: BibTexRequest):
     parser = bibtexparser.bparser.BibTexParser(common_strings=True)
@@ -151,15 +148,11 @@ async def add_papers_bibtex(req: BibTexRequest):
         for entry in bib_database.entries
     ]
 
-    # Query API for papers
-    results = search_papers_by_title(papers)
-
     # Submit for processing
-    message = AddPapersById(paperIds=[r.paperId for r in results])
-    await publish_message(ChannelType.ADD_PAPER, message)
+    message = AddPapersByTitle(papers=[PaperTitleWithYear(title=p.title, year=p.year) for p in papers])
+    await publish_message(ChannelType.ADD_PAPER_BY_TITLE, message)
 
-    return results
-
+    return papers
 
 @app.post("/papers/citations/add", tags=["Papers"])
 async def add_citations(paperIds: List[str]):

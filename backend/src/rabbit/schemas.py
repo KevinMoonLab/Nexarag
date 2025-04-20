@@ -5,6 +5,13 @@ import uuid
 class AddPapersById(BaseModel):
     paperIds: List[str]
 
+class PaperTitleWithYear(BaseModel):
+    title: str
+    year: Optional[int] = None
+
+class AddPapersByTitle(BaseModel):
+    papers: List[PaperTitleWithYear]
+
 class AddPaperCitations(BaseModel):
     paperIds: List[str]
 

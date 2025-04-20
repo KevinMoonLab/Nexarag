@@ -1,7 +1,8 @@
 from .models import Paper, Author, PartialPaper, Citation, PaperRelevanceResult
-from .util import RateLimitExceededError
+from .util import RateLimitExceededError, retry
 import requests
 import json
+from typing import List
 
 DEFAULT_PAPER_FIELDS = "title,abstract,venue,publicationVenue,year,referenceCount,citationCount,influentialCitationCount,publicationTypes,publicationDate,journal,authors"
 DEFAULT_AUTHOR_FIELDS = "authorId,url,name,affiliations,homepage,paperCount,citationCount,hIndex"
@@ -117,3 +118,9 @@ def get_recommendations(positive_paper_ids, negative_paper_ids, limit = 100) -> 
     else:
         print(f"Failed to get recommendations: {response.status_code} {response.text}")
         return []
+    
+def search_papers_by_title(title:str, year:int) -> Paper:
+    res = retry(title_search, title, year)
+    if len(res) > 0:
+        return res[0]
+    return None

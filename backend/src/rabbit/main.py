@@ -15,6 +15,7 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 
 class ChannelType(Enum):
     ADD_PAPER = auto()
+    ADD_PAPER_BY_TITLE = auto()
     ADD_REFERENCES = auto()
     ADD_CITATIONS = auto()
     GRAPH_UPDATED = auto()
