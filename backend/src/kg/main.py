@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from rabbit import get_publisher, publish_message, subscribe_to_queue, ChannelType
-from rabbit.schemas import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
+from rabbit.events import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
 from typing import Callable, Awaitable
 
 logging.basicConfig(level=logging.INFO)

@@ -3,10 +3,12 @@ import logging
 from db.util import load_kg_db
 from db.commands import clear_graph
 from rabbit import publish_message, subscribe_to_queue, ChannelType
-from rabbit.schemas import (
-    AddPaperCitations, AddPaperReferences, DocumentGraphUpdated, GraphUpdated, 
-    AddPapersById, ClearGraph, ChatMessage, ChatResponse, DocumentsCreated, 
+from rabbit.commands import (
+    AddPaperCitations, AddPaperReferences,  AddPapersById, ClearGraph, 
     DocumentCreated, AddPapersByTitle
+)
+from rabbit.events import (
+    DocumentGraphUpdated, GraphUpdated, ChatMessage, ChatResponse, DocumentsCreated
 )
 from db.builder import create_paper_graph, add_citations, add_references
 from db.util import neomodel_connect

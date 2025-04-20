@@ -18,7 +18,7 @@ import { HttpClient } from '@angular/common/http';
     FormsModule, MultiSelectModule, InputSwitchModule
   ],
   template: `
-    <div class="flex flex-col space-y-6">
+    <div class="flex flex-col space-y-6 h-screen w-full bg-white text-black p-4">
         <p-button label="Clear Graph" severity="danger" (click)="clearGraph()" />
     </div>
     <p-divider />

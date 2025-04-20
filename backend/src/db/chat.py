@@ -1,5 +1,5 @@
 from db.models import ChatResponse, ChatMessage
-from rabbit.schemas import ChatMessage as RabbitChatMessage, ChatResponse as RabbitChatResponse
+from rabbit.events import ChatMessage as RabbitChatMessage, ChatResponse as RabbitChatResponse
 
 async def create_chat_message(message: RabbitChatMessage):
     message = await ChatMessage(message_id=message.messageId, message=message.message).save()

@@ -1,4 +1,4 @@
-import { Component, signal, ViewEncapsulation } from '@angular/core';
+import { Component, inject, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import { MenuComponent } from "../menu/menu.component";
 import { SplitterModule } from 'primeng/splitter';
 import { GraphComponent } from "../graph/graph.component";
 import { PlotComponent } from "../plot/plot.component";
+import { ViewportStore } from './viewport.store';
 
 @Component({
   selector: 'app-viewport',
@@ -20,8 +21,8 @@ import { PlotComponent } from "../plot/plot.component";
           <div class="absolute top-0 right-0 h-full z-50">
             <app-chat-menu />
           </div>
-          @if (splitView()) {
-            <p-splitter class="flex-grow h-full w-full" panelStyleClass="h-screen">
+          @if (viewportStore.showPlot()) {
+            <p-splitter (onResizeEnd)="onSplitterResize($event)" class="flex-grow h-full w-full pl-10" panelStyleClass="h-screen">
               <ng-template #panel>
                 <app-plot class="flex-grow h-screen w-full" />
               </ng-template>
@@ -39,5 +40,9 @@ import { PlotComponent } from "../plot/plot.component";
   encapsulation: ViewEncapsulation.None,
 })
 export class ViewportComponent {
-  splitView = signal(true);    
+  viewportStore = inject(ViewportStore);
+
+  onSplitterResize(evt:any) {
+    this.viewportStore.emitPlotResize();
+  }
 }

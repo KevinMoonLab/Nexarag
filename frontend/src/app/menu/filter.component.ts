@@ -16,31 +16,45 @@ import { GraphStore } from '../graph/graph.store';
     FormsModule, MultiSelectModule, InputSwitchModule
   ],
   template: `
-    <div class="flex flex-col space-y-6">
-      
+    <div class="flex flex-col space-y-6 h-screen w-full bg-white text-black px-4 py-6">
+
       <!-- Search Bar -->
-      <div class="flex space-x-4 items-center">
-        <input type="text" pInputText [(ngModel)]="query" class="w-full rounded-md border border-gray-400" placeholder="Search papers and authors..." />
+      <div class="flex flex-col space-y-2">
+        <label class="text-sm font-semibold text-black">Search</label>
+        <input
+          type="text"
+          pInputText
+          [(ngModel)]="query"
+          class="w-full rounded-md border border-gray-400"
+          placeholder="Search papers and authors..."
+        />
       </div>
 
       <p-divider />
 
       <!-- Select Filters to Display -->
-      <div class="flex flex-col space-y-3">
-        <p-multiSelect [(ngModel)]="graphStore.selectedDisplayFilters" [options]="graphStore.displayFilterOptions()" 
-                       placeholder="Visible nodes" class="w-full"></p-multiSelect>
+      <div class="flex flex-col space-y-2">
+        <label class="text-sm font-semibold text-black">Visible Nodes</label>
+        <p-multiSelect
+          [(ngModel)]="graphStore.selectedDisplayFilters"
+          [options]="graphStore.displayFilterOptions()"
+          placeholder="Visible nodes"
+          class="w-full"
+        ></p-multiSelect>
       </div>
 
       <p-divider />
 
       <!-- Toggle Node Weighting -->
-      <div class="flex items-center justify-between">
-        <span class="font-semibold">Node Weighting:</span>
-        <p-inputSwitch [(ngModel)]="nodeWeighting"></p-inputSwitch>
+      <div class="flex flex-col space-y-2">
+        <label class="text-sm font-semibold text-black">Node Weighting</label>
+        <div class="flex items-center justify-between">
+          <span>Enable weighting</span>
+          <p-inputSwitch [(ngModel)]="nodeWeighting"></p-inputSwitch>
+        </div>
       </div>
 
       <p-divider />
-
     </div>
   `,
   styles: [],

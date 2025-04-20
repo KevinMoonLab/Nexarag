@@ -2,11 +2,12 @@ from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDiscon
 from typing import List
 from db.util import check_connection as check_neo4j_connection, load_kg_db
 from db.queries import search_papers_by_id, get_all_papers, get_graph
-from rabbit.schemas import (
+from rabbit.commands import (
     AddPaperCitations, AddPaperReferences, AddPapersById, 
-    AddPapersByTitle, ClearGraph, GraphUpdated, ChatMessage, 
-    ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated,
-    PaperTitleWithYear
+    AddPapersByTitle, ClearGraph, PaperTitleWithYear
+)
+from rabbit.events import (
+    GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated
 )
 from scholar.api import relevance_search, title_search
 from scholar.models import Paper
