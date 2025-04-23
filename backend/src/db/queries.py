@@ -16,12 +16,12 @@ def get_graph(kg):
     result = run_query(kg, cypher)
     return result
 
-def search_papers_by_id(kg, paperId):
+def search_papers_by_id(kg, paper_id):
     cypher = """
-    MATCH (p:Paper {paperId: $paperId})
+    MATCH (p:Paper {paper_id: $paper_id})
     RETURN p
     """
-    result = run_query(kg, cypher, params={'paperId': paperId})
+    result = run_query(kg, cypher, params={'paper_id': paper_id})
     return result
 
 def search_papers_by_title(kg, searchTerm):

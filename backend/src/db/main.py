@@ -31,8 +31,8 @@ async def handle_documents_created(docs: DocumentsCreated):
 
 async def handle_add_papers(message: AddPapersById):
     logger.info(f"Received add paper request: {message}")
-    await create_paper_graph(message.paperIds)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
+    await create_paper_graph(message.paper_ids)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paper_ids))
 
 async def handle_add_papers_by_title(message: AddPapersByTitle):
     logger.info(f"Received add paper request: {message}")
@@ -44,19 +44,19 @@ async def handle_add_papers_by_title(message: AddPapersByTitle):
             papers.append(res)
 
     # Create graph for each paper
-    paper_ids = [paper.paperId for paper in papers]
+    paper_ids = [paper.paper_id for paper in papers]
     await create_paper_graph(paper_ids)
     await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=paper_ids))
 
 async def handle_add_references(message: AddPaperReferences):
     logger.info(f"Received add references request: {message}")
-    await add_references(message.paperIds)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
+    await add_references(message.paper_ids)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paper_ids))
 
 async def handle_add_citations(message: AddPaperCitations):
     logger.info(f"Received add citations request: {message}")
-    await add_citations(message.paperIds)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
+    await add_citations(message.paper_ids)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paper_ids))
 
 async def handle_clear_graph(message: ClearGraph):
     loader = load_kg_db()

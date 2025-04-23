@@ -3,6 +3,8 @@ import logging
 from rabbit import get_publisher, publish_message, subscribe_to_queue, ChannelType
 from rabbit.events import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
 from typing import Callable, Awaitable
+from .docs import create_chunk_nodes
+from db.util import load_kg_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -23,13 +25,14 @@ async def handle_request(message: ChatMessage, cb: Callable, complete: Callable)
 async def handle_documents_created(update: DocumentGraphUpdated):
     doc = update.doc
     logger.info(f"Received documents created: {doc}")
-    # Your code here
-    # Example: Load file content
+    # Load file content
     doc_path = f"/docs/{doc.path}"
     with open(doc_path, "r") as f:
         content = f.read()
-        logger.info(f"Received document for {doc.node_id}")
-        logger.info(f"Loaded document {doc.id} with content: {content}")
+    
+    kg = load_kg_db()
+    create_chunk_nodes(kg, content, doc.node_id)
+    logger.info(f"Created chunk nodes for document: {doc.node_id}: {doc.path}")
 
 def callbacks(message: ChatMessage):
     first_response = ChatResponse(message="", chatId=message.chatId, userMessageId=message.messageId)

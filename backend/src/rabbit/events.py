@@ -3,7 +3,7 @@ from typing import List, Optional
 import uuid
 
 class PaperRef(BaseModel):
-    paperId: str
+    paper_id: str
     paperDbId: str
 
 class GraphUpdated(BaseModel):

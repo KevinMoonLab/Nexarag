@@ -94,7 +94,7 @@ def welcome():
 
 @app.post("/papers/add/", tags=["Papers"])
 async def add_papers(papers: List[str]):
-    message = AddPapersById(paperIds=papers)
+    message = AddPapersById(paper_ids=papers)
     await publish_message(ChannelType.ADD_PAPER, message)
     return { "message": "Papers added to the queue" }
 
@@ -121,8 +121,8 @@ async def relevance_search_papers(query: str = Query(default=''), manager: Conne
     return results
 
 @app.post("/papers/add", tags=["Papers"])
-async def add_papers_by_id(paperIds: List[str]):
-    message = AddPapersById(paperIds=paperIds)
+async def add_papers_by_id(paper_ids: List[str]):
+    message = AddPapersById(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_PAPER, message)
     return { "message": "Papers added to the queue" }
 
@@ -156,14 +156,14 @@ async def add_papers_bibtex(req: BibTexRequest):
     return papers
 
 @app.post("/papers/citations/add", tags=["Papers"])
-async def add_citations(paperIds: List[str]):
-    message = AddPaperCitations(paperIds=paperIds)
+async def add_citations(paper_ids: List[str]):
+    message = AddPaperCitations(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_CITATIONS, message)
     return { "message": "Citations added to the queue" }
 
 @app.post("/papers/references/add", tags=["Papers"])
-async def add_references(paperIds: List[str]):
-    message = AddPaperReferences(paperIds=paperIds)
+async def add_references(paper_ids: List[str]):
+    message = AddPaperReferences(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_REFERENCES, message)
     return { "message": "Citations added to the queue" }
 

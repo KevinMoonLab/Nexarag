@@ -1,6 +1,6 @@
 import re
 
-def paper_data_from_file(md_text, paperId, text_splitter, verbose=False):
+def paper_data_from_file(md_text, paper_id, text_splitter, verbose=False):
     chunks_with_metadata = []
     md_text = remove_references_section(md_text)
     split_text = text_splitter.split_text(md_text)
@@ -8,8 +8,8 @@ def paper_data_from_file(md_text, paperId, text_splitter, verbose=False):
         chunk = "search_document: " + chunk
         chunks_with_metadata.append({
             'text': chunk, 
-            'paperId': paperId,
-            'chunkId': f"{i}_{paperId}"
+            'paper_id': paper_id,
+            'chunkId': f"{i}_{paper_id}"
         })
     if verbose: print(f'\tSplit into {len(split_text)} chunks')
     return chunks_with_metadata
@@ -27,7 +27,7 @@ def remove_references_section(text):
     return split_result[0] if split_result else text
 
 
-def create_chunk_nodes(kg, md_text, paperId, text_splitter, config):
+def create_chunk_nodes(kg, md_text, paper_id, text_splitter):
     kg.query("""
     CREATE CONSTRAINT unique_chunk IF NOT EXISTS 
         FOR (c:Chunk) REQUIRE c.chunkId IS UNIQUE
@@ -36,11 +36,11 @@ def create_chunk_nodes(kg, md_text, paperId, text_splitter, config):
     merge_chunk_node_query = """
     MERGE (mergedChunk:Chunk {chunkId: $chunkParam.chunkId})
       ON CREATE SET 
-          mergedChunk.paperId = $chunkParam.paperId, 
-          mergedChunk.source = $chunkParam.paperId,
+          mergedChunk.paper_id = $chunkParam.paper_id, 
+          mergedChunk.source = $chunkParam.paper_id,
           mergedChunk.text = $chunkParam.text
     WITH mergedChunk
-    MATCH (p:Paper {paperId: $chunkParam.paperId})
+    MATCH (p:Paper {paper_id: $chunkParam.paper_id})
     MERGE (p)-[:HAS_CHUNK]->(mergedChunk)
     RETURN mergedChunk
     """
@@ -52,7 +52,7 @@ def create_chunk_nodes(kg, md_text, paperId, text_splitter, config):
     """
 
     node_count = 0
-    chunks = paper_data_from_file(md_text, paperId, text_splitter)
+    chunks = paper_data_from_file(md_text, paper_id, text_splitter)
     previous_chunk = None
     for chunk in chunks:
         kg.query(merge_chunk_node_query, params={'chunkParam': chunk})
@@ -63,4 +63,3 @@ def create_chunk_nodes(kg, md_text, paperId, text_splitter, config):
                         params={'currentChunkId': previous_chunk['chunkId'],
                                 'nextChunkId': chunk['chunkId']})
         previous_chunk = chunk
-    if config['general']['verbose']: print(f"Created {node_count} nodes")

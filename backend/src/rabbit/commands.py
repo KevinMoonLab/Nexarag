@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 
 class AddPapersById(BaseModel):
-    paperIds: List[str]
+    paper_ids: List[str]
 
 class PaperTitleWithYear(BaseModel):
     title: str
@@ -12,10 +12,10 @@ class AddPapersByTitle(BaseModel):
     papers: List[PaperTitleWithYear]
 
 class AddPaperCitations(BaseModel):
-    paperIds: List[str]
+    paper_ids: List[str]
 
 class AddPaperReferences(BaseModel):
-    paperIds: List[str]
+    paper_ids: List[str]
 
 class ClearGraph(BaseModel):
     reason: str
