@@ -4,6 +4,7 @@ from rabbit import publish_message, subscribe_to_queue, ChannelType
 from rabbit.schemas import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
 from typing import Callable
 import os
+from db.util import load_default_kg
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -12,10 +13,13 @@ import sys
 sys.path.append("/app/src") 
 from rag import rag_utils as rag
 from rag.configs.huggingface_config import config
+from langchain_neo4j import Neo4jVector
 # from rag.configs.ollama_config import config
 
 from langchain.memory import ConversationSummaryBufferMemory
 from langchain.chains import ConversationChain
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.prompts import PromptTemplate
 
 def load_model():
     logger.info("Starting model load...")
@@ -23,19 +27,54 @@ def load_model():
     logger.info("Model loaded!")
     return model
 
+def load_kg_retriever():
+    logger.info("Loading KG")
+    kg = load_default_kg()
+    logger.info("loading embedder")
+    emb_adapter = rag.get_embeddings(config)
+
+    custom_query = """
+    MATCH (c:Chunk)
+    WITH DISTINCT c, vector.similarity.cosine(c.textEmbedding, $embedding) AS score
+    ORDER BY score DESC LIMIT $k
+    RETURN c.text AS text, score, {source: c.source, chunkId: c.chunkId} AS metadata
+    """
+
+    logger.info("Creating chunk nodes Neo4jVector")
+    chunk_vector = Neo4jVector.from_existing_index(
+        emb_adapter.embeddings,
+        graph=kg, 
+        index_name=config["rag"]["index_name"],
+        embedding_node_property=config["rag"]["embedding_node_property"],
+        text_node_property=config["rag"]["text_node_property"],
+        retrieval_query=custom_query,
+    )
+
+    logger.info("Convert to retriever")
+    neo4j_retriever = chunk_vector.as_retriever()
+    return neo4j_retriever
+
 def startup_chatbot():
     global llm_adapter, memory, conversation
     llm_adapter = load_model()
-    memory = ConversationSummaryBufferMemory(
-        llm=llm_adapter, 
-        memory_key='history', 
-        max_token_limit=4096
+    kg_retriever = load_kg_retriever()
+
+    simple_rag_chain = (
+        {"context": llm_adapter, "question": RunnablePassthrough()}
+        | PromptTemplate.from_template("Answer: {context}\nQuestion: {question}")
+        | llm_adapter
     )
-    conversation = ConversationChain(
-        llm=llm_adapter, 
-        memory=memory,
-        verbose=True
-    )
+
+    # memory = ConversationSummaryBufferMemory(
+    #     llm=llm_adapter, 
+    #     memory_key='history', 
+    #     max_token_limit=4096
+    # )
+    # conversation = ConversationChain(
+    #     llm=llm_adapter, 
+    #     memory=memory,
+    #     verbose=True
+    # )
     logger.info("Conversation initialized")
 
 def startup_agent():

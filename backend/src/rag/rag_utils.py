@@ -1,9 +1,9 @@
 import time, sys
 
 from langchain_ollama.llms import OllamaLLM
-from langchain.llms import OpenAI
+# from langchain.llms import OpenAI
 from langchain_ollama.embeddings import OllamaEmbeddings
-from langchain.embeddings import OpenAIEmbeddings
+# from langchain.embeddings import OpenAIEmbeddings
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -71,16 +71,16 @@ class OllamaAdapter(BaseLLM):
     def stream(self, prompt: str):
         return self.llm.stream(prompt)
 
-class OpenAIAdapter(BaseLLM):
-    def __init__(self, llm_config):
-        self.llm = OpenAI(
-            model=llm_config["model_id"],
-            temperature=llm_config.get("temperature", 0.5),
-            openai_api_key=llm_config.get("api_key")
-        )
-    def stream(self, prompt: str):
-        response = self.llm(prompt)
-        yield response
+# class OpenAIAdapter(BaseLLM):
+#     def __init__(self, llm_config):
+#         self.llm = OpenAI(
+#             model=llm_config["model_id"],
+#             temperature=llm_config.get("temperature", 0.5),
+#             openai_api_key=llm_config.get("api_key")
+#         )
+#     def stream(self, prompt: str):
+#         response = self.llm(prompt)
+#         yield response
 
 class HuggingFaceAdapter(BaseLLM):
     def __init__(self, llm_config):
@@ -132,8 +132,8 @@ def get_llm(config):
     provider = config["llm"]["provider"].lower()
     if provider == "ollama":
         return OllamaAdapter(config["llm"])
-    elif provider == "openai":
-        return OpenAIAdapter(config["llm"])
+    # elif provider == "openai":
+    #     return OpenAIAdapter(config["llm"])
     elif provider == "huggingface":
         return HuggingFaceAdapter(config["llm"])
     else:
@@ -159,14 +159,14 @@ class NomicEmbeddingAdapter(BaseEmbeddings):
     def prepare_query(self, query: str):
         return self.query_prefix + query
 
-class OpenAIEmbeddingAdapter(BaseEmbeddings):
-    def __init__(self, emb_config):
-        self.embeddings = OpenAIEmbeddings(model=emb_config["model_id"],
-                                           openai_api_key=emb_config.get("api_key"))
-    def embed_query(self, text: str):
-        return self.embeddings.embed_query(text)
-    def prepare_query(self, query: str):
-        return query
+# class OpenAIEmbeddingAdapter(BaseEmbeddings):
+#     def __init__(self, emb_config):
+#         self.embeddings = OpenAIEmbeddings(model=emb_config["model_id"],
+#                                            openai_api_key=emb_config.get("api_key"))
+#     def embed_query(self, text: str):
+#         return self.embeddings.embed_query(text)
+#     def prepare_query(self, query: str):
+#         return query
 
 class HuggingFaceEmbeddingAdapter(BaseEmbeddings):
     def __init__(self, emb_config):
@@ -185,8 +185,8 @@ def get_embeddings(config):
     provider = config["embedding"]["provider"].lower()
     if provider == "nomic":
         return NomicEmbeddingAdapter(config["embedding"])
-    elif provider == "openai":
-        return OpenAIEmbeddingAdapter(config["embedding"])
+    # elif provider == "openai":
+    #     return OpenAIEmbeddingAdapter(config["embedding"])
     elif provider == "huggingface":
         return HuggingFaceEmbeddingAdapter(config["embedding"])
     else:
