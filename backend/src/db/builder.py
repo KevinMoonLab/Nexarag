@@ -32,7 +32,7 @@ async def create_paper_graph(paper_ids: List[str]):
     for paper_data in papers:
         # Build paper dictionary.
         paper_dicts.append({
-            "paper_id": paper_data.paperId,
+            "paper_id": paper_data.paper_id,
             "title": paper_data.title.strip() if paper_data.title else "Untitled Paper",
             "abstract": paper_data.abstract,
             "year": paper_data.year,
@@ -45,8 +45,8 @@ async def create_paper_graph(paper_ids: List[str]):
 
         # Record paper-author relationships and collect author IDs
         for author in paper_data.authors:
-            all_author_ids.add(author.authorId)
-            paper_author_relations.append((paper_data.paperId, author.authorId))
+            all_author_ids.add(author.author_id)
+            paper_author_relations.append((paper_data.paper_id, author.author_id))
 
         # Process Journal data & relationships
         if paper_data.journal and paper_data.journal.name:
@@ -57,7 +57,7 @@ async def create_paper_graph(paper_ids: List[str]):
                     "pages": paper_data.journal.pages,
                     "volume": paper_data.journal.volume,
                 }
-            paper_journal_relations.append((paper_data.paperId, journal_name))
+            paper_journal_relations.append((paper_data.paper_id, journal_name))
 
         # Process Publication Venue data & relationships
         if paper_data.publicationVenue and paper_data.publicationVenue.id:
@@ -73,13 +73,13 @@ async def create_paper_graph(paper_ids: List[str]):
                     "url": paper_data.publicationVenue.url,
                     "alternate_urls": paper_data.publicationVenue.alternate_urls,
                 }
-            paper_venue_relations.append((paper_data.paperId, venue_id))
+            paper_venue_relations.append((paper_data.paper_id, venue_id))
 
     # Enrich authors once for all unique author IDs
     enriched_authors = retry(enrich_authors, list(all_author_ids))
     for author_data in enriched_authors:
-        author_dicts[author_data.authorId] = {
-            "author_id": author_data.authorId,
+        author_dicts[author_data.author_id] = {
+            "author_id": author_data.author_id,
             "name": author_data.name,
             "url": author_data.url,
             "affiliations": author_data.affiliations,
@@ -136,7 +136,7 @@ async def add_citations(paper_ids):
     all_citations = []
     for paper_id in paper_ids:
         citations = retry(get_citations, paper_id)
-        citation_ids = [reference.paperId for reference in citations]
+        citation_ids = [reference.paper_id for reference in citations]
         all_citations.extend(citation_ids)
 
         for citation_id in citation_ids:
@@ -162,7 +162,7 @@ async def add_references(paper_ids):
     # Add citations to paper
     for paper_id in paper_ids:
         references = get_references(paper_id)
-        reference_ids = [reference.paperId for reference in references]
+        reference_ids = [reference.paper_id for reference in references]
         
         # Add to graph
         await create_paper_graph(reference_ids)

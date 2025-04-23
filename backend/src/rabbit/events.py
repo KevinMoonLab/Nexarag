@@ -2,20 +2,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
 
-class AddPapersById(BaseModel):
-    paperIds: List[str]
-
-class AddPaperCitations(BaseModel):
-    paperIds: List[str]
-
-class AddPaperReferences(BaseModel):
-    paperIds: List[str]
-
-class ClearGraph(BaseModel):
-    reason: str
-
 class PaperRef(BaseModel):
-    paperId: str
+    paper_id: str
     paperDbId: str
 
 class GraphUpdated(BaseModel):
@@ -49,4 +37,11 @@ class DocumentsCreated(BaseModel):
 
 class DocumentUploaded(BaseModel):
     id: str
-    
+
+class EmbeddingPlotCreated(BaseModel):
+    x: List[float]
+    y: List[float]
+    color: List[str]
+    title: str
+    xlabel: str
+    ylabel: str

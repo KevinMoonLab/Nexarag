@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { computed, inject, Injectable, signal } from "@angular/core";
+import { computed, effect, inject, Injectable, signal } from "@angular/core";
 import { Observable, Subject, switchMap } from "rxjs";
 import { AuthorData, Edge, JournalData, KnowledgeGraph, KnowledgeNode, PaperData, PublicationVenueData } from "./types";
 import { environment } from "src/environments/environment";
@@ -23,6 +23,8 @@ export class GraphStore {
     });
     searchTerm = signal('');
     weightNodes = signal(false);
+
+    logger = effect(() => console.log(this.graph()))
 
     filteredGraph = computed(() => {
         const selectedNodeTypes = this.selectedDisplayFilters();

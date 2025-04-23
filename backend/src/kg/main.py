@@ -1,9 +1,10 @@
 import asyncio
 import logging
-from rabbit import publish_message, subscribe_to_queue, ChannelType
-from rabbit.schemas import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
-from typing import Callable
-import os
+from rabbit import get_publisher, publish_message, subscribe_to_queue, ChannelType
+from rabbit.events import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from typing import Callable, Awaitable
+from kg.docs import create_chunk_nodes
 from db.util import load_default_kg
 
 logging.basicConfig(level=logging.INFO)
@@ -94,13 +95,21 @@ async def handle_request(message: ChatMessage, cb: Callable, complete: Callable)
 async def handle_documents_created(update: DocumentGraphUpdated):
     doc = update.doc
     logger.info(f"Received documents created: {doc}")
-    # Your code here
-    # Example: Load file content
+    # Load file content
     doc_path = f"/docs/{doc.path}"
     with open(doc_path, "r") as f:
         content = f.read()
-        logger.info(f"Received document for {doc.node_id}")
-        logger.info(f"Loaded document {doc.id} with content: {content}")
+    
+    kg = load_default_kg()
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size = 1000, # FIXME
+        chunk_overlap  = 200,
+        length_function = len,
+        is_separator_regex = False,
+    )
+    
+    create_chunk_nodes(kg, content, doc.node_id, text_splitter)
+    logger.info(f"Created chunk nodes for document: {doc.node_id}: {doc.path}")
 
 def callbacks(message: ChatMessage):
     first_response = ChatResponse(message="", chatId=message.chatId, userMessageId=message.messageId)

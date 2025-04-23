@@ -2,17 +2,26 @@ from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDiscon
 from typing import List
 from db.util import check_connection as check_neo4j_connection, load_kg_db
 from db.queries import search_papers_by_id, get_all_papers, get_graph
-from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated
-from scholar.api import relevance_search
+from rabbit.commands import (
+    AddPaperCitations, AddPaperReferences, AddPapersById, 
+    AddPapersByTitle, ClearGraph, PaperTitleWithYear
+)
+from rabbit.events import (
+    GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated
+)
+from scholar.api import relevance_search, title_search
+from scholar.models import Paper
 from scholar.util import retry
 from rabbit import publish_message, ChannelType, check_connection as check_rabbit_connection, subscribe_to_queue
 from .upload import upload_many
 from .util import transform_for_cytoscape
 from fastapi.middleware.cors import CORSMiddleware
 from .sockets import ConnectionManager
+import bibtexparser
 from contextlib import asynccontextmanager
 import asyncio
 import logging
+from .types import BibTexPaper, BibTexRequest
 
 ######################## Configuration ########################
 
@@ -85,7 +94,7 @@ def welcome():
 
 @app.post("/papers/add/", tags=["Papers"])
 async def add_papers(papers: List[str]):
-    message = AddPapersById(paperIds=papers)
+    message = AddPapersById(paper_ids=papers)
     await publish_message(ChannelType.ADD_PAPER, message)
     return { "message": "Papers added to the queue" }
 
@@ -112,8 +121,8 @@ async def relevance_search_papers(query: str = Query(default=''), manager: Conne
     return results
 
 @app.post("/papers/add", tags=["Papers"])
-async def add_papers_by_id(paperIds: List[str]):
-    message = AddPapersById(paperIds=paperIds)
+async def add_papers_by_id(paper_ids: List[str]):
+    message = AddPapersById(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_PAPER, message)
     return { "message": "Papers added to the queue" }
 
@@ -124,15 +133,37 @@ async def get_papers():
         papers = get_all_papers(db)
     return papers
 
+@app.post("/papers/bibtex", tags=["Papers"])
+async def add_papers_bibtex(req: BibTexRequest):
+    parser = bibtexparser.bparser.BibTexParser(common_strings=True)
+    bib_database = bibtexparser.loads(req.bibtex, parser=parser)
+
+    # Parse paper data
+    papers = [
+        BibTexPaper(
+            title=entry.get("title", "").strip(),
+            author=entry.get("author", "").strip(),
+            journal=entry.get("journal", "").strip(),
+            year=int(entry.get("year", 0))
+        )
+        for entry in bib_database.entries
+    ]
+
+    # Submit for processing
+    message = AddPapersByTitle(papers=[PaperTitleWithYear(title=p.title, year=p.year) for p in papers])
+    await publish_message(ChannelType.ADD_PAPER_BY_TITLE, message)
+
+    return papers
+
 @app.post("/papers/citations/add", tags=["Papers"])
-async def add_citations(paperIds: List[str]):
-    message = AddPaperCitations(paperIds=paperIds)
+async def add_citations(paper_ids: List[str]):
+    message = AddPaperCitations(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_CITATIONS, message)
     return { "message": "Citations added to the queue" }
 
 @app.post("/papers/references/add", tags=["Papers"])
-async def add_references(paperIds: List[str]):
-    message = AddPaperReferences(paperIds=paperIds)
+async def add_references(paper_ids: List[str]):
+    message = AddPaperReferences(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_REFERENCES, message)
     return { "message": "Citations added to the queue" }
 

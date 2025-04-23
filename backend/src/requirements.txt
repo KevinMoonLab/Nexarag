@@ -182,3 +182,6 @@ wheel==0.44.0
 widgetsnbextension==4.0.13
 yarl==1.18.3
 zstandard==0.23.0
+neomodel==5.4.0
+websockets==15.0
+bibtexparser

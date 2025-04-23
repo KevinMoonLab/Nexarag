@@ -1,10 +1,11 @@
 from .models import Paper, Author, PartialPaper, Citation, PaperRelevanceResult
-from .util import RateLimitExceededError
+from .util import RateLimitExceededError, retry
 import requests
 import json
+from typing import List
 
 DEFAULT_PAPER_FIELDS = "title,abstract,venue,publicationVenue,year,referenceCount,citationCount,influentialCitationCount,publicationTypes,publicationDate,journal,authors"
-DEFAULT_AUTHOR_FIELDS = "authorId,url,name,affiliations,homepage,paperCount,citationCount,hIndex"
+DEFAULT_AUTHOR_FIELDS = "author_id,url,name,affiliations,homepage,paperCount,citationCount,hIndex"
 
 def relevance_search(text, limit = 100) -> list[PaperRelevanceResult]:
     url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={text}&fields=title,authors,year&limit={limit}"
@@ -40,7 +41,7 @@ def title_search(title, year=None, fields = DEFAULT_PAPER_FIELDS) -> list[Paper]
         "query": f"title:({title})",
         "fields": fields
     }
-    if year:
+    if year and year > 0:
         params['year'] = year
 
     response = requests.get(url, params=params)
@@ -96,7 +97,7 @@ def get_references(paper_id: str) -> list[Citation]:
     response = requests.get(base_url, params=params)
     if response.status_code == 200:
         data = response.json()
-        references = [d['citedPaper'] for d in data['data'] if d['citedPaper']['paperId'] is not None]
+        references = [d['citedPaper'] for d in data['data'] if d['citedPaper']['paper_id'] is not None]
         return Citation.schema().load(references, many=True)
     elif response.status_code == 429:
         raise RateLimitExceededError("Rate limit exceeded. Please wait before retrying.")
@@ -105,10 +106,10 @@ def get_references(paper_id: str) -> list[Citation]:
         return None
     
 def get_recommendations(positive_paper_ids, negative_paper_ids, limit = 100) -> list[Citation]:
-    url = f"http://api.semanticscholar.org/recommendations/v1/papers?fields=paperId,title&limit={limit}"
+    url = f"http://api.semanticscholar.org/recommendations/v1/papers?fields=paper_id,title&limit={limit}"
     params = {
-        "positivePaperIds": positive_paper_ids,
-        "negativePaperIds": negative_paper_ids
+        "positivepaper_ids": positive_paper_ids,
+        "negativepaper_ids": negative_paper_ids
     }
     response = requests.post(url, data=json.dumps(params))
     if response.status_code == 200:
@@ -117,3 +118,9 @@ def get_recommendations(positive_paper_ids, negative_paper_ids, limit = 100) -> 
     else:
         print(f"Failed to get recommendations: {response.status_code} {response.text}")
         return []
+    
+def search_papers_by_title(title:str, year:int) -> Paper:
+    res = retry(title_search, title, year)
+    if len(res) > 0:
+        return res[0]
+    return None

@@ -1,17 +1,18 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 from dataclasses_json import dataclass_json
+from marshmallow import EXCLUDE
 
-@dataclass_json
+@dataclass_json(undefined=EXCLUDE)
 @dataclass
 class PartialAuthor:
     name: str
-    authorId: Optional[str] = None
+    author_id: Optional[str] = None
 
-@dataclass_json
+@dataclass_json(undefined=EXCLUDE)
 @dataclass
 class Author:
-    authorId: str
+    author_id: str
     name: str
     url: Optional[str] = None
     affiliations: Optional[List[str]] = field(default_factory=list)
@@ -20,7 +21,7 @@ class Author:
     citationCount: Optional[int] = 0
     hIndex: Optional[int] = 0
 
-@dataclass_json
+@dataclass_json(undefined=EXCLUDE)
 @dataclass
 class PublicationVenue:
     id: str
@@ -32,39 +33,39 @@ class PublicationVenue:
     url: Optional[str] = None
     alternate_urls: Optional[List[str]] = field(default_factory=list)
 
-@dataclass_json
+@dataclass_json(undefined=EXCLUDE)
 @dataclass
 class Journal:
     name: Optional[str] = None
     pages: Optional[str] = None
     volume: Optional[str] = None
 
-@dataclass_json
+@dataclass_json(undefined=EXCLUDE)
 @dataclass
 class PartialPaper:
     id: str
     authorsYear: Optional[str] = None
     title: Optional[str] = None
 
-@dataclass_json
+@dataclass_json(undefined=EXCLUDE)
 @dataclass
 class PaperRelevanceResult:
-    paperId: str
+    paper_id: str
     title: str
     authors: List[PartialAuthor] = field(default_factory=list)
     year: Optional[int] = None
 
 
-@dataclass_json
+@dataclass_json(undefined=EXCLUDE)
 @dataclass
 class Citation:
-    paperId: str
+    paper_id: str
     title: str
 
-@dataclass_json
+@dataclass_json(undefined=EXCLUDE)
 @dataclass
 class Paper:
-    paperId: str
+    paper_id: str
     title: str
     venue: str
     referenceCount: int
