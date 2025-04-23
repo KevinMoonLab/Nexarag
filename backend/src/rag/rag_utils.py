@@ -65,7 +65,8 @@ class OllamaAdapter(BaseLLM):
             model=llm_config["model_id"],
             num_ctx=llm_config.get("num_ctx", 32768),
             num_predict=llm_config.get("num_predict", 4096),
-            temperature=llm_config.get("temperature", 0.5)
+            temperature=llm_config.get("temperature", 0.5),
+            server_url="http://host.docker.internal:11434"
         )
     def stream(self, prompt: str):
         return self.llm.stream(prompt)
@@ -86,15 +87,16 @@ class HuggingFaceAdapter(BaseLLM):
         max_seq_len = llm_config.get("max_seq_len", 4096)
         self.max_seq_len = max_seq_len
         self.temperature = llm_config.get("temperature", 0.5)
-        model_config = AutoConfig.from_pretrained(llm_config["model_id"], trust_remote_code=True, cache_dir="/model/huggingface")
+        model_config = AutoConfig.from_pretrained(llm_config["model_id"], trust_remote_code=True, cache_dir="/models")
         model_config.max_seq_len = max_seq_len
         self.model = AutoModelForCausalLM.from_pretrained(
             llm_config["model_id"],
             config=model_config,
             trust_remote_code=True,
-            device_map="auto"
+            device_map="auto", 
+            cache_dir="/models"
         )
-        self.tokenizer = AutoTokenizer.from_pretrained(llm_config["model_id"], trust_remote_code=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(llm_config["model_id"], trust_remote_code=True, cache_dir="/models")
         self.tokenizer.model_max_length = max_seq_len
    
     def stream(self, prompt: str):
