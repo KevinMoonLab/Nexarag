@@ -4,8 +4,7 @@ from db.util import load_kg_db
 from db.commands import clear_graph
 from rabbit import publish_message, subscribe_to_queue, ChannelType
 from rabbit.commands import (
-    AddPaperCitations, AddPaperReferences,  AddPapersById, ClearGraph, 
-    DocumentCreated, AddPapersByTitle
+    AddPaperCitations, AddPaperReferences,  AddPapersById, ClearGraph, AddPapersByTitle
 )
 from rabbit.events import (
     DocumentGraphUpdated, GraphUpdated, ChatMessage, ChatResponse, DocumentsCreated
