@@ -4,13 +4,16 @@ services:
     container_name: neo4j
     restart: unless-stopped
     environment:
-      NEO4J_AUTH: ${NEO4J_USERNAME}/${NEO4J_PASSWORD}
-      NEO4J_dbms_memory_heap_max__size: 2G
+      - NEO4J_AUTH=${NEO4J_USERNAME}/${NEO4J_PASSWORD}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_memory_heap_max__size=2G
+      - NEO4J_dbms_security_procedures_unrestricted=*
     ports:
       - "${NEO4J_DB_PORT}:7474"
       - "${NEO4J_APP_PORT}:7687"
     volumes:
       - ${NEO4J_VOLUME}:/data
+      - /home/TomKerby/Research/nexarag_work/Nexarag/plugins:/plugins 
     healthcheck:
       test: ["CMD", "cypher-shell", "-u", "${NEO4J_USERNAME}", "-p", "${NEO4J_PASSWORD}", "MATCH (n) RETURN COUNT(n);"]
       interval: 10s
