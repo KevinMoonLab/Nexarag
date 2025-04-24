@@ -16,7 +16,7 @@ async def create_paper_graph(paper_ids: List[str]):
     paper_venue_relations = []
 
     # Filter out papers that already exist
-    existing_paper_ids = [paper.paperId for paper in await Paper.nodes.filter(paper_id__in=paper_ids)]
+    existing_paper_ids = [paper.paper_id for paper in await Paper.nodes.filter(paper_id__in=paper_ids)]
     new_paper_ids = list(set(paper_ids) - set(existing_paper_ids))
     new_paper_ids = list(map(str, new_paper_ids))
 
