@@ -1,11 +1,10 @@
 import asyncio
 import logging
-from rabbit import get_publisher, publish_message, subscribe_to_queue, ChannelType
+from rabbit import publish_message, subscribe_to_queue, ChannelType
 from rabbit.events import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from typing import Callable, Awaitable
-from kg.docs import create_chunk_nodes
-from db.util import load_default_kg
+from kg.graph_embeddings import init_graph, handle_documents_created
+from typing import Callable
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,25 +21,6 @@ async def handle_request(message: ChatMessage, cb: Callable, complete: Callable)
     await cb("I can help you with papers, authors, and more.")
     await asyncio.sleep(1)
     await complete()
-
-async def handle_documents_created(update: DocumentGraphUpdated):
-    doc = update.doc
-    logger.info(f"Received documents created: {doc}")
-    # Load file content
-    doc_path = f"/docs/{doc.path}"
-    with open(doc_path, "r") as f:
-        content = f.read()
-    
-    kg = load_default_kg()
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size = 1000, # FIXME
-        chunk_overlap  = 200,
-        length_function = len,
-        is_separator_regex = False,
-    )
-    
-    create_chunk_nodes(kg, content, doc.node_id, text_splitter)
-    logger.info(f"Created chunk nodes for document: {doc.node_id}: {doc.path}")
 
 def callbacks(message: ChatMessage):
     first_response = ChatResponse(message="", chatId=message.chatId, userMessageId=message.messageId)
@@ -65,5 +45,11 @@ async def main():
 
 if __name__ == "__main__":
     logger.info("Starting Knowledge Graph worker...")
+    logger.info("Initializing graph...")
+    init_graph()
+    logger.info("Graph initialized.")
+    logger.info("Starting event loop...")
+
+    # Start the event loop
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())

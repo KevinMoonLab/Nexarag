@@ -13,7 +13,7 @@ services:
       - "${NEO4J_APP_PORT}:7687"
     volumes:
       - ${NEO4J_VOLUME}:/data
-      - /home/TomKerby/Research/nexarag_work/Nexarag/plugins:/plugins 
+      - ${NEO4J_PLUGINS_PATH}:/plugins
     healthcheck:
       test: ["CMD", "cypher-shell", "-u", "${NEO4J_USERNAME}", "-p", "${NEO4J_PASSWORD}", "MATCH (n) RETURN COUNT(n);"]
       interval: 10s
