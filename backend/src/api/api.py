@@ -9,7 +9,7 @@ from rabbit.commands import (
 from rabbit.events import (
     GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated
 )
-from scholar.api import relevance_search, title_search
+from scholar.api import relevance_search
 from scholar.models import Paper
 from scholar.util import retry
 from rabbit import publish_message, ChannelType, check_connection as check_rabbit_connection, subscribe_to_queue
