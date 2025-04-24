@@ -12,7 +12,7 @@ class PartialAuthor:
 @dataclass_json(undefined=EXCLUDE)
 @dataclass
 class Author:
-    author_id: str
+    authorId: str
     name: str
     url: Optional[str] = None
     affiliations: Optional[List[str]] = field(default_factory=list)
@@ -50,7 +50,7 @@ class PartialPaper:
 @dataclass_json(undefined=EXCLUDE)
 @dataclass
 class PaperRelevanceResult:
-    paper_id: str
+    paperId: str
     title: str
     authors: List[PartialAuthor] = field(default_factory=list)
     year: Optional[int] = None
@@ -59,13 +59,13 @@ class PaperRelevanceResult:
 @dataclass_json(undefined=EXCLUDE)
 @dataclass
 class Citation:
-    paper_id: str
+    paperId: str
     title: str
 
 @dataclass_json(undefined=EXCLUDE)
 @dataclass
 class Paper:
-    paper_id: str
+    paperId: str
     title: str
     venue: str
     referenceCount: int

@@ -40,7 +40,7 @@ async def main():
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
         subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message, ChatMessage),
-        subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, handle_documents_created, DocumentGraphUpdated)
+        subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, handle_documents_created, DocumentGraphUpdated),
     )
 
 if __name__ == "__main__":
