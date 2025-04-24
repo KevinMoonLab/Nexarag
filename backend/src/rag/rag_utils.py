@@ -1,21 +1,26 @@
 import time, sys
 
-from langchain_ollama.llms import OllamaLLM
-# from langchain.llms import OpenAI
+from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
+from langchain_huggingface import ChatHuggingFace
 from langchain_ollama.embeddings import OllamaEmbeddings
-# from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import OpenAIEmbeddings
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_neo4j import Neo4jVector
+
 from langchain_core.language_models.llms import LLM
 from langchain_core.outputs import GenerationChunk, LLMResult
 from typing import Any, AsyncIterator, Iterator, List, Optional
 
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+handler = StreamingStdOutCallbackHandler()
+
 class BaseLLM:
     def stream(self, prompt: str):
         raise NotImplementedError("stream() must be implemented by subclasses.")
-    
+
 class LangChainWrapper(LLM):
     adapter: BaseLLM  # Your existing adapter instance
     streaming: bool = True
@@ -59,24 +64,27 @@ class LangChainWrapper(LLM):
         for token in self.adapter.stream(prompt):
             yield GenerationChunk(text=token)
 
+
+
 class OllamaAdapter(BaseLLM):
     def __init__(self, llm_config):
-        self.llm = OllamaLLM(
+        self.llm = ChatOllama(
             model=llm_config["model_id"],
             num_ctx=llm_config.get("num_ctx", 32768),
             num_predict=llm_config.get("num_predict", 4096),
             temperature=llm_config.get("temperature", 0.5),
-            server_url="http://host.docker.internal:11434"
+            callbacks=[handler]
         )
     def stream(self, prompt: str):
         return self.llm.stream(prompt)
 
 # class OpenAIAdapter(BaseLLM):
 #     def __init__(self, llm_config):
-#         self.llm = OpenAI(
+#         self.llm = ChatOpenAI(
 #             model=llm_config["model_id"],
 #             temperature=llm_config.get("temperature", 0.5),
-#             openai_api_key=llm_config.get("api_key")
+#             openai_api_key=llm_config.get("api_key"),
+#             callbacks=[handler]
 #         )
 #     def stream(self, prompt: str):
 #         response = self.llm(prompt)
@@ -87,16 +95,16 @@ class HuggingFaceAdapter(BaseLLM):
         max_seq_len = llm_config.get("max_seq_len", 4096)
         self.max_seq_len = max_seq_len
         self.temperature = llm_config.get("temperature", 0.5)
-        model_config = AutoConfig.from_pretrained(llm_config["model_id"], trust_remote_code=True, cache_dir="/models")
+        model_config = AutoConfig.from_pretrained(llm_config["model_id"], trust_remote_code=True)
         model_config.max_seq_len = max_seq_len
-        self.model = AutoModelForCausalLM.from_pretrained(
+        llm = AutoModelForCausalLM.from_pretrained(
             llm_config["model_id"],
             config=model_config,
             trust_remote_code=True,
-            device_map="auto", 
-            cache_dir="/models"
+            device_map="auto"
         )
-        self.tokenizer = AutoTokenizer.from_pretrained(llm_config["model_id"], trust_remote_code=True, cache_dir="/models")
+        self.model = ChatHuggingFace(llm=llm, callbacks=[handler])
+        self.tokenizer = AutoTokenizer.from_pretrained(llm_config["model_id"], trust_remote_code=True)
         self.tokenizer.model_max_length = max_seq_len
    
     def stream(self, prompt: str):
@@ -126,7 +134,7 @@ class HuggingFaceAdapter(BaseLLM):
             yield decoded
 
             if token_id == self.tokenizer.eos_token_id or generated_ids.shape[-1] >= self.max_seq_len:
-                break     
+                break   
     
 def get_llm(config):
     provider = config["llm"]["provider"].lower()

@@ -22,6 +22,10 @@ from langchain.chains import ConversationChain
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import PromptTemplate
 
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ConversationBufferMemory
+from langchain_community.chat_message_histories import SQLChatMessageHistory
+
 def load_model():
     logger.info("Starting model load...")
     model = rag.get_llm_with_memory(config)
@@ -45,9 +49,9 @@ def load_kg_retriever():
     chunk_vector = Neo4jVector.from_existing_index(
         emb_adapter.embeddings,
         graph=kg, 
-        index_name=config["rag"]["index_name"],
-        embedding_node_property=config["rag"]["embedding_node_property"],
-        text_node_property=config["rag"]["text_node_property"],
+        index_name='paper_chunks',
+        embedding_node_property='textEmbedding',
+        text_node_property='text',
         retrieval_query=custom_query,
     )
 
@@ -60,22 +64,22 @@ def startup_chatbot():
     llm_adapter = load_model()
     kg_retriever = load_kg_retriever()
 
-    simple_rag_chain = (
-        {"context": llm_adapter, "question": RunnablePassthrough()}
-        | PromptTemplate.from_template("Answer: {context}\nQuestion: {question}")
-        | llm_adapter
+    chat_history = SQLChatMessageHistory(
+        session_id="user123",
+        connection_string="sqlite:///memory.db",
     )
 
-    # memory = ConversationSummaryBufferMemory(
-    #     llm=llm_adapter, 
-    #     memory_key='history', 
-    #     max_token_limit=4096
-    # )
-    # conversation = ConversationChain(
-    #     llm=llm_adapter, 
-    #     memory=memory,
-    #     verbose=True
-    # )
+    memory = ConversationBufferMemory(
+        memory_key="chat_history",
+        return_messages=True,
+        chat_memory=chat_history
+    )
+
+    conversation = ConversationalRetrievalChain.from_llm(
+        llm=llm_adapter.llm, 
+        retriever=kg_retriever,
+        memory=memory
+    )
     logger.info("Conversation initialized")
 
 def startup_agent():
@@ -83,7 +87,9 @@ def startup_agent():
 
 async def handle_request(message: ChatMessage, cb: Callable, complete: Callable):
     try:
-        response = conversation.predict(input=f"User message: {message.message}\nRespond helpfully:")
+        response = conversation.invoke({"question": f"{message.message}"})
+        # print(response["answer"])
+        # response = conversation.predict(input=f"User message: {message.message}\nRespond helpfully:")
         await cb(response.strip())
         await complete()
         
