@@ -1,8 +1,8 @@
 import asyncio
 import logging
 from rabbit import publish_message, subscribe_to_queue, ChannelType
-from rabbit.events import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated
-from kg.graph_embeddings import init_graph, handle_documents_created
+from rabbit.events import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated, GraphUpdated
+from kg.graph_embeddings import init_graph, handle_documents_created, create_abstract_embeddings
 from typing import Callable
 
 
@@ -33,6 +33,11 @@ async def handle_request(message: ChatMessage, cb: Callable, complete: Callable)
     await asyncio.sleep(1)
     await complete()
 
+async def handle_graph_update(message: GraphUpdated):
+    logger.info(f"Received graph update: {message}")
+    create_abstract_embeddings(message.nodeIds)
+    logger.info(f"Abstract embeddings created for nodes: {message.nodeIds}")
+
 def callbacks(message: ChatMessage):
     first_response = ChatResponse(message="", chatId=message.chatId, userMessageId=message.messageId)
     make_response = lambda msg: ChatResponse(message=msg, chatId=message.chatId, userMessageId=message.messageId, responseId=first_response.responseId)
@@ -52,6 +57,7 @@ async def main():
     await asyncio.gather(
         subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message, ChatMessage),
         subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, handle_documents_created, DocumentGraphUpdated),
+        subscribe_to_queue(ChannelType.GRAPH_UPDATED, handle_graph_update, GraphUpdated),
     )
 
 if __name__ == "__main__":

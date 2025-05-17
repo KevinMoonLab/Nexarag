@@ -3,8 +3,7 @@ from db.util import load_default_kg
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from rabbit.events import DocumentGraphUpdated
 import logging
-# from transformers import AutoTokenizer, AutoModel
-# from kg.rag import compute_embedding_nomic
+from kg.rag import NomicEmbeddingAdapter
 
 async def handle_documents_created(update: DocumentGraphUpdated, logger = logging.getLogger(__name__)):
     doc = update.doc
@@ -47,7 +46,7 @@ def init_graph(embedding_size=768, similarity="cosine"):
         }}""", params={'dimension': embedding_size, 'similarity': similarity }
     )
 
-def handle_graph_update(paper_ids, model_id='nomic-ai/nomic-embed-text-v1.5'):
+def create_abstract_embeddings(paper_ids, model_id='nomic-embed-text:v1.5'):
     # Load database and extract paper nodes
     kg = load_default_kg()
     result = kg.query(
@@ -56,22 +55,21 @@ def handle_graph_update(paper_ids, model_id='nomic-ai/nomic-embed-text-v1.5'):
         WHERE p.paper_id IN $paper_ids
         RETURN elementId(p) AS node_id, p.abstract AS abstract
         """,
-        parameters={"paper_ids": paper_ids}
+        params={"paper_ids": paper_ids}
     )
     
-    # Load the model and tokenizer
-    # tokenizer = AutoTokenizer.from_pretrained(model_id, model_max_length=8192)
-    # model = AutoModel.from_pretrained(model_id, trust_remote_code=True, rotary_scaling_factor=2)
-    # model.eval()
+    # Load the embedding adapter
+    nomic_adapter = NomicEmbeddingAdapter(model_id=model_id)
 
-    # # Compute embeddings for each paper
-    # for record in result:
-    #     if record["abstract"]:
-    #         embedding = compute_embedding_nomic(record["abstract"], tokenizer, model, config)
-    #         # embedding = rag.compute_embedding(record["abstract"], tokenizer, model)
-    #         kg.query("""
-    #             MATCH (p:Paper) WHERE elementId(p) = $node_id
-    #             SET p.abstractEmbedding = $embedding
-    #             RETURN elementId(p) AS node_id, p.abstract AS abstract
-    #             """, params={"node_id":record["node_id"], "embedding":embedding}
-    #         )
+    # Compute embeddings for each paper
+    for record in result:
+        if record["abstract"]:
+            embedding = nomic_adapter.embed_query(record["abstract"])
+            kg.query("""
+                MATCH (p:Paper) WHERE elementId(p) = $node_id
+                SET p.abstractEmbedding = $embedding
+                RETURN elementId(p) AS node_id, p.abstract AS abstract
+                """, params={"node_id":record["node_id"], "embedding":embedding}
+            )
+            
+    return result
