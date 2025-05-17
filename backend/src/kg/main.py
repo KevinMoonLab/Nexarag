@@ -13,12 +13,23 @@ logger = logging.getLogger(__name__)
 async def handle_request(message: ChatMessage, cb: Callable, complete: Callable):
     # Your code here
     # Example: Echo response
-    await asyncio.sleep(2)
-    await cb("Hi! I'm a Nexarag.")
     await asyncio.sleep(1)
-    await cb(f"Thanks for asking about '{message.message}'!")
-    await asyncio.sleep(1)
-    await cb("I can help you with papers, authors, and more.")
+    # await cb("Hi! I'm Nexarag.")
+    # await asyncio.sleep(1)
+    # await cb(f"Thanks for asking about '{message.message}'!")
+    # await asyncio.sleep(1)
+    # await cb("I can help you with papers, authors, and more.")
+    await cb("""To leverage the structure of a latent space in diffusion models for influencing generation, several approaches can be employed:
+        1. **Vector Arithmetic**: Utilize vector operations within the latent space to perform semantic image manipulations, allowing for controlled edits by traversing along specific directions.
+
+        2. **Hierarchical Semantic Features**: Employ encoders to capture structured representations at different levels of abstraction, enhancing conditional generation capabilities and enabling more intricate pattern capturing.
+
+        3. **Guidance Techniques**: Adjust latent variables during the generation process through guidance methods, which can steer the output towards desired attributes or styles.
+
+        4. **Intermediate Bottlenecks as Semantic Spaces**: Identify and use bottleneck layers in the model architecture as a semantic space (e.g., "h-space") for effective image editing by manipulating these intermediate representations.
+
+        These techniques collectively enhance the controllability and quality of generated outputs in diffusion models.
+        """)
     await asyncio.sleep(1)
     await complete()
 

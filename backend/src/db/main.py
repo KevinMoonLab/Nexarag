@@ -43,7 +43,7 @@ async def handle_add_papers_by_title(message: AddPapersByTitle):
             papers.append(res)
 
     # Create graph for each paper
-    paper_ids = [paper.paper_id for paper in papers]
+    paper_ids = [paper.paperId for paper in papers]
     await create_paper_graph(paper_ids)
     await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=paper_ids))
 

@@ -55,9 +55,9 @@ const defaultPlot: PlotData = {
     size: 12,
   },
   nodeIds: [],
-  title: 'Default Plot - No Data Selected',
-  xTitle: 'X',
-  yTitle: 'Y',
+  title: 'PCA Embedding Components',
+  xTitle: 'Component 2',
+  yTitle: 'Component 1',
 };
 
 @Component({

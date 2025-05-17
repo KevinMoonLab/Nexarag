@@ -27,6 +27,7 @@
     "cytoscape-cose-bilkent": "^4.1.0",
     "cytoscape-dagre": "^2.5.0",
     "cytoscape-elk": "^2.3.0",
+    "marked": "^15.0.11",
     "plotly.js-dist-min": "^3.0.1",
     "primeicons": "^7.0.0",
     "primeng": "^19.0.5",
