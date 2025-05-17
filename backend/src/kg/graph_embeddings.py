@@ -1,4 +1,4 @@
-from kg.docs import create_chunk_nodes
+from kg.docs import create_chunk_nodes_with_embeddings
 from db.util import load_default_kg
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from rabbit.events import DocumentGraphUpdated
@@ -23,8 +23,8 @@ async def handle_documents_created(update: DocumentGraphUpdated, logger = loggin
         is_separator_regex = False,
     )
     
-    create_chunk_nodes(kg, content, doc.node_id, text_splitter)
-    logger.info(f"Created chunk nodes for document: {doc.node_id}: {doc.path}")
+    create_chunk_nodes_with_embeddings(kg, content, doc.node_id, text_splitter)
+    logger.info(f"Created chunk nodes with embeddings for document: {doc.node_id}: {doc.path}")
 
 def init_graph(embedding_size=768, similarity="cosine"):
     kg = load_default_kg()
@@ -71,5 +71,5 @@ def create_abstract_embeddings(paper_ids, model_id='nomic-embed-text:v1.5'):
                 RETURN elementId(p) AS node_id, p.abstract AS abstract
                 """, params={"node_id":record["node_id"], "embedding":embedding}
             )
-            
+
     return result
