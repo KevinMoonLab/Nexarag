@@ -1,8 +1,8 @@
 import time, sys
 
 from langchain_ollama.llms import OllamaLLM
-from langchain.llms import OpenAI
 from langchain_ollama.embeddings import OllamaEmbeddings
+from langchain.llms import OpenAI
 from langchain.embeddings import OpenAIEmbeddings
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig

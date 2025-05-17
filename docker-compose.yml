@@ -6,14 +6,15 @@ services:
     environment:
       - NEO4J_AUTH=${NEO4J_USERNAME}/${NEO4J_PASSWORD}
       - NEO4J_PLUGINS=["apoc"]
-      - NEO4J_dbms_memory_heap_max__size=2G
-      - NEO4J_dbms_security_procedures_unrestricted=*
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_PLUGINS=\[\"apoc\"\]
     ports:
       - "${NEO4J_DB_PORT}:7474"
       - "${NEO4J_APP_PORT}:7687"
     volumes:
       - ${NEO4J_VOLUME}:/data
-      - ${NEO4J_PLUGINS_PATH}:/plugins
     healthcheck:
       test: ["CMD", "cypher-shell", "-u", "${NEO4J_USERNAME}", "-p", "${NEO4J_PASSWORD}", "MATCH (n) RETURN COUNT(n);"]
       interval: 10s
@@ -54,6 +55,7 @@ services:
       NEO4J_DATABASE: neo4j
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      OLLAMA_BASE_URL: http://ollama:11434
     depends_on:
       neo4j:
         condition: service_healthy
@@ -94,7 +96,6 @@ services:
       nexarag.rabbitmq:
         condition: service_healthy
 
-
   nexarag.kg:
     image: nexarag.kg:latest
     build:
@@ -109,6 +110,7 @@ services:
       NEO4J_DATABASE: neo4j
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      OLLAMA_BASE_URL: http://ollama:11434
     volumes:
       - ${DOCS_VOLUME}:/docs
     depends_on:
@@ -116,3 +118,18 @@ services:
         condition: service_healthy
       nexarag.rabbitmq:
         condition: service_healthy
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ${OLLAMA_VOLUME}:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

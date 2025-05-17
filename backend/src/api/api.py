@@ -22,6 +22,11 @@ from contextlib import asynccontextmanager
 import asyncio
 import logging
 from .types import BibTexPaper, BibTexRequest
+from ollama import Client
+from langchain_ollama.llms import OllamaLLM
+import os
+ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+
 
 ######################## Configuration ########################
 
@@ -212,3 +217,16 @@ def test_neo4j_connection():
 async def test_rabbit_connection():
     success = await check_rabbit_connection()
     return { "message": f"Connection {'successful' if success else 'failed'}" }
+
+######################## LLMs ########################
+@app.get("/ollama/list", tags=["LLMs"])
+def list_ollama_models():
+    client = Client(host=ollama_base_url)
+    models = client.list()
+    return models
+
+@app.get("/ollama/ask", tags=["LLMs"])
+def ask_ollama_model(model:str, question:str):
+    llm = OllamaLLM(model=model, base_url=ollama_base_url)
+    response = llm.invoke(question)
+    return response
