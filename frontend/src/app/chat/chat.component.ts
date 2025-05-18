@@ -103,29 +103,9 @@ export class ChatComponent {
 
   constructor(private sanitizer: DomSanitizer) {}
 
-  private message = `<p>To leverage the structure of a latent space in diffusion models for influencing generation, several approaches can be employed:</p>
-
-<ol>
-  <li>
-    <strong>Vector Arithmetic</strong>: Utilize vector operations within the latent space to perform semantic image manipulations, allowing for controlled edits by traversing along specific directions.
-  </li>
-  <li>
-    <strong>Hierarchical Semantic Features</strong>: Employ encoders to capture structured representations at different levels of abstraction, enhancing conditional generation capabilities and enabling more intricate pattern capturing.
-  </li>
-  <li>
-    <strong>Guidance Techniques</strong>: Adjust latent variables during the generation process through guidance methods, which can steer the output towards desired attributes or styles.
-  </li>
-  <li>
-    <strong>Intermediate Bottlenecks as Semantic Spaces</strong>: Identify and use bottleneck layers in the model architecture as a semantic space (e.g., "h-space") for effective image editing by manipulating these intermediate representations.
-  </li>
-</ol>
-
-<p>These techniques collectively enhance the controllability and quality of generated outputs in diffusion models.</p>
-`
-
   renderMarkdown(text: string): SafeHtml {
     const html = marked.parse(text) as string;
-    return this.sanitizer.bypassSecurityTrustHtml(this.message);
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
   thinkingEffect = effect(() => {

@@ -13,6 +13,10 @@ class ChatMessage(BaseModel):
     message: str 
     chatId: str
     messageId: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
+    numCtx: Optional[int] = Field(default_factory=lambda: 32768)
+    numPredict: Optional[int] = Field(default_factory=lambda: 4096)
+    temperature: Optional[float] = Field(default_factory=lambda: 0.5)
+    model: Optional[str] = Field(default_factory=lambda: "gemma3:1b")
 
 class ChatResponse(BaseModel):
     message: str
