@@ -1,9 +1,9 @@
 import { HttpClient } from "@angular/common/http";
 import { computed, inject, Injectable, signal } from "@angular/core";
-import { Observable, Subject, switchMap } from "rxjs";
+import { map, Observable, Subject, switchMap } from "rxjs";
 import { environment } from "src/environments/environment";
 import { Event, EventService } from "../events.service";
-import { ChatMessage, ChatResponse } from "./types";
+import { ChatMessage, ChatResponse, ModelDetails } from "./types";
 
 @Injectable({
     providedIn: 'root',
@@ -37,7 +37,8 @@ import { ChatMessage, ChatResponse } from "./types";
     });
 
     message = signal('');
-    messageObject = computed(() => ({ message: this.message(), chatId: this.chatId() } as ChatMessage));
+    messageObject = computed(() => 
+      ({ message: this.message(), chatId: this.chatId(), model: this.getSelectedModel() } as ChatMessage));
 
     // Thinking indicator
     isThinking = signal(false);
@@ -46,6 +47,11 @@ import { ChatMessage, ChatResponse } from "./types";
 
     // New message subject
     #messageSubject = new Subject<ChatMessage>();
+
+    // Models
+    models = signal([] as ModelDetails[]);
+    #updateModelsSubject = new Subject<void>();
+    selectedModel = signal('');
   
     constructor() {
       this.#events.events$.subscribe((event) => {
@@ -54,11 +60,19 @@ import { ChatMessage, ChatResponse } from "./types";
         } else if (event.type === 'response_completed') {
           this.handleResponseCompleted(event.body);
         }
-      })
+      });
 
       this.#messageSubject.pipe(
         switchMap(this.send.bind(this))        )
         .subscribe(this.messageAdded.bind(this));
+
+      this.#updateModelsSubject.pipe(
+        switchMap(this.getModels.bind(this))
+      ).subscribe((models) => {
+        this.models.set(models);
+      });
+
+      this.#updateModelsSubject.next();
     }
 
     private handleChatResponse(data: ChatResponse) {
@@ -73,6 +87,20 @@ import { ChatMessage, ChatResponse } from "./types";
     public send(message: ChatMessage): Observable<any> {
       const url = environment.apiBaseUrl + '/chat/send/';
       return this.#http.post(url, message);
+    }
+
+    private getModels(): Observable<ModelDetails[]> {
+      const url = environment.apiBaseUrl + '/ollama/list/';
+      return this.#http.get<any>(url).pipe(map(res => res.models));
+    }
+
+    private getSelectedModel() {
+      console.log('getSelectedModel', this.selectedModel());
+      return this.selectedModel() || this.models()[0]?.model;
+    }
+
+    public updateModels() {
+      this.#updateModelsSubject.next();
     }
 
     private messageAdded(newMessage: ChatMessage) {

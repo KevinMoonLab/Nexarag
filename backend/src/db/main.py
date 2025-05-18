@@ -65,15 +65,15 @@ async def handle_clear_graph(message: ClearGraph):
     logger.info("Graph cleared.")
 
 async def handle_chat_response(message: ChatResponse):
-    logger.info(f"Received chat response: {message}")
     await update_chat_response(message)
     await publish_message(ChannelType.CHAT_RESPONSE_CREATED, message)
 
 
 async def handle_chat_message(message: ChatMessage):
-    logger.info(f"Received chat message: {message}")
+    logger.info(f"Database received chat message: {message}")
     await create_chat_message(message)
     await publish_message(ChannelType.CHAT_MESSAGE_CREATED, message)
+    logger.info(f"Saved chat message: {message}")
 
 async def main():
     logger.info("Initializing Neo4j database...")

@@ -7,20 +7,21 @@ from langchain_neo4j import Neo4jVector
 from db.util import load_default_kg
 from rabbit.events import ChatMessage
 
-import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 import os
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 
 prompt_template = """
+    You are a helpful research assistant that provides detailed answers about academic papers using retrieved context as well as your own knowledge.
+    The context consists of both abstracts and chunks of text from the papers.
     Based on the following context, provide as much detail as possible in response to the question based primarily on the context, but also including any existing knowledge you have of the topic.
     If the context lacks the requested information, provide a reasonable response while acknowledging your limited knowledge of the topic.
     Always explicitly cite the title in the context you used to answer the question, if it is available.
 
-    Context:
-    {context}
+    Abstracts:
+    {abstracts}
+
+    Chunks:
+    {chunks}
 
     Question:
     {question}
@@ -155,9 +156,9 @@ def query_kg(question, llm_adapter, emb_adapter, kg, prompt_template, k=30):
 
     retrieved_docs = doc_vector.similarity_search_with_score(prepared_question, k=k)
     retrieved_abstracts = abstract_vector.similarity_search_with_score(prepared_question, k=k)
-    retrieved_docs.extend(retrieved_abstracts)
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_docs])
-    prompt = prompt_template.format(context=context_text, question=question)
+    abstract_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_abstracts])
+    prompt = prompt_template.format(abstracts=abstract_text, chunks=context_text, question=question)
 
     for chunk in llm_adapter.stream(prompt):
         yield chunk

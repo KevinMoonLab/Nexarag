@@ -2,13 +2,13 @@ import asyncio
 import logging
 from rabbit import publish_message, subscribe_to_queue, ChannelType
 from rabbit.events import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated, GraphUpdated
-from kg.graph_embeddings import init_graph, handle_documents_created, create_abstract_embeddings
+from kg.embeddings import init_graph, create_document_embeddings, create_abstract_embeddings
 from kg.rag import ask_llm_kg
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def handle_chat_message(message: ChatMessage, cb, complete):
+async def ask_kg(message: ChatMessage, cb, complete):
     logger.info(f"Handling chat request: {message}")
     for chunk in ask_llm_kg(message):
         await cb(chunk)
@@ -29,15 +29,14 @@ def callbacks(message: ChatMessage):
     return (async_chat_callback, async_completion_callback)
 
 async def handle_chat_message(message: ChatMessage):
-    logger.info(f"Received chat message: {message}")
     response_callback, completion_callback = callbacks(message)
-    await handle_chat_message(message, response_callback, completion_callback)
+    await ask_kg(message, response_callback, completion_callback)
 
 async def main():
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
         subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message, ChatMessage),
-        subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, handle_documents_created, DocumentGraphUpdated),
+        subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, create_document_embeddings, DocumentGraphUpdated),
         subscribe_to_queue(ChannelType.GRAPH_UPDATED, handle_graph_update, GraphUpdated),
     )
 

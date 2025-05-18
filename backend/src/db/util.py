@@ -120,8 +120,6 @@ def init_schema(tx):
         ON (a.author_id);
     """)
 
-
-
 def initialize(kg):
     with kg.session() as session:
         session.execute_write(init_schema)

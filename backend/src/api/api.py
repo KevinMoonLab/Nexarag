@@ -43,7 +43,6 @@ async def handle_update_result(message: GraphUpdated):
     await manager.broadcast("graph_updated", {})
 
 async def handle_chat_response(message: ChatResponse):
-    logger.info(f"Chat response: {message}")
     await manager.broadcast("chat_response", message.model_dump())
 
 async def handle_response_completed(message: ResponseCompleted):
@@ -190,6 +189,7 @@ async def remove_whole_graph():
 ######################## Chat ########################
 @app.post("/chat/send/", tags=["Chat"])
 async def send_chat_message(request: ChatMessage):
+    logger.info(f"Received chat message: {request}")
     await publish_message(ChannelType.CHAT_MESSAGE, request)
     return request
 

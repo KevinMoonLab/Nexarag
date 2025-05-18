@@ -4,7 +4,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from rabbit.events import DocumentGraphUpdated
 from kg.rag import NomicEmbeddingAdapter
 
-async def handle_documents_created(update: DocumentGraphUpdated):
+async def create_document_embeddings(update: DocumentGraphUpdated):
     doc = update.doc
     # Load file content
     doc_path = f"/docs/{doc.path}"
