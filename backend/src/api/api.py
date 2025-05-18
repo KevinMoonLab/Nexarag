@@ -125,7 +125,7 @@ async def relevance_search_papers(query: str = Query(default=''), manager: Conne
     results = retry(relevance_search, query, cb=lambda e: handle_rate_limit_exceeded(manager, e))
     return results
 
-@app.post("/papers/add", tags=["Papers"])
+@app.post("/papers/add/", tags=["Papers"])
 async def add_papers_by_id(paper_ids: List[str]):
     message = AddPapersById(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_PAPER, message)
@@ -138,7 +138,7 @@ async def get_papers():
         papers = get_all_papers(db)
     return papers
 
-@app.post("/papers/bibtex", tags=["Papers"])
+@app.post("/papers/bibtex/", tags=["Papers"])
 async def add_papers_bibtex(req: BibTexRequest):
     parser = bibtexparser.bparser.BibTexParser(common_strings=True)
     bib_database = bibtexparser.loads(req.bibtex, parser=parser)
@@ -160,13 +160,13 @@ async def add_papers_bibtex(req: BibTexRequest):
 
     return transform_bibtex_for_cytoscape(papers)
 
-@app.post("/papers/citations/add", tags=["Papers"])
+@app.post("/papers/citations/add/", tags=["Papers"])
 async def add_citations(paper_ids: List[str]):
     message = AddPaperCitations(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_CITATIONS, message)
     return { "message": "Citations added to the queue" }
 
-@app.post("/papers/references/add", tags=["Papers"])
+@app.post("/papers/references/add/", tags=["Papers"])
 async def add_references(paper_ids: List[str]):
     message = AddPaperReferences(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_REFERENCES, message)
@@ -181,7 +181,7 @@ def get_whole_graph():
         graph = get_graph(db)
     return transform_for_cytoscape(graph)
 
-@app.post("/graph/clear", tags=["Graph"])
+@app.post("/graph/clear/", tags=["Graph"])
 async def remove_whole_graph():
     message = ClearGraph(reason="User requested")
     await publish_message(ChannelType.CLEAR_GRAPH, message)
@@ -194,7 +194,7 @@ async def send_chat_message(request: ChatMessage):
     await publish_message(ChannelType.CHAT_MESSAGE, request)
     return request
 
-@app.get("/chat/prefix/default", tags=["Chat"])
+@app.get("/chat/prefix/default/", tags=["Chat"])
 def get_default_prefix():
     cleaned = default_prefix.strip()
     return cleaned
@@ -225,13 +225,13 @@ async def test_rabbit_connection():
     return { "message": f"Connection {'successful' if success else 'failed'}" }
 
 ######################## LLMs ########################
-@app.get("/ollama/list", tags=["LLMs"])
+@app.get("/ollama/list/", tags=["LLMs"])
 def list_ollama_models():
     client = Client(host=ollama_base_url)
     models = client.list()
     return models
 
-@app.get("/ollama/ask", tags=["LLMs"])
+@app.get("/ollama/ask/", tags=["LLMs"])
 def ask_ollama_model(model:str, question:str):
     llm = OllamaLLM(model=model, base_url=ollama_base_url)
     response = llm.invoke(question)

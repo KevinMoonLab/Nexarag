@@ -3,19 +3,36 @@ Nexarag is a tool for interacting with research literature.
 
 # Pre-Requisites
 - [Docker](https://docs.docker.com/engine/install/)
+- **(MacOS Only)** [Ollama](https://ollama.com/download/mac)
 
 # Run
 First copy `Nexarag/.env.example` to `Nexarag/.env`, modifying the settings as needed to configure volumes.
 
+## Linux
 ```
 docker compose up -d --build
 ```
 
+## MacOS
+```
+docker compose -f docker-compose.macos.yml up -d
+```
+
 # Pull Ollama Models
+
+## Linux
 Models can be pulled through the command line and will be stored on the volume specified by the `OLLAMA_VOLUME` environment variable.
 
 ```
 docker exec -it ollama /bin/bash
+ollama pull nomic-embed-text:v1.5
+ollama pull gemma3:1b
+```
+
+## MacOS
+Pull models from the command line:
+
+```
 ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
 ```
