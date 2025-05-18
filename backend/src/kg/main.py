@@ -8,7 +8,7 @@ from kg.rag import ask_llm_kg
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def handle_request(message: ChatMessage, cb, complete):
+async def handle_chat_message(message: ChatMessage, cb, complete):
     logger.info(f"Handling chat request: {message}")
     for chunk in ask_llm_kg(message):
         await cb(chunk)
@@ -31,7 +31,7 @@ def callbacks(message: ChatMessage):
 async def handle_chat_message(message: ChatMessage):
     logger.info(f"Received chat message: {message}")
     response_callback, completion_callback = callbacks(message)
-    await handle_request(message, response_callback, completion_callback)
+    await handle_chat_message(message, response_callback, completion_callback)
 
 async def main():
     logger.info("Subscribing to RabbitMQ events...")

@@ -5,15 +5,24 @@ Nexarag is a tool for interacting with research literature.
 - [Docker](https://docs.docker.com/engine/install/)
 
 # Run
-First copy `Nexarag/.env.example` to `Nexarag/.env`, modifying the settings as needed.
+First copy `Nexarag/.env.example` to `Nexarag/.env`, modifying the settings as needed to configure volumes.
 
 ```
 docker compose up -d --build
 ```
 
+# Pull Ollama Models
+Models can be pulled through the command line and will be stored on the volume specified by the `OLLAMA_VOLUME` environment variable.
+
+```
+docker exec -it ollama /bin/bash
+ollama pull nomic-embed-text:v1.5
+ollama pull gemma3:1b
+```
+
 # Development
 ## Backend
-Development for the backend project can be done inside a devcontainer. The container will be automatically provisioned with a `neo4j` database and a `rabbitmq` instance. 
+Development for the backend project can be done inside a devcontainer. The container will be automatically provisioned with a `neo4j` database, a `rabbitmq` instance, and the official Ollama container image. 
 
 1. Copy the `.env.example` file into `Nexarag/.devcontainer/.env`, modifying the values for your system
 2. Open `Nexarag` in VS Code

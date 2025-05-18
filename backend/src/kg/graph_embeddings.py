@@ -2,13 +2,10 @@ from kg.docs import create_chunk_nodes_with_embeddings
 from db.util import load_default_kg
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from rabbit.events import DocumentGraphUpdated
-import logging
 from kg.rag import NomicEmbeddingAdapter
 
-async def handle_documents_created(update: DocumentGraphUpdated, logger = logging.getLogger(__name__)):
+async def handle_documents_created(update: DocumentGraphUpdated):
     doc = update.doc
-    logger.info(f"Received documents created: {doc}")
-
     # Load file content
     doc_path = f"/docs/{doc.path}"
     with open(doc_path, "r") as f:
@@ -24,7 +21,6 @@ async def handle_documents_created(update: DocumentGraphUpdated, logger = loggin
     )
     
     create_chunk_nodes_with_embeddings(kg, content, doc.node_id, text_splitter)
-    logger.info(f"Created chunk nodes with embeddings for document: {doc.node_id}: {doc.path}")
 
 def init_graph(embedding_size=768, similarity="cosine"):
     kg = load_default_kg()

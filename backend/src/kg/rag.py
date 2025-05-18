@@ -7,19 +7,17 @@ from langchain_neo4j import Neo4jVector
 from db.util import load_default_kg
 from rabbit.events import ChatMessage
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 import os
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 
-custom_query = """
-    MATCH (c:Chunk)
-    WITH DISTINCT c, vector.similarity.cosine(c.textEmbedding, $embedding) AS score
-    ORDER BY score DESC LIMIT $k
-    RETURN c.text AS text, score, {source: c.source, chunkId: c.chunkId} AS metadata
-"""
-
 prompt_template = """
-    You are an expert in generative models. Based on the following context, provide a concise answer to the question. 
-    If the context lacks the requested information simply state that you do not know.
+    Based on the following context, provide as much detail as possible in response to the question based primarily on the context, but also including any existing knowledge you have of the topic.
+    If the context lacks the requested information, provide a reasonable response while acknowledging your limited knowledge of the topic.
+    Always explicitly cite the title in the context you used to answer the question, if it is available.
 
     Context:
     {context}
@@ -29,8 +27,6 @@ prompt_template = """
 
     Answer:
 """
-
-
 
 class BaseLLM:
     def stream(self, prompt: str):
@@ -121,19 +117,45 @@ class NomicEmbeddingAdapter(BaseEmbeddings):
         return self.query_prefix + query
     
 
-def query_kg(question, llm_adapter, emb_adapter, kg, custom_query, prompt_template, k=30):
+def query_kg(question, llm_adapter, emb_adapter, kg, prompt_template, k=30):
     prepared_question = emb_adapter.prepare_query(question)
 
-    chunk_vector = Neo4jVector.from_existing_index(
+    doc_query = """
+        MATCH (c:Chunk)
+        WITH DISTINCT c, vector.similarity.cosine(c.textEmbedding, $embedding) AS score
+        ORDER BY score DESC LIMIT $k
+        RETURN c.text AS text, score, {source: c.source, chunkId: c.chunkId} AS metadata
+    """
+
+    doc_vector = Neo4jVector.from_existing_index(
         emb_adapter.embeddings,
         graph=kg,
         index_name='paper_chunks',
         embedding_node_property='textEmbedding',
         text_node_property='text',
-        retrieval_query=custom_query,
+        retrieval_query=doc_query,
     )
 
-    retrieved_docs = chunk_vector.similarity_search_with_score(prepared_question, k=k)
+    abstract_query = """
+        MATCH (c:Paper)
+        WHERE c.abstract IS NOT NULL AND c.title IS NOT NULL
+        WITH DISTINCT c, vector.similarity.cosine(c.abstractEmbedding, $embedding) AS score
+        ORDER BY score DESC LIMIT $k
+        RETURN 'Title: ' + c.title + '\n\n' + 'Abstract: ' + c.abstract AS text, score, {source: c.source, chunkId: c.chunkId} AS metadata
+    """
+
+    abstract_vector = Neo4jVector.from_existing_index(
+        emb_adapter.embeddings,
+        graph=kg,
+        index_name='abstract_embeddings',
+        embedding_node_property='abstractEmbedding',
+        text_node_property='text',
+        retrieval_query=abstract_query,
+    )
+
+    retrieved_docs = doc_vector.similarity_search_with_score(prepared_question, k=k)
+    retrieved_abstracts = abstract_vector.similarity_search_with_score(prepared_question, k=k)
+    retrieved_docs.extend(retrieved_abstracts)
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_docs])
     prompt = prompt_template.format(context=context_text, question=question)
 
@@ -156,7 +178,6 @@ def ask_llm_kg(message:ChatMessage):
         llm_adapter, 
         nomic_adapter, 
         kg, 
-        custom_query, 
         prompt_template, 
         k=10
     ):
