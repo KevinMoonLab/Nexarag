@@ -128,6 +128,21 @@ export class GraphComponent {
               'line-color': '#d3d3d3',
               'curve-style': 'bezier'
             }
+          },
+          {
+            selector: 'node:selected',
+            style: {
+              'border-width': '4px',
+              'border-color': '#ffa500',
+              'overlay-color': '#ffa500',
+              'overlay-padding': '8px',
+              'overlay-opacity': 0.3,
+              'shadow-blur': 10,
+              'shadow-color': '#888',
+              'shadow-opacity': 0.8,
+              'shadow-offset-x': 2,
+              'shadow-offset-y': 2
+            }
           }
         ];
       } else {
