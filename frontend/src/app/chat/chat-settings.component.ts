@@ -31,7 +31,7 @@ import { ChatService } from './chat.service';
         <textarea
           pInputTextarea
           id="promptTextarea"
-          [(ngModel)]="prompt"
+          [(ngModel)]="chatService.prompt"
           rows="4"
           class="w-full text-black p-2 border rounded-lg"
           placeholder="Enter a default prompt..."
@@ -47,13 +47,10 @@ export class ChatSettingsComponent {
 
   availableModels = computed(() => {
     const models = this.chatService.models();
-    console.log(models);
     const options = models.map(model => ({
       label: model.model,
       value: model.model,
     }));
     return options;
   });
-
-  prompt = model('');
 }

@@ -1,5 +1,6 @@
 export type ChatMessage = {
     message: string;
+    prefix:string;
     chatId: string;
     messageId: string;
     model: string;

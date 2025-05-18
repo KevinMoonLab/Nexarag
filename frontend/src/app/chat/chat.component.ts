@@ -25,8 +25,8 @@ import { marked } from 'marked';
                 <ng-container *ngFor="let message of chat.messages()">
                   <div [ngClass]="{'justify-start': !message.isUser, 'justify-end': message.isUser}" class="flex items-start gap-2">
                     <span *ngIf="!message.isUser" class="pi pi-sparkles text-2xl bg-gray-100 rounded-full p-2"></span>
-                    <div class="p-3 rounded-lg shadow-md bg-white prose prose-sm"
-                      [innerHTML]="renderMarkdown(message.text)">
+                    <div class="p-3 rounded-lg shadow-md bg-white prose prose-sm">
+                      {{ message.text }}
                     </div>
                     <span *ngIf="message.isUser" class="pi pi-user text-2xl bg-gray-100 rounded-full p-2"></span>
                   </div>
@@ -61,8 +61,8 @@ import { marked } from 'marked';
               <ng-container *ngFor="let message of chat.messages()">
                 <div [ngClass]="{'justify-start': !message.isUser, 'justify-end': message.isUser}" class="flex items-start gap-2">
                   <span *ngIf="!message.isUser" class="pi pi-sparkles text-2xl bg-gray-100 rounded-full p-2"></span>
-                  <div class="max-w-[80%] p-3 rounded-lg shadow-md bg-white prose prose-sm"
-                      [innerHTML]="renderMarkdown(message.text)">
+                  <div class="max-w-[80%] p-3 rounded-lg shadow-md bg-white prose prose-sm">
+                    {{ message.text }}
                   </div>
                   <span *ngIf="message.isUser" class="pi pi-user text-2xl bg-gray-100 rounded-full p-2"></span>
                 </div>

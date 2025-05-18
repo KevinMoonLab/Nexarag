@@ -11,7 +11,8 @@ class GraphUpdated(BaseModel):
 
 class ChatMessage(BaseModel):
     message: str 
-    chatId: str
+    prefix: str
+    chatId: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
     messageId: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
     numCtx: Optional[int] = Field(default_factory=lambda: 32768)
     numPredict: Optional[int] = Field(default_factory=lambda: 4096)

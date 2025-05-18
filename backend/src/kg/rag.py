@@ -10,12 +10,20 @@ from rabbit.events import ChatMessage
 import os
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 
-prompt_template = """
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+default_prefix = """
     You are a helpful research assistant that provides detailed answers about academic papers using retrieved context as well as your own knowledge.
     The context consists of both abstracts and chunks of text from the papers.
     Based on the following context, provide as much detail as possible in response to the question based primarily on the context, but also including any existing knowledge you have of the topic.
     If the context lacks the requested information, provide a reasonable response while acknowledging your limited knowledge of the topic.
     Always explicitly cite the title in the context you used to answer the question, if it is available.
+"""
+
+prompt_template = """
+    {prefix}
 
     Abstracts:
     {abstracts}
@@ -118,7 +126,7 @@ class NomicEmbeddingAdapter(BaseEmbeddings):
         return self.query_prefix + query
     
 
-def query_kg(question, llm_adapter, emb_adapter, kg, prompt_template, k=30):
+def query_kg(question, prefix, llm_adapter, emb_adapter, kg, prompt_template, k=30):
     prepared_question = emb_adapter.prepare_query(question)
 
     doc_query = """
@@ -158,7 +166,8 @@ def query_kg(question, llm_adapter, emb_adapter, kg, prompt_template, k=30):
     retrieved_abstracts = abstract_vector.similarity_search_with_score(prepared_question, k=k)
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_docs])
     abstract_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_abstracts])
-    prompt = prompt_template.format(abstracts=abstract_text, chunks=context_text, question=question)
+    prompt = prompt_template.format(prefix=prefix, abstracts=abstract_text, chunks=context_text, question=question)
+    logger.info(f"Prompt: {prompt}")
 
     for chunk in llm_adapter.stream(prompt):
         yield chunk
@@ -176,6 +185,7 @@ def ask_llm_kg(message:ChatMessage):
 
     for chunk in query_kg(
         message.message, 
+        message.prefix,
         llm_adapter, 
         nomic_adapter, 
         kg, 

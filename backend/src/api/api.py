@@ -21,6 +21,7 @@ import bibtexparser
 from contextlib import asynccontextmanager
 import asyncio
 import logging
+from kg.rag import default_prefix
 from .types import BibTexPaper, BibTexRequest
 from ollama import Client
 from langchain_ollama.llms import OllamaLLM
@@ -192,6 +193,11 @@ async def send_chat_message(request: ChatMessage):
     logger.info(f"Received chat message: {request}")
     await publish_message(ChannelType.CHAT_MESSAGE, request)
     return request
+
+@app.get("/chat/prefix/default", tags=["Chat"])
+def get_default_prefix():
+    cleaned = default_prefix.strip()
+    return cleaned
 
 ######################## Documents ########################
 
