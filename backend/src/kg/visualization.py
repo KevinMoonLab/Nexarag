@@ -92,7 +92,7 @@ def generate_plot_from_query(
     else:
         raise Exception(f'color_var must be one of: labels, citationCount, dates. Current value is {color_var}')
     
-def create_plot(model_id, queries, color_var, labels=None, n_docs=10, n_components=.95):
+def create_plot(model_id, queries, color_var, labels=None, n_docs=10, n_components=0.95):
     if labels is None:
         labels = queries
 

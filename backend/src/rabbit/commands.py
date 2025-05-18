@@ -21,9 +21,9 @@ class ClearGraph(BaseModel):
     reason: str
 
 class CreateEmbeddingPlot(BaseModel):
-    model_id: str
     queries: List[str]
     color_var: str
+    model_id: Optional[str] = Field(default="nomic-embed-text:v1.5")
     num_docs: Optional[int] = Field(default=10)
-    num_components: Optional[float] = Field(default=.95)
+    num_components: Optional[float] = Field(default=0.95)
     labels: Optional[List[str]] = None

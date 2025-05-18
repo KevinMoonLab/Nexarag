@@ -155,6 +155,10 @@ export class GraphStore {
         });
     }
 
+    focusNode(id: string) {
+
+    }
+
     getNodeName(n: KnowledgeNode) {
         if (n.label === 'Author') {
             return (n.properties as AuthorData).name;
@@ -261,6 +265,16 @@ export class GraphStore {
 
     getNode(id: string): KnowledgeNode | undefined {
         return this.nodeMap().get(id);
+    }
+
+    setSelectedPaper(id: string) {
+        const paper = this.graph().nodes
+            .filter(n => n.label === 'Paper')
+            .find(p => (p.properties as PaperData).paper_id === id);
+
+        if (paper) {
+            this.selectedNodeKey.set(paper.id);
+        }
     }
 
     addContextMenu(cy: Core) {

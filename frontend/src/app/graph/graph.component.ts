@@ -41,6 +41,20 @@ export class GraphComponent {
       });
     }
 
+    centerNodeEffect = effect(() => {
+      const selection = this.#graphStore.selectedNode();
+      const cy = this.cyCore();
+      if (cy && selection) {
+        const node = cy.getElementById(selection.id);
+        if (node) {
+          cy.elements().unselect();
+          cy.center(node);
+          cy.zoom(3);
+          node.select();
+        }
+      }
+    });
+
     destroyGraph() {
       const cy = this.cyCore();
       if (cy) {
@@ -138,6 +152,21 @@ export class GraphComponent {
               'line-color': '#d3d3d3',
               'curve-style': 'bezier'
             }
+          },
+          {
+            selector: 'node:selected',
+            style: {
+              'border-width': '4px',
+              'border-color': '#ffa500',
+              'overlay-color': '#ffa500',
+              'overlay-padding': '8px',
+              'overlay-opacity': 0.3,
+              'shadow-blur': 10,
+              'shadow-color': '#888',
+              'shadow-opacity': 0.8,
+              'shadow-offset-x': 2,
+              'shadow-offset-y': 2
+            }
           }
         ]
       }
@@ -155,7 +184,7 @@ export class GraphComponent {
         elements: this.cytoscapeGraph(),
         layout: {
             name: 'cose',
-            nodeRepulsion: () => 70000,
+            nodeRepulsion: () => 90000,
         } as CoseLayoutOptions,
         style: this.styleSheet(),
       };
