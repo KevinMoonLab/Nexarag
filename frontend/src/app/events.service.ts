@@ -3,7 +3,7 @@ import { Subject, Observable, BehaviorSubject } from "rxjs";
 import { environment } from "src/environments/environment";
 
 export type Event = {
-    type: 'graph_updated' | 'chat_response' | 'response_completed';
+    type: 'graph_updated' | 'chat_response' | 'response_completed' | 'plot_created';
     body: any;
 }
 

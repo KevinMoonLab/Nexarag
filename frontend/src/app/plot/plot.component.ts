@@ -7,6 +7,13 @@ import Plotly from 'plotly.js-dist-min';
 import { ViewportStore } from '../viewport/viewport.store';
 import { SplitterModule } from 'primeng/splitter';
 import { PlotControlComponent } from "./plot-controls.component";
+import { EventService } from '../events.service';
+
+export type RawPlotData = {
+  embeddings: number[][];
+  labels: string[];
+  paper_ids: string[];
+}
 
 export type PlotData = {
   x: number[];
@@ -87,6 +94,17 @@ const defaultPlot: PlotData = {
 export class PlotComponent implements OnInit {
   plotEl = viewChild('plot', { read: ElementRef });
   viewportStore = inject(ViewportStore);
+  #events = inject(EventService);
+  logger = effect(() => console.log('Plot data:', this.plotData()));
+
+  constructor() {
+    this.#events.events$.subscribe((event) => {
+      if (event.type === 'plot_created') {
+        const mappedData = this.transformEmbeddingDataToPlot(event.body as RawPlotData);
+        this.plotData.set(mappedData);
+      }
+    });
+  }
 
   ngOnInit() {
     this.viewportStore.plotResize.subscribe(() => {
@@ -103,7 +121,7 @@ export class PlotComponent implements OnInit {
       }, 30);
     }
   }
-  plotData = signal(defaultPlot)
+  plotData = signal<PlotData>(defaultPlot);
   plotlyData = computed(() => ({
     data: [{
       x: this.plotData().x,
@@ -121,4 +139,32 @@ export class PlotComponent implements OnInit {
       responsive: true
     }
   }));
+
+  private transformEmbeddingDataToPlot(data: RawPlotData): PlotData {
+    const x = data.embeddings.map(e => e[0]);
+    const y = data.embeddings.map(e => e[1]);
+  
+    const categories = Array.from(new Set(data.labels));
+    const categoryIndices = data.labels.map(label => categories.indexOf(label));
+  
+    return {
+      x,
+      y,
+      nodeIds: data.paper_ids,
+      marker: {
+        color: categoryIndices,
+        colorscale: 'Category10', // Plotly categorical scale
+        size: 10,
+        showscale: true,
+        colorbar: {
+          title: 'Label',
+          tickvals: categories.map((_, i) => i),
+          ticktext: categories,
+        }
+      },
+      title: 'PCA of Abstract Embeddings',
+      xTitle: 'Principal Component 1',
+      yTitle: 'Principal Component 2',
+    };
+  }
 }

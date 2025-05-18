@@ -1,9 +1,11 @@
 import asyncio
 import logging
 from rabbit import publish_message, subscribe_to_queue, ChannelType
-from rabbit.events import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated, GraphUpdated
+from rabbit.events import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated, GraphUpdated, EmbeddingPlotCreated
+from rabbit.commands import CreateEmbeddingPlot
 from kg.embeddings import init_graph, create_document_embeddings, create_abstract_embeddings
 from kg.rag import ask_llm_kg
+from kg.visualization import create_plot
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -13,6 +15,12 @@ async def ask_kg(message: ChatMessage, cb, complete):
     for chunk in ask_llm_kg(message):
         await cb(chunk)
     await complete()
+
+async def handle_plot_request(message: CreateEmbeddingPlot):
+    logger.info(f"Received plot request: {message}")
+    embeddings, labels, paper_ids = create_plot(message.model_id, message.queries, message.color_var, message.labels, message.num_docs, message.num_components)
+    plot_evt = EmbeddingPlotCreated.from_numpy(embeddings, labels, paper_ids)
+    await publish_message(ChannelType.EMBEDDING_PLOT_CREATED, plot_evt)
 
 async def handle_graph_update(message: GraphUpdated):
     logger.info(f"Received graph update: {message}")
@@ -38,6 +46,7 @@ async def main():
         subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message, ChatMessage),
         subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, create_document_embeddings, DocumentGraphUpdated),
         subscribe_to_queue(ChannelType.GRAPH_UPDATED, handle_graph_update, GraphUpdated),
+        subscribe_to_queue(ChannelType.EMBEDDING_PLOT_REQUESTED, handle_plot_request, CreateEmbeddingPlot),
     )
 
 if __name__ == "__main__":

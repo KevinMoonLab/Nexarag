@@ -19,6 +19,20 @@ class ChatMessage(BaseModel):
     temperature: Optional[float] = Field(default_factory=lambda: 0.5)
     model: Optional[str] = Field(default_factory=lambda: "gemma3:1b")
 
+class EmbeddingPlotCreated(BaseModel):
+    embeddings: List[List[float]]
+    labels: List[str]
+    paper_ids: List[str]
+
+    @classmethod
+    def from_numpy(cls, embeddings_np, labels, paper_id_chunks):
+        paper_ids = [pid for chunk in paper_id_chunks for pid in chunk.tolist()]
+        return cls(
+            embeddings=embeddings_np.tolist(),
+            labels=labels,
+            paper_ids=paper_ids
+        )
+
 class ChatResponse(BaseModel):
     message: str
     chatId: str
@@ -42,11 +56,3 @@ class DocumentsCreated(BaseModel):
 
 class DocumentUploaded(BaseModel):
     id: str
-
-class EmbeddingPlotCreated(BaseModel):
-    x: List[float]
-    y: List[float]
-    color: List[str]
-    title: str
-    xlabel: str
-    ylabel: str

@@ -64,7 +64,8 @@ import { ChatMessage, ChatResponse, ModelDetails } from "./types";
     #messageSubject = new Subject<ChatMessage>();
 
     // Models
-    models = signal([] as ModelDetails[]);
+    allModels = signal([] as ModelDetails[]);
+    models = computed(() => this.allModels().filter(m => !m.model.includes('nomic')));
     #updateModelsSubject = new Subject<void>();
     selectedModel = signal('');
   
@@ -84,7 +85,7 @@ import { ChatMessage, ChatResponse, ModelDetails } from "./types";
       this.#updateModelsSubject.pipe(
         switchMap(this.getModels.bind(this))
       ).subscribe((models) => {
-        this.models.set(models);
+        this.allModels.set(models);
       });
 
       this.getDefaultPrefix()

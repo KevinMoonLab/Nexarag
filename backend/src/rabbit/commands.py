@@ -21,7 +21,9 @@ class ClearGraph(BaseModel):
     reason: str
 
 class CreateEmbeddingPlot(BaseModel):
+    model_id: str
     queries: List[str]
     color_var: str
-    num_docs: int
-    n_components: float  
+    num_docs: Optional[int] = Field(default=10)
+    num_components: Optional[float] = Field(default=.95)
+    labels: Optional[List[str]] = None

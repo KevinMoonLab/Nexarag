@@ -7,8 +7,11 @@ from rabbit.commands import (
     AddPapersByTitle, ClearGraph, PaperTitleWithYear
 )
 from rabbit.events import (
-    GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated
+    GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, 
+    DocumentsCreated, EmbeddingPlotCreated
 )
+
+from rabbit.commands import CreateEmbeddingPlot
 from scholar.api import relevance_search
 from scholar.models import Paper
 from scholar.util import retry
@@ -50,12 +53,16 @@ async def handle_response_completed(message: ResponseCompleted):
     logger.info(f"Response completed: {message.responseId}")
     await manager.broadcast("response_completed", message.model_dump())
 
+async def handle_plot_created(message: EmbeddingPlotCreated):
+    await manager.broadcast("plot_created", message.model_dump())
+
 async def subscribe_to_rabbitmq():
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
         subscribe_to_queue(ChannelType.GRAPH_UPDATED, handle_update_result, GraphUpdated),
         subscribe_to_queue(ChannelType.CHAT_RESPONSE_CREATED, handle_chat_response, ChatResponse),
-        subscribe_to_queue(ChannelType.RESPONSE_COMPLETED, handle_response_completed, ResponseCompleted)
+        subscribe_to_queue(ChannelType.RESPONSE_COMPLETED, handle_response_completed, ResponseCompleted),
+        subscribe_to_queue(ChannelType.EMBEDDING_PLOT_CREATED, handle_plot_created, EmbeddingPlotCreated)
     )
 
 @asynccontextmanager
@@ -236,3 +243,9 @@ def ask_ollama_model(model:str, question:str):
     llm = OllamaLLM(model=model, base_url=ollama_base_url)
     response = llm.invoke(question)
     return response
+
+######################## Visualization ########################
+@app.post("/viz/plot/", tags=["Visualizations"])
+async def create_plot(cmd: CreateEmbeddingPlot):
+    await publish_message(ChannelType.EMBEDDING_PLOT_REQUESTED, cmd)
+    return cmd

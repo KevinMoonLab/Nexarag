@@ -27,6 +27,8 @@ class ChannelType(Enum):
     CHAT_RESPONSE_CREATED = auto()
     DOCUMENTS_CREATED = auto()
     DOCUMENT_GRAPH_UPDATED = auto()
+    EMBEDDING_PLOT_REQUESTED = auto()
+    EMBEDDING_PLOT_CREATED = auto()
 
 def serialize_message(message: BaseModel) -> bytes:
     return message.json().encode("utf-8")
