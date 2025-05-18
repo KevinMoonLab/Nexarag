@@ -14,7 +14,7 @@ from scholar.models import Paper
 from scholar.util import retry
 from rabbit import publish_message, ChannelType, check_connection as check_rabbit_connection, subscribe_to_queue
 from .upload import upload_many
-from .util import transform_for_cytoscape
+from .util import transform_for_cytoscape, transform_bibtex_for_cytoscape
 from fastapi.middleware.cors import CORSMiddleware
 from .sockets import ConnectionManager
 import bibtexparser
@@ -158,7 +158,7 @@ async def add_papers_bibtex(req: BibTexRequest):
     message = AddPapersByTitle(papers=[PaperTitleWithYear(title=p.title, year=p.year) for p in papers])
     await publish_message(ChannelType.ADD_PAPER_BY_TITLE, message)
 
-    return papers
+    return transform_bibtex_for_cytoscape(papers)
 
 @app.post("/papers/citations/add", tags=["Papers"])
 async def add_citations(paper_ids: List[str]):

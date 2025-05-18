@@ -136,7 +136,7 @@ async def add_citations(paper_ids):
     all_citations = []
     for paper_id in paper_ids:
         citations = retry(get_citations, paper_id)
-        citation_ids = [reference.paper_id for reference in citations]
+        citation_ids = [reference.paperId for reference in citations]
         all_citations.extend(citation_ids)
 
         for citation_id in citation_ids:
@@ -162,7 +162,7 @@ async def add_references(paper_ids):
     # Add citations to paper
     for paper_id in paper_ids:
         references = get_references(paper_id)
-        reference_ids = [reference.paper_id for reference in references]
+        reference_ids = [reference.paperId for reference in references]
         
         # Add to graph
         await create_paper_graph(reference_ids)

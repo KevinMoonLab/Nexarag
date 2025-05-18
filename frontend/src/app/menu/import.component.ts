@@ -10,6 +10,8 @@ import { ToastService } from '../toast/toast.service';
 import { TabsModule } from 'primeng/tabs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
+import { GraphStore } from '../graph/graph.store';
+import { KnowledgeGraph } from '../graph/types';
 
 
 @Component({
@@ -38,6 +40,7 @@ import { environment } from 'src/environments/environment';
 })
 export class ImportComponent {
   toastService = inject(ToastService);
+  graphStore = inject(GraphStore);
   http = inject(HttpClient);
   
   bibtexData = model();
@@ -48,10 +51,12 @@ export class ImportComponent {
 
   submit() {
     const uri = environment.apiBaseUrl + "/papers/bibtex";
-    this.http.post<any[]>(uri, { bibtex: this.bibtexData() })
+    this.http.post<KnowledgeGraph>(uri, { bibtex: this.bibtexData() })
       .subscribe(res => {
         this.clear();
-        this.toastService.show(`Successfully added ${res.length} papers.`);
+        console.log(res);
+        this.graphStore.addNodes(res.nodes);
+        this.toastService.show(`Successfully added ${res.nodes.length} papers.`);
       });
   }
 }

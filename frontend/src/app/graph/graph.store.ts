@@ -24,8 +24,6 @@ export class GraphStore {
     searchTerm = signal('');
     weightNodes = signal(false);
 
-    logger = effect(() => console.log(this.graph()))
-
     filteredGraph = computed(() => {
         const selectedNodeTypes = this.selectedDisplayFilters();
         const searchTerm = this.searchTerm();
@@ -167,6 +165,7 @@ export class GraphStore {
     constructor() {
         this.fetchGraphSubject.pipe(switchMap(() => this.fetchGraphFromBackend()))
             .subscribe((graph) => {
+                console.log('Graph fetched from backend:', graph);
                 this.graph.set(graph);
             });
 
@@ -188,6 +187,12 @@ export class GraphStore {
     private fetchGraphFromBackend(): Observable<KnowledgeGraph> {
         const url = `${environment.apiBaseUrl}/graph/get/`;
         return this.http.get<KnowledgeGraph>(url);
+    }
+
+    public addNodes(nodes: KnowledgeNode[]) {
+        console.log('Adding nodes:', nodes);
+        console.log('Current nodes:', this.graph().nodes);
+        this.graph.update((prevGraph) => ({ ...prevGraph, nodes: [...prevGraph.nodes, ...nodes] }));
     }
 
     graphNodeRepresentations = computed(() => {

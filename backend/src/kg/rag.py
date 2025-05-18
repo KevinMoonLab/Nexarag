@@ -10,10 +10,6 @@ from rabbit.events import ChatMessage
 import os
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 
-import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 default_prefix = """
     You are a helpful research assistant that provides detailed answers about academic papers using retrieved context as well as your own knowledge.
     The context consists of both abstracts and chunks of text from the papers.
@@ -167,7 +163,6 @@ def query_kg(question, prefix, llm_adapter, emb_adapter, kg, prompt_template, k=
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_docs])
     abstract_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_abstracts])
     prompt = prompt_template.format(prefix=prefix, abstracts=abstract_text, chunks=context_text, question=question)
-    logger.info(f"Prompt: {prompt}")
 
     for chunk in llm_adapter.stream(prompt):
         yield chunk
