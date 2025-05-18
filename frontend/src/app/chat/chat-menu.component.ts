@@ -12,7 +12,7 @@ import { ChatSettingsComponent } from './chat-settings.component';
   selector: 'app-chat-menu',
   imports: [CommonModule, ButtonModule, DividerModule, ChatComponent, ChatSettingsComponent],
   template: `
-    <div class="h-screen bg-gray-800 text-white flex transition-all duration-300" [ngClass]="{'w-[40rem]': expanded(), 'w-16': !expanded()}">
+    <div class="h-screen bg-gray-800 text-white flex transition-all duration-300" [ngClass]="{'w-[50rem]': expanded(), 'w-16': !expanded()}">
       
       <div class="w-16 flex flex-col items-center border-r border-gray-700 p-2">
         <p-button icon="{{ icon() }}" class="p-button-rounded p-button-text text-white mt-4" (click)="toggleMenu()"></p-button>
