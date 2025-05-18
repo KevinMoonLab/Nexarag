@@ -109,6 +109,22 @@ export class GraphStore {
             selector: 'node',
             onClickFunction: () => this.showAddDocuments(),
             show: true,
+        },
+        {
+            id: 'refresh-graph',
+            content: 'Refresh Graph',
+            tooltipText: 'Reload graph from backend',
+            selector: 'core',
+            onClickFunction: () => this.fetchGraph(),
+            show: true,
+        },
+        {
+            id: 'bulk-add-documents',
+            content: 'Upload Documents',
+            tooltipText: 'Add document text to the graph',
+            selector: 'core',
+            onClickFunction: () => this.fetchGraph(),
+            show: true,
         }
     ]
 
@@ -190,8 +206,6 @@ export class GraphStore {
     }
 
     public addNodes(nodes: KnowledgeNode[]) {
-        console.log('Adding nodes:', nodes);
-        console.log('Current nodes:', this.graph().nodes);
         this.graph.update((prevGraph) => ({ ...prevGraph, nodes: [...prevGraph.nodes, ...nodes] }));
     }
 
@@ -264,6 +278,13 @@ export class GraphStore {
           const id = event.target.data()?.id;
           this.selectedNodeKey.set(id);
           ctx.showMenuItem('show-node');
+        });
+
+        cy.on('cxttap', (event) => {
+            if (event.target === cy) {
+                ctx.showMenuItem('bulk-add-documents');
+                ctx.showMenuItem('refresh-graph');
+            }
         });
     }
 
