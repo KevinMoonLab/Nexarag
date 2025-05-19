@@ -6,12 +6,13 @@ import { ButtonModule } from 'primeng/button';
 import { ChatService } from './chat.service';
 import { DividerModule } from 'primeng/divider';
 import { ChatComponent } from "./chat.component";
+import { ChatSettingsComponent } from './chat-settings.component';
 
 @Component({
   selector: 'app-chat-menu',
-  imports: [CommonModule, ButtonModule, DividerModule, ChatComponent],
+  imports: [CommonModule, ButtonModule, DividerModule, ChatComponent, ChatSettingsComponent],
   template: `
-    <div class="h-screen bg-gray-800 text-white flex transition-all duration-300" [ngClass]="{'w-[40rem]': expanded(), 'w-16': !expanded()}">
+    <div class="h-screen bg-gray-800 text-white flex transition-all duration-300" [ngClass]="{'w-[50rem]': expanded(), 'w-16': !expanded()}">
       
       <div class="w-16 flex flex-col items-center border-r border-gray-700 p-2">
         <p-button icon="{{ icon() }}" class="p-button-rounded p-button-text text-white mt-4" (click)="toggleMenu()"></p-button>
@@ -27,8 +28,7 @@ import { ChatComponent } from "./chat.component";
           <app-chat />
         </ng-container>
         <ng-container *ngIf="selectedTab() === 1">
-          <p class="text-lg">Chat History</p>
-          <p-divider />
+          <app-chat-settings />
         </ng-container>
       </div>
 
@@ -43,8 +43,8 @@ export class ChatMenuComponent {
   
     icon = computed(() => this.expanded() ? 'pi pi-angle-right' : 'pi pi-angle-left');
     tabs = [
-      { icon: 'pi pi-plus', label: 'New Conversation' },
-      { icon: 'pi pi-history', label: 'History' }
+      { icon: 'pi pi-comments', label: 'New Conversation' },
+      { icon: 'pi pi-cog', label: 'Settings' }
     ];
   
     toggleMenu() {

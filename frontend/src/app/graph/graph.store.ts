@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { computed, inject, Injectable, signal } from "@angular/core";
+import { computed, effect, inject, Injectable, signal } from "@angular/core";
 import { Observable, Subject, switchMap } from "rxjs";
 import { AuthorData, Edge, JournalData, KnowledgeGraph, KnowledgeNode, PaperData, PublicationVenueData } from "./types";
 import { environment } from "src/environments/environment";
@@ -109,7 +109,23 @@ export class GraphStore {
             selector: 'node',
             onClickFunction: () => this.showAddDocuments(),
             show: true,
-        }
+        },
+        // {
+        //     id: 'refresh-graph',
+        //     content: 'Refresh Graph',
+        //     tooltipText: 'Reload graph from backend',
+        //     selector: 'core',
+        //     onClickFunction: () => this.fetchGraph(),
+        //     show: true,
+        // },
+        // {
+        //     id: 'bulk-add-documents',
+        //     content: 'Upload Documents',
+        //     tooltipText: 'Add document text to the graph',
+        //     selector: 'core',
+        //     onClickFunction: () => this.fetchGraph(),
+        //     show: true,
+        // }
     ]
 
     showAddDocuments() {
@@ -121,7 +137,7 @@ export class GraphStore {
         if (!selectedNode) return;
         if (selectedNode.label !== 'Paper') return;
         const paperId = (selectedNode.properties as PaperData).paper_id;
-        const url = `${environment.apiBaseUrl}/papers/citations/add`;
+        const url = `${environment.apiBaseUrl}/papers/citations/add/`;
         this.http.post(url, [paperId]).subscribe(() => {
             this.toastService.show('Building citation graph...');
         });
@@ -132,11 +148,15 @@ export class GraphStore {
         if (!selectedNode) return;
         if (selectedNode.label !== 'Paper') return;
         const paperId = (selectedNode.properties as PaperData).paper_id;
-        const url = `${environment.apiBaseUrl}/papers/references/add`;
+        const url = `${environment.apiBaseUrl}/papers/references/add/`;
         this.http.post(url, [paperId]).subscribe(() => {
             this.toastService.show('Building reference graph...');
 
         });
+    }
+
+    focusNode(id: string) {
+
     }
 
     getNodeName(n: KnowledgeNode) {
@@ -165,6 +185,7 @@ export class GraphStore {
     constructor() {
         this.fetchGraphSubject.pipe(switchMap(() => this.fetchGraphFromBackend()))
             .subscribe((graph) => {
+                console.log('Graph fetched from backend:', graph);
                 this.graph.set(graph);
             });
 
@@ -185,7 +206,12 @@ export class GraphStore {
 
     private fetchGraphFromBackend(): Observable<KnowledgeGraph> {
         const url = `${environment.apiBaseUrl}/graph/get/`;
+        console.log('fetch graph url', url);
         return this.http.get<KnowledgeGraph>(url);
+    }
+
+    public addNodes(nodes: KnowledgeNode[]) {
+        this.graph.update((prevGraph) => ({ ...prevGraph, nodes: [...prevGraph.nodes, ...nodes] }));
     }
 
     graphNodeRepresentations = computed(() => {
@@ -242,6 +268,16 @@ export class GraphStore {
         return this.nodeMap().get(id);
     }
 
+    setSelectedPaper(id: string) {
+        const paper = this.graph().nodes
+            .filter(n => n.label === 'Paper')
+            .find(p => (p.properties as PaperData).paper_id === id);
+
+        if (paper) {
+            this.selectedNodeKey.set(paper.id);
+        }
+    }
+
     addContextMenu(cy: Core) {
         const ctx = cy.contextMenus({
           menuItems: this.menuItems,
@@ -258,6 +294,13 @@ export class GraphStore {
           this.selectedNodeKey.set(id);
           ctx.showMenuItem('show-node');
         });
+
+        // cy.on('cxttap', (event) => {
+        //     if (event.target === cy) {
+        //         ctx.showMenuItem('bulk-add-documents');
+        //         ctx.showMenuItem('refresh-graph');
+        //     }
+        // });
     }
 
 

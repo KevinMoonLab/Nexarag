@@ -1,5 +1,6 @@
 import uuid
-import time
+from .types import BibTexPaper
+from typing import List
 
 def create_id():
     return str(uuid.uuid4())
@@ -40,3 +41,19 @@ def transform_for_cytoscape(data):
         })
 
     return {"nodes": nodes, "edges": edges}
+
+def transform_bibtex_for_cytoscape(data: List[BibTexPaper]):
+    nodes = []
+
+    for entry in data:
+        node_id = create_id()
+        nodes.append({
+            "id": node_id,
+            "label": 'Paper',
+            "properties": {
+                "title": entry.title,
+                "year": entry.year
+            }
+        })
+
+    return { "nodes": nodes, "edges": [] }

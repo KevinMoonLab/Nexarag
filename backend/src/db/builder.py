@@ -45,8 +45,8 @@ async def create_paper_graph(paper_ids: List[str]):
 
         # Record paper-author relationships and collect author IDs
         for author in paper_data.authors:
-            all_author_ids.add(author.authorId)
-            paper_author_relations.append((paper_data.paperId, author.authorId))
+            all_author_ids.add(author.author_id)
+            paper_author_relations.append((paper_data.paperId, author.author_id))
 
         # Process Journal data & relationships
         if paper_data.journal and paper_data.journal.name:
@@ -152,6 +152,9 @@ async def add_citations(paper_ids):
         reference = await Paper.nodes.get_or_none(paper_id=citation_id)
         if paper and reference:
             await paper.citations.connect(reference)
+    
+    # Return citation ids
+    return list(paper_dict.keys())
 
 async def add_references(paper_ids):
     # Create paper graph
@@ -177,3 +180,6 @@ async def add_references(paper_ids):
         reference = await Paper.nodes.get(paper_id=reference_id)
         if paper and reference:
             await paper.references.connect(reference)
+
+    # Return reference ids
+    return list(paper_dict.keys())

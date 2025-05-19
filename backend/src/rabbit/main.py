@@ -1,5 +1,5 @@
 import os
-from aio_pika import connect_robust, Message
+from aio_pika import connect_robust, Message, ExchangeType, Channel
 import logging
 from enum import Enum, auto
 import json
@@ -15,6 +15,7 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 
 class ChannelType(Enum):
     ADD_PAPER = auto()
+    ADD_PAPER_BY_TITLE = auto()
     ADD_REFERENCES = auto()
     ADD_CITATIONS = auto()
     GRAPH_UPDATED = auto()
@@ -26,6 +27,8 @@ class ChannelType(Enum):
     CHAT_RESPONSE_CREATED = auto()
     DOCUMENTS_CREATED = auto()
     DOCUMENT_GRAPH_UPDATED = auto()
+    EMBEDDING_PLOT_REQUESTED = auto()
+    EMBEDDING_PLOT_CREATED = auto()
 
 def serialize_message(message: BaseModel) -> bytes:
     return message.json().encode("utf-8")
@@ -52,46 +55,84 @@ async def check_connection():
         logger.error(f"Failed to connect to RabbitMQ: {str(e)}")
         return False
 
+EXCHANGE_SUFFIX = ".broadcast"
+
+
+def exchange_name(channel_type: ChannelType) -> str:
+    """Fan-out exchange name derived from the enum value."""
+    return f"{channel_type.name}{EXCHANGE_SUFFIX}"
+
+
+async def _get_channel() -> Channel:
+    connection = await create_connection()
+    return await connection.channel()
+
 async def publish_message(channel_type: ChannelType, message: BaseModel):
-    """Publish a message to a specified queue."""
+    # Get the connection
     connection = await create_connection()
     async with connection:
         channel = await connection.channel()
-        await channel.declare_queue(channel_type.name, durable=True)
-        await channel.default_exchange.publish(
-            Message(body=serialize_message(message)),
-            routing_key=channel_type.name,
+        exchange = await channel.declare_exchange(
+            exchange_name(channel_type),
+            ExchangeType.FANOUT,
+            durable=True,
         )
+        await exchange.publish(
+            Message(body=serialize_message(message)),
+            routing_key="",
+        )
+
 
 async def get_publisher(channel_type: ChannelType):
-    """
-    Return a reusable publisher function for the specified queue.
-    The returned function can be used to publish multiple messages without creating a new connection each time.
-    """
     connection = await create_connection()
-    queue_name = channel_type.name
     channel = await connection.channel()
-    await channel.declare_queue(queue_name, durable=True)
-    async def publish_message(message: BaseModel):
-        await channel.default_exchange.publish(
+    exchange = await channel.declare_exchange(
+        exchange_name(channel_type),
+        ExchangeType.FANOUT,
+        durable=True,
+    )
+
+    async def _publish(message: BaseModel):
+        await exchange.publish(
             Message(body=serialize_message(message)),
-            routing_key=queue_name,
+            routing_key="",
         )
 
-    return publish_message, connection
+    return _publish, connection
+
 
 async def subscribe_to_queue(
     channel_type: ChannelType,
     callback: Callable[[BaseModel], Awaitable[None]],
     model: Type[BaseModel],
-):
-    queue_name = channel_type.name
+    *,
+    queue_name: str | None = None,
+    durable: bool = False,
+) -> None:
     connection = await create_connection()
+
     async with connection:
         channel = await connection.channel()
-        queue = await channel.declare_queue(queue_name, durable=True)
+
+        # Declare fan out exchange
+        exchange = await channel.declare_exchange(
+            exchange_name(channel_type),
+            ExchangeType.FANOUT,
+            durable=True,
+        )
+
+        # Create private queue
+        if queue_name is None:
+            queue = await channel.declare_queue(exclusive=True)
+        else:
+            queue = await channel.declare_queue(queue_name, durable=durable)
+
+        # Bind queue
+        await queue.bind(exchange)
+
+        # Consume messages
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
                 async with message.process():
-                    deserialized_message = deserialize_message(message.body, model)
-                    await callback(deserialized_message)
+                    data = deserialize_message(message.body, model)
+                    await callback(data)

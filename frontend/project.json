@@ -26,9 +26,14 @@
         "styles": [
           "./src/styles.scss", 
           "src/styles/tailwind.css", 
-          "node_modules/cytoscape-context-menus/cytoscape-context-menus.css"
+          "node_modules/cytoscape-context-menus/cytoscape-context-menus.css",
+          "node_modules/katex/dist/katex.min.css"
         ],
-        "scripts": []
+        "scripts": [
+          "node_modules/katex/dist/katex.min.js",
+          "node_modules/katex/dist/contrib/auto-render.min.js",
+          "node_modules/clipboard/dist/clipboard.min.js"
+        ]
       },
       "configurations": {
         "production": {
@@ -42,12 +47,12 @@
             {
               "type": "initial",
               "maximumWarning": "500kb",
-              "maximumError": "5mb"
+              "maximumError": "10mb"
             },
             {
               "type": "anyComponentStyle",
               "maximumWarning": "4kb",
-              "maximumError": "8kb"
+              "maximumError": "10mb"
             }
           ],
           "outputHashing": "all"

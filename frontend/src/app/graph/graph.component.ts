@@ -5,31 +5,21 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { GraphStore } from './graph.store';
 import { Core, CoseLayoutOptions, CytoscapeOptions, StylesheetJson } from 'cytoscape';
-import cytoscape from 'cytoscape';
-import coseBilkent from 'cytoscape-cose-bilkent';
 import { KnowledgeNode } from './types';
 import { NodeDialogComponent } from './node-dialog.component';
-import contextMenus from 'cytoscape-context-menus';
-import { MenuComponent } from "../menu/menu.component";
-import { ChatMenuComponent } from "../chat/chat-menu.component";
 import { DocumentDialogComponent } from "./doc-dialog.component";
+import cytoscape from 'cytoscape';
+import coseBilkent from 'cytoscape-cose-bilkent';
+import contextMenus from 'cytoscape-context-menus';
 
 cytoscape.use(coseBilkent);
 cytoscape.use(contextMenus);
 
 @Component({
   selector: 'app-graph',
-  imports: [CommonModule, InputTextModule, FormsModule, ButtonModule, MenuComponent, NodeDialogComponent, ChatMenuComponent, DocumentDialogComponent],
+  imports: [CommonModule, InputTextModule, FormsModule, ButtonModule, NodeDialogComponent, DocumentDialogComponent],
   template: `
-        <div class="relative h-screen w-full flex">
-          <div class="absolute top-0 left-0 h-full z-50">
-            <app-menu />
-          </div>
-          <div class="absolute top-0 right-0 h-full z-50">
-            <app-chat-menu />
-          </div>
-          <div class="flex-grow h-screen w-full" #graph id="graph"></div>
-        </div>
+        <div class="flex-grow h-screen w-full" #graph id="graph"></div>
         <app-node-dialog />
         <app-doc-dialog />
     `,
@@ -50,6 +40,20 @@ export class GraphComponent {
         this.cyCore();
       });
     }
+
+    centerNodeEffect = effect(() => {
+      const selection = this.#graphStore.selectedNode();
+      const cy = this.cyCore();
+      if (cy && selection) {
+        const node = cy.getElementById(selection.id);
+        if (node) {
+          cy.elements().unselect();
+          cy.center(node);
+          cy.zoom(3);
+          node.select();
+        }
+      }
+    });
 
     destroyGraph() {
       const cy = this.cyCore();
@@ -124,6 +128,21 @@ export class GraphComponent {
               'line-color': '#d3d3d3',
               'curve-style': 'bezier'
             }
+          },
+          {
+            selector: 'node:selected',
+            style: {
+              'border-width': '4px',
+              'border-color': '#ffa500',
+              'overlay-color': '#ffa500',
+              'overlay-padding': '8px',
+              'overlay-opacity': 0.3,
+              'shadow-blur': 10,
+              'shadow-color': '#888',
+              'shadow-opacity': 0.8,
+              'shadow-offset-x': 2,
+              'shadow-offset-y': 2
+            }
           }
         ];
       } else {
@@ -148,6 +167,21 @@ export class GraphComponent {
               'line-color': '#d3d3d3',
               'curve-style': 'bezier'
             }
+          },
+          {
+            selector: 'node:selected',
+            style: {
+              'border-width': '4px',
+              'border-color': '#ffa500',
+              'overlay-color': '#ffa500',
+              'overlay-padding': '8px',
+              'overlay-opacity': 0.3,
+              'shadow-blur': 10,
+              'shadow-color': '#888',
+              'shadow-opacity': 0.8,
+              'shadow-offset-x': 2,
+              'shadow-offset-y': 2
+            }
           }
         ]
       }
@@ -165,7 +199,7 @@ export class GraphComponent {
         elements: this.cytoscapeGraph(),
         layout: {
             name: 'cose',
-            nodeRepulsion: () => 70000,
+            nodeRepulsion: () => 90000,
         } as CoseLayoutOptions,
         style: this.styleSheet(),
       };

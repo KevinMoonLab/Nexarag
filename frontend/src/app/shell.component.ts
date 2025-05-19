@@ -1,13 +1,13 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GraphComponent } from './graph/graph.component';
 import { ToastComponent } from './toast/toast.component';
+import { ViewportComponent } from './viewport/viewport.component';
 
 @Component({
   selector: 'app-shell',
-  imports: [CommonModule, GraphComponent, ToastComponent],
+  imports: [CommonModule, ToastComponent, ViewportComponent],
   template: `
-    <app-graph class="h-screen w-full" />
+    <app-viewport class="h-screen w-full" />
     <app-toast />
   `,
   styles: [],

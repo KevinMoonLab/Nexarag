@@ -3,11 +3,17 @@ import logging
 from db.util import load_kg_db
 from db.commands import clear_graph
 from rabbit import publish_message, subscribe_to_queue, ChannelType
-from rabbit.schemas import AddPaperCitations, AddPaperReferences, DocumentGraphUpdated, GraphUpdated, AddPapersById, ClearGraph, ChatMessage, ChatResponse, DocumentsCreated, DocumentCreated
+from rabbit.commands import (
+    AddPaperCitations, AddPaperReferences,  AddPapersById, ClearGraph, AddPapersByTitle
+)
+from rabbit.events import (
+    DocumentGraphUpdated, GraphUpdated, ChatMessage, ChatResponse, DocumentsCreated
+)
 from db.builder import create_paper_graph, add_citations, add_references
 from db.util import neomodel_connect
 from db.chat import create_chat_message, update_chat_response
 from db.docs import add_document_refs
+from scholar.api import search_papers_by_title
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,18 +30,32 @@ async def handle_documents_created(docs: DocumentsCreated):
 
 async def handle_add_papers(message: AddPapersById):
     logger.info(f"Received add paper request: {message}")
-    await create_paper_graph(message.paperIds)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
+    await create_paper_graph(message.paper_ids)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paper_ids))
+
+async def handle_add_papers_by_title(message: AddPapersByTitle):
+    logger.info(f"Received add paper request: {message}")
+    # Query API for papers
+    papers = []
+    for paper in message.papers:
+        res = search_papers_by_title(paper.title, paper.year)
+        if res:
+            papers.append(res)
+
+    # Create graph for each paper
+    paper_ids = [paper.paperId for paper in papers]
+    await create_paper_graph(paper_ids)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=paper_ids))
 
 async def handle_add_references(message: AddPaperReferences):
     logger.info(f"Received add references request: {message}")
-    await add_references(message.paperIds)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
+    references = await add_references(message.paper_ids)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=references))
 
 async def handle_add_citations(message: AddPaperCitations):
     logger.info(f"Received add citations request: {message}")
-    await add_citations(message.paperIds)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paperIds))
+    citations = await add_citations(message.paper_ids)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=citations))
 
 async def handle_clear_graph(message: ClearGraph):
     loader = load_kg_db()
@@ -45,15 +65,15 @@ async def handle_clear_graph(message: ClearGraph):
     logger.info("Graph cleared.")
 
 async def handle_chat_response(message: ChatResponse):
-    logger.info(f"Received chat response: {message}")
     await update_chat_response(message)
     await publish_message(ChannelType.CHAT_RESPONSE_CREATED, message)
 
 
 async def handle_chat_message(message: ChatMessage):
-    logger.info(f"Received chat message: {message}")
+    logger.info(f"Database received chat message: {message}")
     await create_chat_message(message)
     await publish_message(ChannelType.CHAT_MESSAGE_CREATED, message)
+    logger.info(f"Saved chat message: {message}")
 
 async def main():
     logger.info("Initializing Neo4j database...")
@@ -67,6 +87,7 @@ async def main():
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
         subscribe_to_queue(ChannelType.ADD_PAPER, handle_add_papers, AddPapersById),
+        subscribe_to_queue(ChannelType.ADD_PAPER_BY_TITLE, handle_add_papers_by_title, AddPapersByTitle),
         subscribe_to_queue(ChannelType.ADD_CITATIONS, handle_add_citations, AddPaperCitations),
         subscribe_to_queue(ChannelType.ADD_REFERENCES, handle_add_references, AddPaperReferences),
         subscribe_to_queue(ChannelType.CLEAR_GRAPH, handle_clear_graph, ClearGraph),

@@ -2,20 +2,35 @@ from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDiscon
 from typing import List
 from db.util import check_connection as check_neo4j_connection, load_kg_db
 from db.queries import search_papers_by_id, get_all_papers, get_graph
-from rabbit.schemas import AddPaperCitations, AddPaperReferences, AddPapersById, ClearGraph, GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, DocumentsCreated
-from scholar.api import relevance_search, title_search
+from rabbit.commands import (
+    AddPaperCitations, AddPaperReferences, AddPapersById, 
+    AddPapersByTitle, ClearGraph, PaperTitleWithYear
+)
+from rabbit.events import (
+    GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, 
+    DocumentsCreated, EmbeddingPlotCreated
+)
+
+from rabbit.commands import CreateEmbeddingPlot
+from scholar.api import relevance_search
 from scholar.models import Paper
 from scholar.util import retry
 from rabbit import publish_message, ChannelType, check_connection as check_rabbit_connection, subscribe_to_queue
 from .upload import upload_many
-from .util import transform_for_cytoscape
+from .util import transform_for_cytoscape, transform_bibtex_for_cytoscape
 from fastapi.middleware.cors import CORSMiddleware
 from .sockets import ConnectionManager
 import bibtexparser
 from contextlib import asynccontextmanager
 import asyncio
 import logging
+from kg.rag import default_prefix
 from .types import BibTexPaper, BibTexRequest
+from ollama import Client
+from langchain_ollama.llms import OllamaLLM
+import os
+ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+
 
 ######################## Configuration ########################
 
@@ -32,19 +47,22 @@ async def handle_update_result(message: GraphUpdated):
     await manager.broadcast("graph_updated", {})
 
 async def handle_chat_response(message: ChatResponse):
-    logger.info(f"Chat response: {message}")
     await manager.broadcast("chat_response", message.model_dump())
 
 async def handle_response_completed(message: ResponseCompleted):
     logger.info(f"Response completed: {message.responseId}")
     await manager.broadcast("response_completed", message.model_dump())
 
+async def handle_plot_created(message: EmbeddingPlotCreated):
+    await manager.broadcast("plot_created", message.model_dump())
+
 async def subscribe_to_rabbitmq():
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
         subscribe_to_queue(ChannelType.GRAPH_UPDATED, handle_update_result, GraphUpdated),
         subscribe_to_queue(ChannelType.CHAT_RESPONSE_CREATED, handle_chat_response, ChatResponse),
-        subscribe_to_queue(ChannelType.RESPONSE_COMPLETED, handle_response_completed, ResponseCompleted)
+        subscribe_to_queue(ChannelType.RESPONSE_COMPLETED, handle_response_completed, ResponseCompleted),
+        subscribe_to_queue(ChannelType.EMBEDDING_PLOT_CREATED, handle_plot_created, EmbeddingPlotCreated)
     )
 
 @asynccontextmanager
@@ -88,7 +106,7 @@ def welcome():
 
 @app.post("/papers/add/", tags=["Papers"])
 async def add_papers(papers: List[str]):
-    message = AddPapersById(paperIds=papers)
+    message = AddPapersById(paper_ids=papers)
     await publish_message(ChannelType.ADD_PAPER, message)
     return { "message": "Papers added to the queue" }
 
@@ -114,9 +132,9 @@ async def relevance_search_papers(query: str = Query(default=''), manager: Conne
     results = retry(relevance_search, query, cb=lambda e: handle_rate_limit_exceeded(manager, e))
     return results
 
-@app.post("/papers/add", tags=["Papers"])
-async def add_papers_by_id(paperIds: List[str]):
-    message = AddPapersById(paperIds=paperIds)
+@app.post("/papers/add/", tags=["Papers"])
+async def add_papers_by_id(paper_ids: List[str]):
+    message = AddPapersById(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_PAPER, message)
     return { "message": "Papers added to the queue" }
 
@@ -127,15 +145,7 @@ async def get_papers():
         papers = get_all_papers(db)
     return papers
 
-def search_papers_by_title(papers: List[BibTexPaper]) -> List[Paper]:
-    results = []
-    for paper in papers:
-        res = retry(title_search, paper.title, paper.year)
-        if len(res) > 0:
-            results.append(res[0])
-    return results
-
-@app.post("/papers/bibtex", tags=["Papers"])
+@app.post("/papers/bibtex/", tags=["Papers"])
 async def add_papers_bibtex(req: BibTexRequest):
     parser = bibtexparser.bparser.BibTexParser(common_strings=True)
     bib_database = bibtexparser.loads(req.bibtex, parser=parser)
@@ -151,25 +161,21 @@ async def add_papers_bibtex(req: BibTexRequest):
         for entry in bib_database.entries
     ]
 
-    # Query API for papers
-    results = search_papers_by_title(papers)
-
     # Submit for processing
-    message = AddPapersById(paperIds=[r.paperId for r in results])
-    await publish_message(ChannelType.ADD_PAPER, message)
+    message = AddPapersByTitle(papers=[PaperTitleWithYear(title=p.title, year=p.year) for p in papers])
+    await publish_message(ChannelType.ADD_PAPER_BY_TITLE, message)
 
-    return results
+    return transform_bibtex_for_cytoscape(papers)
 
-
-@app.post("/papers/citations/add", tags=["Papers"])
-async def add_citations(paperIds: List[str]):
-    message = AddPaperCitations(paperIds=paperIds)
+@app.post("/papers/citations/add/", tags=["Papers"])
+async def add_citations(paper_ids: List[str]):
+    message = AddPaperCitations(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_CITATIONS, message)
     return { "message": "Citations added to the queue" }
 
-@app.post("/papers/references/add", tags=["Papers"])
-async def add_references(paperIds: List[str]):
-    message = AddPaperReferences(paperIds=paperIds)
+@app.post("/papers/references/add/", tags=["Papers"])
+async def add_references(paper_ids: List[str]):
+    message = AddPaperReferences(paper_ids=paper_ids)
     await publish_message(ChannelType.ADD_REFERENCES, message)
     return { "message": "Citations added to the queue" }
 
@@ -182,7 +188,7 @@ def get_whole_graph():
         graph = get_graph(db)
     return transform_for_cytoscape(graph)
 
-@app.post("/graph/clear", tags=["Graph"])
+@app.post("/graph/clear/", tags=["Graph"])
 async def remove_whole_graph():
     message = ClearGraph(reason="User requested")
     await publish_message(ChannelType.CLEAR_GRAPH, message)
@@ -191,8 +197,14 @@ async def remove_whole_graph():
 ######################## Chat ########################
 @app.post("/chat/send/", tags=["Chat"])
 async def send_chat_message(request: ChatMessage):
+    logger.info(f"Received chat message: {request}")
     await publish_message(ChannelType.CHAT_MESSAGE, request)
     return request
+
+@app.get("/chat/prefix/default/", tags=["Chat"])
+def get_default_prefix():
+    cleaned = default_prefix.strip()
+    return cleaned
 
 ######################## Documents ########################
 
@@ -218,3 +230,22 @@ def test_neo4j_connection():
 async def test_rabbit_connection():
     success = await check_rabbit_connection()
     return { "message": f"Connection {'successful' if success else 'failed'}" }
+
+######################## LLMs ########################
+@app.get("/ollama/list/", tags=["LLMs"])
+def list_ollama_models():
+    client = Client(host=ollama_base_url)
+    models = client.list()
+    return models
+
+@app.get("/ollama/ask/", tags=["LLMs"])
+def ask_ollama_model(model:str, question:str):
+    llm = OllamaLLM(model=model, base_url=ollama_base_url)
+    response = llm.invoke(question)
+    return response
+
+######################## Visualization ########################
+@app.post("/viz/plot/", tags=["Visualizations"])
+async def create_plot(cmd: CreateEmbeddingPlot):
+    await publish_message(ChannelType.EMBEDDING_PLOT_REQUESTED, cmd)
+    return cmd

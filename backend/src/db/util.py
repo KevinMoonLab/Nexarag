@@ -95,32 +95,30 @@ def serialize_relationship(relationship):
     }
 
 def init_schema(tx):
-    # Create unique constraint on paperId
+    # Create unique constraint on paper_id
     tx.run("""
         CREATE CONSTRAINT paper_id_unique IF NOT EXISTS
         FOR (p:Paper)
-        REQUIRE p.paperId IS UNIQUE;
+        REQUIRE p.paper_id IS UNIQUE;
     """)
-    # Create index on paperId
+    # Create index on paper_id
     tx.run("""
         CREATE INDEX paper_id_index IF NOT EXISTS
         FOR (p:Paper)
-        ON (p.paperId);
+        ON (p.paper_id);
     """)
-    # Create unique constraint on authorId
+    # Create unique constraint on author_id
     tx.run("""
         CREATE CONSTRAINT author_id_unique IF NOT EXISTS
         FOR (a:Author)
-        REQUIRE a.authorId IS UNIQUE;
+        REQUIRE a.author_id IS UNIQUE;
     """)
-    # Create index on authorId
+    # Create index on author_id
     tx.run("""
         CREATE INDEX author_id_index IF NOT EXISTS
         FOR (a:Author)
-        ON (a.authorId);
+        ON (a.author_id);
     """)
-
-
 
 def initialize(kg):
     with kg.session() as session:
