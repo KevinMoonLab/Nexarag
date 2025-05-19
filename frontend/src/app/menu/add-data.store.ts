@@ -34,7 +34,7 @@ export class AddDataStore {
     }
 
     addPapersToGraph(paperIds: string[]) {
-        return this.#http.post(`${environment.apiBaseUrl}/papers/add`, paperIds);
+        return this.#http.post(`${environment.apiBaseUrl}/papers/add/`, paperIds);
     }
 
     clearResults() {

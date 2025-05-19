@@ -137,7 +137,7 @@ export class GraphStore {
         if (!selectedNode) return;
         if (selectedNode.label !== 'Paper') return;
         const paperId = (selectedNode.properties as PaperData).paper_id;
-        const url = `${environment.apiBaseUrl}/papers/citations/add`;
+        const url = `${environment.apiBaseUrl}/papers/citations/add/`;
         this.http.post(url, [paperId]).subscribe(() => {
             this.toastService.show('Building citation graph...');
         });
@@ -148,7 +148,7 @@ export class GraphStore {
         if (!selectedNode) return;
         if (selectedNode.label !== 'Paper') return;
         const paperId = (selectedNode.properties as PaperData).paper_id;
-        const url = `${environment.apiBaseUrl}/papers/references/add`;
+        const url = `${environment.apiBaseUrl}/papers/references/add/`;
         this.http.post(url, [paperId]).subscribe(() => {
             this.toastService.show('Building reference graph...');
 
@@ -206,6 +206,7 @@ export class GraphStore {
 
     private fetchGraphFromBackend(): Observable<KnowledgeGraph> {
         const url = `${environment.apiBaseUrl}/graph/get/`;
+        console.log('fetch graph url', url);
         return this.http.get<KnowledgeGraph>(url);
     }
 

@@ -50,7 +50,7 @@ export class ImportComponent {
   }
 
   submit() {
-    const uri = environment.apiBaseUrl + "/papers/bibtex";
+    const uri = environment.apiBaseUrl + "/papers/bibtex/";
     this.http.post<KnowledgeGraph>(uri, { bibtex: this.bibtexData() })
       .subscribe(res => {
         this.clear();
