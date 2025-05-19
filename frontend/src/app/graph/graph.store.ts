@@ -110,22 +110,22 @@ export class GraphStore {
             onClickFunction: () => this.showAddDocuments(),
             show: true,
         },
-        {
-            id: 'refresh-graph',
-            content: 'Refresh Graph',
-            tooltipText: 'Reload graph from backend',
-            selector: 'core',
-            onClickFunction: () => this.fetchGraph(),
-            show: true,
-        },
-        {
-            id: 'bulk-add-documents',
-            content: 'Upload Documents',
-            tooltipText: 'Add document text to the graph',
-            selector: 'core',
-            onClickFunction: () => this.fetchGraph(),
-            show: true,
-        }
+        // {
+        //     id: 'refresh-graph',
+        //     content: 'Refresh Graph',
+        //     tooltipText: 'Reload graph from backend',
+        //     selector: 'core',
+        //     onClickFunction: () => this.fetchGraph(),
+        //     show: true,
+        // },
+        // {
+        //     id: 'bulk-add-documents',
+        //     content: 'Upload Documents',
+        //     tooltipText: 'Add document text to the graph',
+        //     selector: 'core',
+        //     onClickFunction: () => this.fetchGraph(),
+        //     show: true,
+        // }
     ]
 
     showAddDocuments() {
@@ -295,12 +295,12 @@ export class GraphStore {
           ctx.showMenuItem('show-node');
         });
 
-        cy.on('cxttap', (event) => {
-            if (event.target === cy) {
-                ctx.showMenuItem('bulk-add-documents');
-                ctx.showMenuItem('refresh-graph');
-            }
-        });
+        // cy.on('cxttap', (event) => {
+        //     if (event.target === cy) {
+        //         ctx.showMenuItem('bulk-add-documents');
+        //         ctx.showMenuItem('refresh-graph');
+        //     }
+        // });
     }
 
 
