@@ -54,8 +54,8 @@ async def handle_add_references(message: AddPaperReferences):
 
 async def handle_add_citations(message: AddPaperCitations):
     logger.info(f"Received add citations request: {message}")
-    await add_citations(message.paper_ids)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paper_ids))
+    citations = await add_citations(message.paper_ids)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=citations))
 
 async def handle_clear_graph(message: ClearGraph):
     loader = load_kg_db()

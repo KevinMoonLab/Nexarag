@@ -152,6 +152,9 @@ async def add_citations(paper_ids):
         reference = await Paper.nodes.get_or_none(paper_id=citation_id)
         if paper and reference:
             await paper.citations.connect(reference)
+    
+    # Return citation ids
+    return list(paper_dict.keys())
 
 async def add_references(paper_ids):
     # Create paper graph
