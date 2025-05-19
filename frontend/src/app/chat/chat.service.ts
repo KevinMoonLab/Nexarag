@@ -108,6 +108,14 @@ import { ChatMessage, ChatResponse, ModelDetails } from "./types";
       return this.#http.post(url, message);
     }
 
+    public startNewConversation() {
+      this.chatId.set('');
+      this.userMessages.set([]);
+      this.responseMessageList.set([]);
+      this.message.set('');
+      this.prompt.set('');
+    }
+
     public getDefaultPrefix(): Observable<string> {
       const url = environment.apiBaseUrl + '/chat/prefix/default/';
       return this.#http.get<string>(url);
