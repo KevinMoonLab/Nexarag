@@ -65,7 +65,7 @@ const defaultPlot: PlotData = {
   template: `
     <p-splitter class="flex-grow h-full w-full" layout="vertical" panelStyleClass="h-screen" [panelSizes]="[50, 50]">
       <ng-template #panel>
-        <div class="flex-grow h-full w-full">
+        <div class="p-8 flex-grow h-full w-full">
           <plotly-plot
             #plot
             (plotlyClick)="handleClick($event)"
@@ -75,7 +75,7 @@ const defaultPlot: PlotData = {
         </div>
       </ng-template>
       <ng-template #panel>
-        <div class="h-full w-full overflow-y-auto">
+        <div class="p-12 h-full w-full overflow-y-auto">
           <app-plot-controls class="min-h-full" />
         </div>
       </ng-template>

@@ -28,7 +28,7 @@ interface PromptItem {
     TableModule
   ],
   template: `
-    <div class="p-8 max-w-7xl mx-auto space-y-8 min-h-full">
+    <div class="max-w-7xl mx-auto space-y-8 min-h-full">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Settings Column -->
         <section class="space-y-4">
@@ -109,7 +109,7 @@ interface PromptItem {
       </div>
 
       <!-- Submit -->
-      <div class="border-t pt-6 flex justify-center">
+      <div class="border-t pt-6 flex justify-center space-x-4">
         <button
           pButton
           label="Submit"
@@ -117,6 +117,14 @@ interface PromptItem {
           (click)="submit()"
           [disabled]="!isFormValid()"
           class="bg-green-600 text-white px-6 py-3 rounded shadow hover:bg-green-700 disabled:opacity-50"
+        ></button>
+        <button
+          pButton
+          label="Clear"
+          icon="pi pi-times"
+          severity="danger"
+          (click)="clear()"
+          class="bg-red-600 text-white px-6 py-3 rounded shadow hover:bg-red-700"
         ></button>
       </div>
     </div>
@@ -137,8 +145,8 @@ export class PlotControlComponent {
   selectedColorVariable = model<string | null>(null);
   colorVariables = [
     { label: 'Labels', value: 'labels' },
-    { label: 'Citation Count', value: 'citationCount' },
-    { label: 'Date', value: 'date' }
+    // { label: 'Citation Count', value: 'citationCount' },
+    // { label: 'Date', value: 'date' }
   ];
 
   canAdd() {
@@ -179,7 +187,6 @@ export class PlotControlComponent {
     this.#http.post(environment.apiBaseUrl + '/viz/plot/', cmd)
       .subscribe(res => {
         this.#toastService.show('Submitted plot data.');
-        this.clear();
       });
   }
 }
