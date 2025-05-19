@@ -49,8 +49,8 @@ async def handle_add_papers_by_title(message: AddPapersByTitle):
 
 async def handle_add_references(message: AddPaperReferences):
     logger.info(f"Received add references request: {message}")
-    await add_references(message.paper_ids)
-    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=message.paper_ids))
+    references = await add_references(message.paper_ids)
+    await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=references))
 
 async def handle_add_citations(message: AddPaperCitations):
     logger.info(f"Received add citations request: {message}")

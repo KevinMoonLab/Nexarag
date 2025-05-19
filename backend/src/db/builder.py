@@ -180,3 +180,6 @@ async def add_references(paper_ids):
         reference = await Paper.nodes.get(paper_id=reference_id)
         if paper and reference:
             await paper.references.connect(reference)
+
+    # Return reference ids
+    return list(paper_dict.keys())
