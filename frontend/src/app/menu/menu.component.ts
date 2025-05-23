@@ -5,7 +5,7 @@ import { DividerModule } from 'primeng/divider';
 import { AddDataComponent } from "./add-data.component";
 import { FilterComponent } from './filter.component';
 import { SettingsComponent } from './settings.component';
-import { ViewportStore } from '../viewport/viewport.store';
+import { GraphStore } from '../graph/graph.store';
 
 @Component({
   selector: 'app-menu',
@@ -40,7 +40,7 @@ import { ViewportStore } from '../viewport/viewport.store';
 export class MenuComponent {
   expanded = signal(false);
   selectedTab = signal(0);
-  viewportStore = inject(ViewportStore);
+  viewportStore = inject(GraphStore);
 
   icon = computed(() => !this.expanded() ? 'pi pi-angle-right' : 'pi pi-angle-left');
 
