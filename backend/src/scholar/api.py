@@ -5,7 +5,7 @@ import json
 from typing import List
 
 DEFAULT_PAPER_FIELDS = "title,abstract,venue,publicationVenue,year,referenceCount,citationCount,influentialCitationCount,publicationTypes,publicationDate,journal,authors"
-DEFAULT_AUTHOR_FIELDS = "author_id,url,name,affiliations,homepage,paperCount,citationCount,hIndex"
+DEFAULT_AUTHOR_FIELDS = "authorId,url,name,affiliations,homepage,paperCount,citationCount,hIndex"
 
 def relevance_search(text, limit = 100) -> list[PaperRelevanceResult]:
     url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={text}&fields=title,authors,year&limit={limit}"

@@ -5,6 +5,9 @@ from neomodel import adb
 from scholar.api import enrich_papers, enrich_authors, get_citations, get_references
 from scholar.util import retry
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 async def create_paper_graph(paper_ids: List[str]):
     paper_dicts = []
@@ -45,8 +48,8 @@ async def create_paper_graph(paper_ids: List[str]):
 
         # Record paper-author relationships and collect author IDs
         for author in paper_data.authors:
-            all_author_ids.add(author.author_id)
-            paper_author_relations.append((paper_data.paperId, author.author_id))
+            all_author_ids.add(author.authorId)
+            paper_author_relations.append((paper_data.paperId, author.authorId))
 
         # Process Journal data & relationships
         if paper_data.journal and paper_data.journal.name:
@@ -88,42 +91,36 @@ async def create_paper_graph(paper_ids: List[str]):
             "paper_count": author_data.paperCount,
             "h_index": author_data.hIndex,
         }
+    
+    logger.info(f"Enriched authors: {author_dicts}")
+    logger.info(f"Author Ids: {all_author_ids}")
 
-    # Begin database transaction
-    await adb.begin()
-    try:
-        # Create or update nodes
-        await Paper.create_or_update(*paper_dicts)
-        await Author.create_or_update(*author_dicts.values())
-        await Journal.create_or_update(*journal_dicts.values())
-        await PublicationVenue.create_or_update(*venue_dicts.values())
+    # Create or update nodes
+    await Paper.create_or_update(*paper_dicts)
+    await Author.create_or_update(*author_dicts.values())
+    await Journal.create_or_update(*journal_dicts.values())
+    await PublicationVenue.create_or_update(*venue_dicts.values())
 
-        # Create author relationships
-        for paper_id, author_id in paper_author_relations:
-            paper = await Paper.nodes.get_or_none(paper_id=paper_id)
-            author = await Author.nodes.get_or_none(author_id=author_id)
-            if paper and author:
-                await paper.authors.connect(author)
+    # Create author relationships
+    for paper_id, author_id in paper_author_relations:
+        paper = await Paper.nodes.get_or_none(paper_id=paper_id)
+        author = await Author.nodes.get_or_none(author_id=author_id)
+        if paper and author:
+            await author.papers.connect(paper)
 
-        # Create journal relationships
-        for paper_id, journal_name in paper_journal_relations:
-            paper = await Paper.nodes.get_or_none(paper_id=paper_id)
-            journal = await Journal.nodes.get_or_none(name=journal_name)
-            if paper and journal:
-                await paper.journal.connect(journal)
+    # Create journal relationships
+    for paper_id, journal_name in paper_journal_relations:
+        paper = await Paper.nodes.get_or_none(paper_id=paper_id)
+        journal = await Journal.nodes.get_or_none(name=journal_name)
+        if paper and journal:
+            await paper.journal.connect(journal)
 
-        # Create publication venue relationships
-        for paper_id, venue_id in paper_venue_relations:
-            paper = await Paper.nodes.get_or_none(paper_id=paper_id)
-            venue = await PublicationVenue.nodes.get_or_none(venue_id=venue_id)
-            if paper and venue:
-                await paper.publication_venue.connect(venue)
-
-        # Commit transaction
-        await adb.commit()
-    except Exception as e:
-        await adb.rollback()
-        raise e
+    # Create publication venue relationships
+    for paper_id, venue_id in paper_venue_relations:
+        paper = await Paper.nodes.get_or_none(paper_id=paper_id)
+        venue = await PublicationVenue.nodes.get_or_none(venue_id=venue_id)
+        if paper and venue:
+            await paper.publication_venue.connect(venue)
 
 
 async def add_citations(paper_ids):
