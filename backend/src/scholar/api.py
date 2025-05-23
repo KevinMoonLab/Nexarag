@@ -97,7 +97,7 @@ def get_references(paper_id: str) -> list[Citation]:
     response = requests.get(base_url, params=params)
     if response.status_code == 200:
         data = response.json()
-        references = [d['citedPaper'] for d in data['data'] if d['citedPaper']['paper_id'] is not None]
+        references = [d['citedPaper'] for d in data['data'] if d['citedPaper']['paperId'] is not None]
         return Citation.schema().load(references, many=True)
     elif response.status_code == 429:
         raise RateLimitExceededError("Rate limit exceeded. Please wait before retrying.")
@@ -106,7 +106,7 @@ def get_references(paper_id: str) -> list[Citation]:
         return None
     
 def get_recommendations(positive_paper_ids, negative_paper_ids, limit = 100) -> list[Citation]:
-    url = f"http://api.semanticscholar.org/recommendations/v1/papers?fields=paper_id,title&limit={limit}"
+    url = f"http://api.semanticscholar.org/recommendations/v1/papers?fields=paperId,title&limit={limit}"
     params = {
         "positivepaper_ids": positive_paper_ids,
         "negativepaper_ids": negative_paper_ids
