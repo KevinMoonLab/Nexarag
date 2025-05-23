@@ -34,8 +34,7 @@ class PublicationVenue(AsyncStructuredNode):
 
 
 class Journal(AsyncStructuredNode):
-    uid = UniqueIdProperty()
-    name = StringProperty(unique_index = True, required = True)
+    name = UniqueIdProperty()
     pages = StringProperty()
     volume = StringProperty()
     

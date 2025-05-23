@@ -46,7 +46,7 @@ export class MenuComponent {
 
   tabs = [
     { icon: 'pi pi-plus', label: 'Add Data' },
-    { icon: 'pi pi-search', label: 'Filter' },
+    { icon: 'pi pi-sliders-v', label: 'Filter' },
     { icon: 'pi pi-cog', label: 'Settings' },
     { icon: 'pi pi-chart-line', label: 'Plot' }
   ];

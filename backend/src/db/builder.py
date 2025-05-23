@@ -91,36 +91,45 @@ async def create_paper_graph(paper_ids: List[str]):
             "paper_count": author_data.paperCount,
             "h_index": author_data.hIndex,
         }
-    
-    logger.info(f"Enriched authors: {author_dicts}")
-    logger.info(f"Author Ids: {all_author_ids}")
 
     # Create or update nodes
-    await Paper.create_or_update(*paper_dicts)
-    await Author.create_or_update(*author_dicts.values())
-    await Journal.create_or_update(*journal_dicts.values())
-    await PublicationVenue.create_or_update(*venue_dicts.values())
+    try:
+        await Paper.create_or_update(*paper_dicts)
+        await Author.create_or_update(*author_dicts.values())
+        await Journal.create_or_update(*journal_dicts.values())
+        await PublicationVenue.create_or_update(*venue_dicts.values())
+    except:
+        logger.error("Error creating or updating nodes in the graph database")
 
     # Create author relationships
     for paper_id, author_id in paper_author_relations:
-        paper = await Paper.nodes.get_or_none(paper_id=paper_id)
-        author = await Author.nodes.get_or_none(author_id=author_id)
-        if paper and author:
-            await author.papers.connect(paper)
+        try:
+            paper = await Paper.nodes.get_or_none(paper_id=paper_id)
+            author = await Author.nodes.get_or_none(author_id=author_id)
+            if paper and author:
+                await author.papers.connect(paper)
+        except:
+            logger.error(f"Error connecting author {author_id} to paper {paper_id}")
 
     # Create journal relationships
     for paper_id, journal_name in paper_journal_relations:
-        paper = await Paper.nodes.get_or_none(paper_id=paper_id)
-        journal = await Journal.nodes.get_or_none(name=journal_name)
-        if paper and journal:
-            await paper.journal.connect(journal)
+        try:
+            paper = await Paper.nodes.get_or_none(paper_id=paper_id)
+            journal = await Journal.nodes.get_or_none(name=journal_name)
+            if paper and journal:
+                await paper.journal.connect(journal)
+        except:
+            logger.error(f"Error connecting journal {journal_name} to paper {paper_id}")
 
     # Create publication venue relationships
     for paper_id, venue_id in paper_venue_relations:
-        paper = await Paper.nodes.get_or_none(paper_id=paper_id)
-        venue = await PublicationVenue.nodes.get_or_none(venue_id=venue_id)
-        if paper and venue:
-            await paper.publication_venue.connect(venue)
+        try:
+            paper = await Paper.nodes.get_or_none(paper_id=paper_id)
+            venue = await PublicationVenue.nodes.get_or_none(venue_id=venue_id)
+            if paper and venue:
+                await paper.publication_venue.connect(venue)
+        except:
+            logger.error(f"Error connecting venue {venue_id} to paper {paper_id}")
 
 
 async def add_citations(paper_ids):
