@@ -9,7 +9,7 @@ Nexarag is an open‑source platform to ingest research papers, build knowledge 
 # Run
 ## Linux/WSL
 ```
-docker compose up -d --build
+docker compose up -d
 ```
 
 ## MacOS
@@ -18,6 +18,8 @@ docker compose -f docker-compose.macos.yml up -d
 ```
 
 # Pull Ollama Models
+Browse the full library of Ollama models [here](https://ollama.com/library).
+
 ## Linux/WSL
 Models can be pulled through the command line in the `ollama` Docker container.
 
