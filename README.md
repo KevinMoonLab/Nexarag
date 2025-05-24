@@ -2,8 +2,8 @@
 Nexarag is an open‑source platform to ingest research papers, build knowledge graphs, and query them with agentic AI.
 
 # Pre-Requisites
-- **(Windows Only)** [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
 - [Docker](https://docs.docker.com/engine/install/)
+- **(Windows Only)** [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
 - **(MacOS Only)** [Ollama](https://ollama.com/download/mac)
 
 # Run
@@ -19,7 +19,7 @@ docker compose -f docker-compose.macos.yml up -d
 
 # Pull Ollama Models
 ## Linux/WSL
-Models can be pulled through the command line and will be stored on the volume specified by the `OLLAMA_VOLUME` environment variable.
+Models can be pulled through the command line in the `ollama` Docker container.
 
 ```
 docker exec -it nexarag.ollama /bin/bash
