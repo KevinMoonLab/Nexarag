@@ -4,7 +4,7 @@ Nexarag is an open‑source platform to ingest research papers, build knowledge 
 # Pre-Requisites
 - [Docker](https://docs.docker.com/engine/install/)
 - **(Windows Only)** [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
-- **(MacOS Only)** [Ollama](https://ollama.com/download/mac)
+- **(MacOS Only)** [Ollama Desktop](https://ollama.com/download/mac)
 
 # Run
 ## Linux/WSL
@@ -37,7 +37,7 @@ ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
 ```
 
-# Access Nexarag Frontend
+# Nexarag Frontend
 The Nexarag frontend application will be served at `http://localhost:5000`.
 
 # Semantic Scholar
