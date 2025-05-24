@@ -21,7 +21,7 @@ docker compose -f docker-compose.macos.yml up -d
 Browse the full library of Ollama models [here](https://ollama.com/library).
 
 ## Linux/WSL
-Models can be pulled through the command line in the `ollama` Docker container.
+Models can be pulled through the command line in the `ollama` Docker container. The `nomic-embed-text:v1.5` embedding model is required; pull any other models that your hardware supports for LLM integration.
 
 ```
 docker exec -it nexarag.ollama /bin/bash
