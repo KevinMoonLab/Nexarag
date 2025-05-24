@@ -77,7 +77,7 @@ async def handle_chat_message(message: ChatMessage):
 
 async def main():
     logger.info("Initializing Neo4j database...")
-    result = await neomodel_connect('neo4j')
+    result = await neomodel_connect()
     if result.success:
         logger.info(result.message)
     else:

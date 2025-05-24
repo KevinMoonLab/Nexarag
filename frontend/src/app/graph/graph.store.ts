@@ -58,6 +58,15 @@ export class GraphStore {
         return degreeMap;
     });
 
+    private plotResizeSubject = new Subject<void>();
+    readonly plotResize = this.plotResizeSubject.asObservable();
+  
+    showPlot = signal(false);
+  
+    emitPlotResize() {
+      this.plotResizeSubject.next();
+    }
+
     maxDegree = computed(() => this.degreeMap() ? Math.max(...Array.from(this.degreeMap().values())) : 0);
 
     selectedDisplayFilters = signal(['Paper', 'Journal' ]);
@@ -153,10 +162,6 @@ export class GraphStore {
             this.toastService.show('Building reference graph...');
 
         });
-    }
-
-    focusNode(id: string) {
-
     }
 
     getNodeName(n: KnowledgeNode) {

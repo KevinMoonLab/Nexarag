@@ -12,7 +12,7 @@ class NeomodelConnectionResult:
     success: bool
     message: str
 
-async def neomodel_connect(uri = 'neo4j.dev'):
+async def neomodel_connect(uri = 'nexarag.neo4j'):
     # Extract environment variables
     neo4j_user = os.getenv("NEO4J_USERNAME", "neo4j")
     neo4j_password = os.getenv("NEO4J_PASSWORD", "password")

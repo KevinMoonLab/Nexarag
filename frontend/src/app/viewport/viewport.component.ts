@@ -8,7 +8,7 @@ import { MenuComponent } from "../menu/menu.component";
 import { SplitterModule } from 'primeng/splitter';
 import { GraphComponent } from "../graph/graph.component";
 import { PlotComponent } from "../plot/plot.component";
-import { ViewportStore } from './viewport.store';
+import { GraphStore } from '../graph/graph.store';
 
 @Component({
   selector: 'app-viewport',
@@ -40,7 +40,7 @@ import { ViewportStore } from './viewport.store';
   encapsulation: ViewEncapsulation.None,
 })
 export class ViewportComponent {
-  viewportStore = inject(ViewportStore);
+  viewportStore = inject(GraphStore);
 
   onSplitterResize(evt:any) {
     this.viewportStore.emitPlotResize();

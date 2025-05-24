@@ -4,7 +4,6 @@ import { ButtonModule } from 'primeng/button';
 import { PlotlyModule } from 'angular-plotly.js';
 
 import Plotly from 'plotly.js-dist-min';
-import { ViewportStore } from '../viewport/viewport.store';
 import { SplitterModule } from 'primeng/splitter';
 import { PlotControlComponent } from "./plot-controls.component";
 import { EventService } from '../events.service';
@@ -85,7 +84,6 @@ const defaultPlot: PlotData = {
 })
 export class PlotComponent implements OnInit {
   plotEl = viewChild('plot', { read: ElementRef });
-  viewportStore = inject(ViewportStore);
   graphStore = inject(GraphStore);
   #events = inject(EventService);
   logger = effect(() => console.log('Plot data:', this.plotData()));
@@ -100,7 +98,7 @@ export class PlotComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.viewportStore.plotResize.subscribe(() => {
+    this.graphStore.plotResize.subscribe(() => {
       this.resizePlot();
     });
   }
@@ -144,8 +142,6 @@ export class PlotComponent implements OnInit {
   }));
 
   private transformEmbeddingDataToPlot(data: RawPlotData): PlotData {
-    console.log('embeddings', data.embeddings);
-
     const coords = data.embeddings.map(e => e.slice(0, 2));
     const x = coords.map(c => c[0]);
     const y = coords.map(c => c[1]);

@@ -43,8 +43,9 @@ export class GraphComponent {
 
     centerNodeEffect = effect(() => {
       const selection = this.#graphStore.selectedNode();
+      const plotMode = this.#graphStore.showPlot();
       const cy = this.cyCore();
-      if (cy && selection) {
+      if (cy && selection && plotMode) {
         const node = cy.getElementById(selection.id);
         if (node) {
           cy.elements().unselect();

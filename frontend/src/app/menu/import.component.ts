@@ -56,7 +56,7 @@ export class ImportComponent {
         this.clear();
         console.log(res);
         this.graphStore.addNodes(res.nodes);
-        this.toastService.show(`Successfully added ${res.nodes.length} papers.`);
+        this.toastService.show(`Successfully added ${res.nodes.length} papers. Enriching graph...`);
       });
   }
 }
