@@ -4,7 +4,8 @@ from neomodel import (
 )
 
 class Author(AsyncStructuredNode):
-    author_id = UniqueIdProperty()
+    uid = UniqueIdProperty()
+    author_id = StringProperty(unique_index=True, required=True)
     name = StringProperty(required=True)
     url = StringProperty()
     affiliations = JSONProperty(default=[])
@@ -18,7 +19,8 @@ class Author(AsyncStructuredNode):
 
 
 class PublicationVenue(AsyncStructuredNode):
-    venue_id = UniqueIdProperty()
+    uid = UniqueIdProperty()
+    venue_id = StringProperty(unique_index=True, required=True)
     name = StringProperty(required=True)
     type = StringProperty()
     alternate_names = JSONProperty(default=[])
@@ -40,7 +42,8 @@ class Journal(AsyncStructuredNode):
     papers = AsyncRelationshipFrom("Paper", "PUBLISHED_IN")
 
 class Paper(AsyncStructuredNode):
-    paper_id = UniqueIdProperty()
+    uid = UniqueIdProperty()
+    paper_id = StringProperty(unique_index=True, required=True)
     title = StringProperty(required=True)
     abstract = StringProperty()
     year = IntegerProperty()
@@ -59,7 +62,8 @@ class Paper(AsyncStructuredNode):
     documents = AsyncRelationshipTo("Document", "BELONGS_TO")
 
 class Document(AsyncStructuredNode):
-    document_id = UniqueIdProperty()
+    uid = UniqueIdProperty()
+    document_id = StringProperty(unique_index=True, required=True)
     path = StringProperty()
     paper = AsyncRelationshipFrom("Paper", "BELONGS_TO")
 

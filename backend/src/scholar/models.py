@@ -7,7 +7,7 @@ from marshmallow import EXCLUDE
 @dataclass
 class PartialAuthor:
     name: str
-    author_id: Optional[str] = None
+    authorId: Optional[str] = None
 
 @dataclass_json(undefined=EXCLUDE)
 @dataclass
