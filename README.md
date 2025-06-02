@@ -1,6 +1,9 @@
 # Overview
 Nexarag is an open‑source platform for ingesting research papers, building knowledge graphs, and querying them with agentic AI.
 
+# Feedback
+We are actively seeking feedback for Nexarag, including feature requests, issue reports, training material, etc. Please submit to `nexarag.ai@gmail.com`. 
+
 # Pre-Requisites
 - [Docker](https://docs.docker.com/engine/install/)
 - **(Windows Only)** [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
