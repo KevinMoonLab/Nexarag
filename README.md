@@ -9,21 +9,22 @@ We are actively seeking feedback for Nexarag, including feature requests, issue 
 - **(Windows Only)** [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
 - **(MacOS Only)** [Ollama Desktop](https://ollama.com/download/mac)
 
-# Run
-## Linux/WSL
+# Local Deployment
+## 1. Docker Compose
+### Linux/WSL
 ```
 docker compose up -d
 ```
 
-## MacOS
+### MacOS
 ```
 docker compose -f docker-compose.macos.yml up -d
 ```
 
-# Pull Ollama Models
+## 2. Pull Ollama Models
 Browse the full library of Ollama models [here](https://ollama.com/library). The `nomic-embed-text:v1.5` embedding model is required; pull any other models that your hardware supports for LLM integration.
 
-## Linux/WSL
+### Linux/WSL
 Models can be pulled through the command line in the `ollama` Docker container. 
 
 ```
@@ -32,7 +33,7 @@ ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
 ```
 
-## MacOS
+### MacOS
 Pull models from the command line:
 
 ```
@@ -40,7 +41,7 @@ ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
 ```
 
-# Nexarag Frontend
+## 3. Launch Applicatiuon
 The Nexarag frontend application will be served at `http://localhost:5000`.
 
 # Semantic Scholar
