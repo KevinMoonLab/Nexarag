@@ -41,7 +41,7 @@ ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
 ```
 
-## 3. Launch Applicatiuon
+## 3. Launch Application
 The Nexarag frontend application will be served at `http://localhost:5000`.
 
 # Semantic Scholar
