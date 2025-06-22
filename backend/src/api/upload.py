@@ -137,7 +137,7 @@ def extract_title_heuristic(content: str, filename: str) -> str:
     
     return os.path.splitext(filename)[0]
 
-async def upload(doc: UploadFile, ollama_base_url: str, extraction_method: str = "ollama", ollama_model: str = "gemma3:12b") -> UploadFileResponse:
+async def upload(doc: UploadFile, ollama_base_url: str, extraction_method: str = "ollama", ollama_model: str = "gemma3:1b") -> UploadFileResponse:
     # Check if file is allowed
     if not is_allowed_file(doc):
         allowed_extensions = [".pdf", ".md", ".txt"]

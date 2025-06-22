@@ -6,7 +6,7 @@ from typing import Any, AsyncIterator, Iterator, List, Optional
 from langchain_neo4j import Neo4jVector
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.chat_message_histories import ChatMessageHistory, SQLChatMessageHistory
+from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from db.util import load_default_kg
 from rabbit.events import ChatMessage

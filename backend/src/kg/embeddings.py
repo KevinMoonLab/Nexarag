@@ -14,7 +14,7 @@ async def create_document_embeddings(update: DocumentGraphUpdated):
     # Chunk the content
     kg = load_default_kg()
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size = 1000, # FIXME
+        chunk_size = 10000,
         chunk_overlap  = 200,
         length_function = len,
         is_separator_regex = False,

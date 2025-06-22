@@ -22,7 +22,7 @@ docker compose -f docker-compose.macos.yml up -d
 ```
 
 ## 2. Pull Ollama Models
-Browse the full library of Ollama models [here](https://ollama.com/library). The `nomic-embed-text:v1.5` embedding model is required; pull any other models that your hardware supports for LLM integration.
+Browse the full library of Ollama models [here](https://ollama.com/library). The following are required; pull any other models that your hardware supports for LLM integration.
 
 ### Linux/WSL
 Models can be pulled through the command line in the `ollama` Docker container. 
@@ -34,7 +34,7 @@ ollama pull gemma3:1b
 ```
 
 ### MacOS
-Pull models from the command line:
+Pull models from the command line. The following are required; pull any other models that your hardware supports for LLM integration.
 
 ```
 ollama pull nomic-embed-text:v1.5
