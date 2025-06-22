@@ -7,61 +7,28 @@ import { CommonModule } from '@angular/common';
 import { PaperData } from './types';
 import { environment } from 'src/environments/environment';
 import { ToastService } from '../toast/toast.service';
+import { DocumentUploadComponent } from "./doc-upload.component";
 
 @Component({
-    imports: [CommonModule, DialogModule, DividerModule, FileUploadModule, DividerModule],
+    imports: [CommonModule, DialogModule, DividerModule, FileUploadModule, DividerModule, DocumentUploadComponent],
     selector: 'app-doc-dialog',
     template: `<p-dialog
       [(visible)]="visible"
       [modal]="true"
       [style]="{ width: '50vw', height: '80vh' }"
       (visibleChange)="onVisibleChange($event)">
-    <p class="text-xl bold">{{ selectedNode() ? 'Add documents for ' + selectedNode().title : 'Upload documents' }}</p>
-    <p-divider />
-    <p-fileUpload  
-      (onUpload)="onUpload($event)" 
-      [multiple]="selectedNode() == null" 
-      [url]="url()"
-      accept=".md,.txt,.pdf" 
-      maxFileSize="100000000" 
-      name="docs"
-      mode="advanced">
-        <ng-template #empty>
-            <div>Drag and drop files to here to upload.</div>
-        </ng-template>
-        <ng-template #content>
-            <ul *ngIf="uploadedFiles.length">
-                <li *ngFor="let file of uploadedFiles">{{ file.name }} - {{ file.size }} bytes</li>
-            </ul>
-        </ng-template>
-    </p-fileUpload>
+      <app-doc-upload (onUploadedFiles)="handleFileUpload($event)"></app-doc-upload>
   </p-dialog>`
 })
 export class DocumentDialogComponent {
-  #toast = inject(ToastService);
   state = inject(GraphStore);
   visible = this.state.showDocumentDialog;
-  selectedNode = computed(() => this.state.selectedNode()?.properties as PaperData ?? null);
-  uploadedFiles: any[] = [];
 
   onVisibleChange(visible: boolean) {
     this.visible.set(visible);
   }
 
-  onUpload(event: any) {
-      this.#toast.show('Files uploaded successfully.');
-      this.uploadedFiles = [];
-      this.visible.set(false);
+  handleFileUpload(event: any) {
+    this.visible.set(false);
   }
-
-  url = computed(() => {
-    const selectedNode = this.selectedNode();
-    const baseUrl = environment.apiBaseUrl;
-    
-    if (selectedNode?.paper_id) {
-      return `${baseUrl}/docs/upload/${selectedNode.paper_id}`;
-    } else {
-      return `${baseUrl}/docs/bulk/upload/`;
-    }
-  });
 }

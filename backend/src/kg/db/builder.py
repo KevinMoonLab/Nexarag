@@ -1,4 +1,4 @@
-from db.models import Paper, PublicationVenue, Journal, Author
+from kg.db.models import Paper, PublicationVenue, Journal, Author
 from scholar.models import Paper as ScholarPaper
 from typing import List
 from neomodel import adb

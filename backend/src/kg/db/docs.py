@@ -1,5 +1,5 @@
 from rabbit.events import DocumentsCreated, DocumentCreated
-from db.models import Document, Paper 
+from kg.db.models import Document, Paper 
 from pydantic import BaseModel
 from typing import List
 

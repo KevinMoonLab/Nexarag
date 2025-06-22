@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDisconnect, Depends
 from typing import List
-from db.util import check_connection as check_neo4j_connection, load_kg_db
-from db.queries import search_papers_by_id, get_all_papers, get_graph
+from kg.db.util import check_connection as check_neo4j_connection, load_kg_db
+from kg.db.queries import search_papers_by_id, get_all_papers, get_graph
 from rabbit.commands import (
     AddPaperCitations, AddPaperReferences, AddPapersById, 
     AddPapersByTitle, ClearGraph, PaperTitleWithYear
@@ -24,7 +24,7 @@ import bibtexparser
 from contextlib import asynccontextmanager
 import asyncio
 import logging
-from kg.rag import default_prefix
+from kg.llm.chat import default_prefix
 from .types import BibTexPaper, BibTexRequest
 from ollama import Client
 from langchain_ollama.llms import OllamaLLM

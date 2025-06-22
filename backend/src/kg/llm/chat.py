@@ -8,7 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
-from db.util import load_default_kg
+from kg.db.util import load_default_kg
 from rabbit.events import ChatMessage
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 

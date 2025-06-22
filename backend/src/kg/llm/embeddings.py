@@ -1,8 +1,8 @@
-from kg.docs import create_chunk_nodes_with_embeddings
-from db.util import load_default_kg
+from kg.llm.docs import create_chunk_nodes_with_embeddings
+from kg.db.util import load_default_kg
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from rabbit.events import DocumentGraphUpdated
-from kg.rag import NomicEmbeddingAdapter
+from kg.llm.chat import NomicEmbeddingAdapter
 
 async def create_document_embeddings(update: DocumentGraphUpdated):
     doc = update.doc
@@ -12,7 +12,6 @@ async def create_document_embeddings(update: DocumentGraphUpdated):
         content = f.read()
     
     # Chunk the content
-    kg = load_default_kg()
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size = 10000,
         chunk_overlap  = 200,
@@ -20,31 +19,9 @@ async def create_document_embeddings(update: DocumentGraphUpdated):
         is_separator_regex = False,
     )
     
-    create_chunk_nodes_with_embeddings(kg, content, doc.node_id, text_splitter)
-
-def init_graph(embedding_size=768, similarity="cosine"):
-    kg = load_default_kg()
-    kg.query("""
-        CREATE VECTOR INDEX `paper_chunks` IF NOT EXISTS
-        FOR (c:Chunk) ON (c.textEmbedding) 
-        OPTIONS { indexConfig: {
-            `vector.dimensions`: $dimension,
-            `vector.similarity_function`: $similarity    
-        }}""", params={'dimension': embedding_size, 'similarity': similarity }
-    )
-
-    kg.query("""
-        CREATE VECTOR INDEX abstract_embeddings IF NOT EXISTS
-        FOR (p:Paper) ON (p.abstractEmbedding) 
-        OPTIONS { indexConfig: {
-            `vector.dimensions`: $dimension,
-            `vector.similarity_function`: $similarity
-        }}""", params={'dimension': embedding_size, 'similarity': similarity }
-    )
+    await create_chunk_nodes_with_embeddings(content, doc.node_id, text_splitter)
 
 def create_abstract_embeddings(paper_ids, model_id='nomic-embed-text:v1.5'):
-    # Load database and extract paper nodes
-    kg = load_default_kg()
     result = kg.query(
         """
         MATCH (p:Paper) 
