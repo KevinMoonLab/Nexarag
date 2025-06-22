@@ -1,5 +1,5 @@
 {
-    "name": "Python DevContainer",
+    "name": "Nexarag Dev",
     "dockerComposeFile": "docker-compose.yml",
     "service": "nexarag.dev",
     "workspaceFolder": "/app",

@@ -1,7 +1,7 @@
 import re
 from kg.rag import NomicEmbeddingAdapter
 
-def paper_data_from_file(md_text, paper_id, text_splitter, verbose=False):
+def paper_data_from_file(md_text, paper_id, text_splitter):
     chunks_with_metadata = []
     md_text = remove_references_section(md_text)
     split_text = text_splitter.split_text(md_text)
@@ -12,48 +12,38 @@ def paper_data_from_file(md_text, paper_id, text_splitter, verbose=False):
             'paper_id': paper_id,
             'chunkId': f"{i}_{paper_id}"
         })
-    if verbose: print(f'\tSplit into {len(split_text)} chunks')
     return chunks_with_metadata
 
 def remove_references_section(text):
-    """
-    Remove the references or bibliography section from the text.
-    This function looks for headings like 'References' or 'Bibliography'
-    (case-insensitive), including markdown headers (e.g. '## References'),
-    and returns text before that heading.
-    """
-    # This regex matches a newline, optional markdown header symbols (#) and spaces,
-    # then the word "References" or "Bibliography" (case-insensitive) as a whole word.
     split_result = re.split(r"(?i)(?:\n|\r\n)(?:\s*#+\s*)?(References|Bibliography)\b", text)
     return split_result[0] if split_result else text
 
 
 def create_chunk_nodes_with_embeddings(kg, md_text, paper_id, text_splitter, model_id='nomic-embed-text:v1.5'):
-    # Ensure uniqueness constraint on chunk nodes
     kg.query("""
-    CREATE CONSTRAINT unique_chunk IF NOT EXISTS 
+        CREATE CONSTRAINT unique_chunk IF NOT EXISTS 
         FOR (c:Chunk) REQUIRE c.chunkId IS UNIQUE
     """)
 
     # Cypher query to merge Chunk node
     merge_chunk_node_query = """
-    MERGE (mergedChunk:Chunk {chunkId: $chunkParam.chunkId})
-      ON CREATE SET 
-          mergedChunk.paper_id = $chunkParam.paper_id, 
-          mergedChunk.source = $chunkParam.paper_id,
-          mergedChunk.text = $chunkParam.text,
-          mergedChunk.textEmbedding = $chunkParam.textEmbedding
-    WITH mergedChunk
-    MATCH (p:Paper {paper_id: $chunkParam.paper_id})
-    MERGE (p)-[:HAS_CHUNK]->(mergedChunk)
-    RETURN mergedChunk
+        MERGE (mergedChunk:Chunk {chunkId: $chunkParam.chunkId})
+        ON CREATE SET 
+            mergedChunk.paper_id = $chunkParam.paper_id, 
+            mergedChunk.source = $chunkParam.paper_id,
+            mergedChunk.text = $chunkParam.text,
+            mergedChunk.textEmbedding = $chunkParam.textEmbedding
+        WITH mergedChunk
+        MATCH (p:Paper {paper_id: $chunkParam.paper_id})
+        MERGE (p)-[:HAS_CHUNK]->(mergedChunk)
+        RETURN mergedChunk
     """
 
     # Cypher query to link chunks
     merge_next_relationship_query = """
-    MATCH (current:Chunk {chunkId: $currentChunkId})
-    MATCH (next:Chunk {chunkId: $nextChunkId})
-    MERGE (current)-[:NEXT]->(next)
+        MATCH (current:Chunk {chunkId: $currentChunkId})
+        MATCH (next:Chunk {chunkId: $nextChunkId})
+        MERGE (current)-[:NEXT]->(next)
     """
 
     node_count = 0

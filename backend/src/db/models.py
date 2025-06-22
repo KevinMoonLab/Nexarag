@@ -1,6 +1,6 @@
 from neomodel import (
     AsyncStructuredNode, StringProperty, IntegerProperty, UniqueIdProperty,
-    JSONProperty, AsyncRelationshipTo, AsyncRelationshipFrom
+    JSONProperty, AsyncRelationshipTo, AsyncRelationshipFrom, ZeroOrOne, ZeroOrMore
 )
 
 class Author(AsyncStructuredNode):
@@ -41,6 +41,14 @@ class Journal(AsyncStructuredNode):
     # Relationships
     papers = AsyncRelationshipFrom("Paper", "PUBLISHED_IN")
 
+class Tag(AsyncStructuredNode):
+    uid = UniqueIdProperty()
+    name = StringProperty(unique_index=True, required=True)
+    
+    # Relationships
+    papers = AsyncRelationshipFrom("Paper", "TAGGED_WITH")
+    documents = AsyncRelationshipFrom("Document", "TAGGED_WITH")
+
 class Paper(AsyncStructuredNode):
     uid = UniqueIdProperty()
     paper_id = StringProperty(unique_index=True, required=True)
@@ -60,12 +68,16 @@ class Paper(AsyncStructuredNode):
     journal = AsyncRelationshipTo("Journal", "PUBLISHED_IN")
     publication_venue = AsyncRelationshipTo("PublicationVenue", "PUBLISHED_AT")
     documents = AsyncRelationshipTo("Document", "BELONGS_TO")
+    tags = AsyncRelationshipTo("Tag", "TAGGED_WITH", cardinality=ZeroOrMore)
 
 class Document(AsyncStructuredNode):
     uid = UniqueIdProperty()
     document_id = StringProperty(unique_index=True, required=True)
     path = StringProperty()
-    paper = AsyncRelationshipFrom("Paper", "BELONGS_TO")
+    name = StringProperty()
+    og_path = StringProperty()
+    paper = AsyncRelationshipFrom("Paper", "BELONGS_TO", cardinality=ZeroOrOne)
+    tags = AsyncRelationshipTo("Tag", "TAGGED_WITH", cardinality=ZeroOrMore)
 
 class Chat(AsyncStructuredNode):
     chat_id = UniqueIdProperty()

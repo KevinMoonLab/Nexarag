@@ -72,12 +72,18 @@ export class GraphComponent {
         return '#6BBF59'; 
       } else if (n.label === 'PublicationVenue') {
         return '#F4A261'; 
+      } else if (n.label === 'Document') {
+        return '#8E44AD';
       } else {
         return '#4A4A4A'; 
       }
     }    
 
     private truncateName(name: string, maxLength=30): string {
+      if (!name) {
+        return '';
+      }
+      
       if (name.length > maxLength) {
         return name.substring(0, maxLength) + '...';
       }

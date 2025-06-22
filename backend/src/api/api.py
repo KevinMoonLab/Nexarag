@@ -29,6 +29,7 @@ from .types import BibTexPaper, BibTexRequest
 from ollama import Client
 from langchain_ollama.llms import OllamaLLM
 import os
+from fastapi.staticfiles import StaticFiles
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 
 
@@ -79,6 +80,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Nexarag API", description="API for managing the Nexarag knowledge graph", lifespan=lifespan)
 
+app.mount("/docs", StaticFiles(directory="/docs"), name="docs")
+
 @app.websocket("/ws/events/")
 async def websocket_endpoint(websocket: WebSocket, manager: ConnectionManager = Depends(get_connection_manager)):
     await manager.connect(websocket)
@@ -90,10 +93,10 @@ async def websocket_endpoint(websocket: WebSocket, manager: ConnectionManager = 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"], 
+    allow_headers=["*"],
 )
 
 ######################## General ########################
@@ -210,8 +213,19 @@ def get_default_prefix():
 
 @app.post("/docs/upload/{paper_id}", tags=["Documents"])
 async def upload_docs(paper_id:str, docs: List[UploadFile] = File(...)):
-    upload_info = await upload_many(docs)
-    documents = [DocumentCreated(id=doc.id, node_id=paper_id, path=doc.path) for doc in upload_info]
+    upload_info = await upload_many(docs, ollama_base_url)
+    documents = [DocumentCreated(id=doc.id, node_id=paper_id, path=doc.path, og_path=doc.og_path, name=doc.name) for doc in upload_info]
+    message = DocumentsCreated(documents=documents)
+    await publish_message(ChannelType.DOCUMENTS_CREATED, message)
+    return {
+        "message": "Files uploaded successfully",
+        "files": upload_info
+    }
+
+@app.post("/docs/bulk/upload/", tags=["Documents"])
+async def upload_docs_no_paper(docs: List[UploadFile] = File(...)):
+    upload_info = await upload_many(docs, ollama_base_url)
+    documents = [DocumentCreated(id=doc.id, path=doc.path, og_path=doc.og_path, name=doc.name) for doc in upload_info]
     message = DocumentsCreated(documents=documents)
     await publish_message(ChannelType.DOCUMENTS_CREATED, message)
     return {

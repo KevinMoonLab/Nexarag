@@ -17,7 +17,7 @@ import { ToastService } from '../toast/toast.service';
       [modal]="true"
       [style]="{ width: '50vw', height: '80vh' }"
       (visibleChange)="onVisibleChange($event)">
-    <p class="text-xl bold">Add documents for '{{ selectedNode()?.title ?? 'No title' }}'</p>
+    <p class="text-xl bold">{{ selectedNode() ? 'Add documents for ' + selectedNode().title : 'Upload documents' }}</p>
     <p-divider />
     <p-fileUpload  
       (onUpload)="onUpload($event)" 
@@ -55,5 +55,14 @@ export class DocumentDialogComponent {
       this.visible.set(false);
   }
 
-  url = computed(() => environment.apiBaseUrl + '/docs/upload/' + (this.selectedNode()?.paper_id ?? ''));
+  url = computed(() => {
+    const selectedNode = this.selectedNode();
+    const baseUrl = environment.apiBaseUrl;
+    
+    if (selectedNode?.paper_id) {
+      return `${baseUrl}/docs/upload/${selectedNode.paper_id}`;
+    } else {
+      return `${baseUrl}/docs/bulk/upload/`;
+    }
+  });
 }

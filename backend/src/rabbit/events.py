@@ -45,8 +45,10 @@ class ResponseCompleted(BaseModel):
 
 class DocumentCreated(BaseModel):
     id: str
-    node_id: str
     path: str
+    og_path: str
+    node_id: Optional[str] = None
+    name: Optional[str] = Field(default="Document", description="Document name")
 
 class DocumentGraphUpdated(BaseModel):
     doc: DocumentCreated

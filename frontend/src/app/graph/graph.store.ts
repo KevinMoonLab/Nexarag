@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { computed, effect, inject, Injectable, signal } from "@angular/core";
 import { Observable, Subject, switchMap } from "rxjs";
-import { AuthorData, Edge, JournalData, KnowledgeGraph, KnowledgeNode, PaperData, PublicationVenueData } from "./types";
+import { AuthorData, Edge, JournalData, KnowledgeGraph, KnowledgeNode, PaperData, PublicationVenueData, DocumentData } from "./types";
 import { environment } from "src/environments/environment";
 import {
     Core,
@@ -23,6 +23,8 @@ export class GraphStore {
     });
     searchTerm = signal('');
     weightNodes = signal(false);
+
+    logger = effect(() => console.log('GraphStore: graph updated', this.graph()));
 
     filteredGraph = computed(() => {
         const selectedNodeTypes = this.selectedDisplayFilters();
@@ -69,12 +71,13 @@ export class GraphStore {
 
     maxDegree = computed(() => this.degreeMap() ? Math.max(...Array.from(this.degreeMap().values())) : 0);
 
-    selectedDisplayFilters = signal(['Paper', 'Journal' ]);
+    selectedDisplayFilters = signal(['Paper', 'Journal', 'Document', 'Author']);
     displayFilterOptions = signal([
       { label: 'Author', value: 'Author' },
       { label: 'Paper', value: 'Paper' },
       { label: 'Journal', value: 'Journal' },
       { label: 'Publication Venue', value: 'PublicationVenue' },
+      { label: 'Document', value: 'Document' },
     ]);
 
     selectedAuthors = signal([] as string[]);
@@ -86,7 +89,7 @@ export class GraphStore {
         }));
     })
 
-    menuItems = [
+    nodeMenuItems = [
         {
             id: 'show-node',
             content: 'Details',
@@ -118,24 +121,27 @@ export class GraphStore {
             selector: 'node',
             onClickFunction: () => this.showAddDocuments(),
             show: true,
-        },
-        // {
-        //     id: 'refresh-graph',
-        //     content: 'Refresh Graph',
-        //     tooltipText: 'Reload graph from backend',
-        //     selector: 'core',
-        //     onClickFunction: () => this.fetchGraph(),
-        //     show: true,
-        // },
-        // {
-        //     id: 'bulk-add-documents',
-        //     content: 'Upload Documents',
-        //     tooltipText: 'Add document text to the graph',
-        //     selector: 'core',
-        //     onClickFunction: () => this.fetchGraph(),
-        //     show: true,
-        // }
+        }
     ]
+
+    canvasMenuItems = [
+        {
+            id: 'bulk-add-documents',
+            content: 'Bulk Add Documents',
+            tooltipText: 'Add Documents in Bulk',
+            selector: 'core', // 'core' targets the canvas/background
+            onClickFunction: () => this.bulkAddDocuments(),
+            show: true,
+        },
+        {
+            id: 'refresh-graph',
+            content: 'Refresh Graph',
+            tooltipText: 'Refresh the entire graph',
+            selector: 'core',
+            onClickFunction: () => this.refreshGraph(),
+            show: true,
+        }
+    ];
 
     showAddDocuments() {
         this.showDocumentDialog.set(true);
@@ -173,6 +179,8 @@ export class GraphStore {
             return (n.properties as JournalData).name;
         } else if (n.label === 'PublicationVenue') {
             return (n.properties as PublicationVenueData).name;
+        } else if (n.label === 'Document') {
+            return (n.properties as DocumentData).name;
         } else {
             return 'No Name';
         }
@@ -185,19 +193,18 @@ export class GraphStore {
         const key = this.selectedNodeKey();
         return this.getNode(key);
     });
+
     private fetchGraphSubject = new Subject<void>();
 
     constructor() {
         this.fetchGraphSubject.pipe(switchMap(() => this.fetchGraphFromBackend()))
             .subscribe((graph) => {
-                console.log('Graph fetched from backend:', graph);
                 this.graph.set(graph);
             });
 
         this.fetchGraph();
 
         this.events.events$.subscribe((event) => {
-            console.log('graph update')
             if (event.type === 'graph_updated') {
                 this.toastService.show('Graph updated!');
                 this.fetchGraph();
@@ -211,7 +218,6 @@ export class GraphStore {
 
     private fetchGraphFromBackend(): Observable<KnowledgeGraph> {
         const url = `${environment.apiBaseUrl}/graph/get/`;
-        console.log('fetch graph url', url);
         return this.http.get<KnowledgeGraph>(url);
     }
 
@@ -283,29 +289,53 @@ export class GraphStore {
         }
     }
 
+    bulkAddDocuments() {
+        this.showDocumentDialog.set(true);
+        this.selectedNodeKey.set('');
+    }
+
+    refreshGraph() {
+        this.fetchGraph();
+    }
+
     addContextMenu(cy: Core) {
+        const allMenuItems = [...this.nodeMenuItems, ...this.canvasMenuItems];
+        
         const ctx = cy.contextMenus({
-          menuItems: this.menuItems,
-          menuItemClasses: ['custom-context-menu-item'],
-          contextMenuClasses: ['custom-context-menu'],
+            menuItems: allMenuItems,
+            menuItemClasses: ['custom-context-menu-item'],
+            contextMenuClasses: ['custom-context-menu'],
         });
-    
+
         this.addRightClickEvents(cy, ctx);
     }
 
     private addRightClickEvents(cy: Core, ctx: contextMenus.ContextMenu) {
         cy.on('cxttap', 'node', (event) => {    
-          const id = event.target.data()?.id;
-          this.selectedNodeKey.set(id);
-          ctx.showMenuItem('show-node');
+            const id = event.target.data()?.id;
+            this.selectedNodeKey.set(id);
+            
+            this.canvasMenuItems.forEach(item => {
+                ctx.hideMenuItem(item.id);
+            });
+            
+            this.nodeMenuItems.forEach(item => {
+                ctx.showMenuItem(item.id);
+            });
         });
 
-        // cy.on('cxttap', (event) => {
-        //     if (event.target === cy) {
-        //         ctx.showMenuItem('bulk-add-documents');
-        //         ctx.showMenuItem('refresh-graph');
-        //     }
-        // });
+        // Handle right-click on canvas (background)
+        cy.on('cxttap', (event) => {
+            if (event.target === cy) {
+                this.nodeMenuItems.forEach(item => {
+                    ctx.hideMenuItem(item.id);
+                });
+                
+                this.canvasMenuItems.forEach(item => {
+                    ctx.showMenuItem(item.id);
+                });
+            }
+        });
     }
 
 
