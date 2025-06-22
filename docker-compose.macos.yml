@@ -107,6 +107,7 @@ services:
       OLLAMA_BASE_URL: http://host.docker.internal:11434
     volumes:
       - docs_data:/docs
+      - chat_data:/data	
     depends_on:
       nexarag.neo4j:
         condition: service_healthy
@@ -118,3 +119,4 @@ volumes:
   rabbit_data:
   ollama_data:
   docs_data:
+  chat_data:

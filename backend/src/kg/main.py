@@ -4,7 +4,7 @@ from rabbit import publish_message, subscribe_to_queue, ChannelType
 from rabbit.events import ChatMessage, ChatResponse, ResponseCompleted, DocumentGraphUpdated, GraphUpdated, EmbeddingPlotCreated
 from rabbit.commands import CreateEmbeddingPlot
 from kg.embeddings import init_graph, create_document_embeddings, create_abstract_embeddings
-from kg.rag import ask_llm_kg
+from kg.rag import ask_llm_kg_with_conversation
 from kg.visualization import create_plot
 
 logging.basicConfig(level=logging.INFO)
@@ -12,9 +12,13 @@ logger = logging.getLogger(__name__)
 
 async def ask_kg(message: ChatMessage, cb, complete):
     logger.info(f"Handling chat request: {message}")
-    for chunk in ask_llm_kg(message):
-        await cb(chunk)
-    await complete()
+    try:
+        for chunk in ask_llm_kg_with_conversation(message, message.chatId):
+            await cb(chunk)
+        await complete()
+    except Exception as e:
+        logger.error(f"Error in ask_kg: {e}")
+        await complete()
 
 async def handle_plot_request(message: CreateEmbeddingPlot):
     logger.info(f"Received plot request: {message}")
