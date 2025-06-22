@@ -127,7 +127,7 @@ class NomicEmbeddingAdapter(BaseEmbeddings):
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
     return SQLChatMessageHistory(
         session_id=session_id,
-        connection_string="sqlite:///chat_conversations.db"
+        connection_string="sqlite:////data/chat_conversations.db"
     )
 
 def create_rag_chain_with_memory(llm_adapter, emb_adapter, kg):    
@@ -173,8 +173,6 @@ def create_rag_chain_with_memory(llm_adapter, emb_adapter, kg):
         
         context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_docs])
         abstract_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_abstracts])
-
-        logger.info(f"Retrieved chunks {context_text} and abstracts {abstract_text} for question: {question}")
         
         return {
             "prefix": inputs.get("prefix", default_prefix),
@@ -216,20 +214,20 @@ def ask_llm_kg_with_conversation(message: ChatMessage, session_id: str = "defaul
 def clear_conversation_history(session_id: str = "default"):
     history = SQLChatMessageHistory(
         session_id=session_id,
-        connection_string="sqlite:///chat_conversations.db"
+        connection_string="sqlite:////data/chat_conversations.db"
     )
     history.clear()
 
 def get_conversation_history(session_id: str):
     history = SQLChatMessageHistory(
         session_id=session_id,
-        connection_string="sqlite:///chat_conversations.db"
+        connection_string="sqlite:////data/chat_conversations.db"
     )
     return history.messages
 
 def list_all_sessions():
     import sqlite3
-    conn = sqlite3.connect("chat_conversations.db")
+    conn = sqlite3.connect("/data/chat_conversations.db")
     cursor = conn.cursor()
     
     # Get all unique session IDs
@@ -252,7 +250,7 @@ def get_session_summary(session_id: str):
         "last_timestamp": history[-1].additional_kwargs.get('timestamp') if history else None
     }
 
-def restore_conversation_from_backup(backup_file: str, target_db: str = "chat_conversations.db"):
+def restore_conversation_from_backup(backup_file: str, target_db: str = "/data/chat_conversations.db"):
     import shutil
     shutil.copy2(backup_file, target_db)
     print(f"Conversations restored from {backup_file}")

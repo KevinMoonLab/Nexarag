@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
 import { GraphStore } from './graph.store';
 import { NodeCardComponent } from './node-dialog-card.component';

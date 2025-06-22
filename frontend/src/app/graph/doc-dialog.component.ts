@@ -2,11 +2,10 @@ import { Component, computed, effect, inject } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
 import { DividerModule } from 'primeng/divider';
 import { GraphStore } from './graph.store';
-import { FileUploadModule, UploadEvent } from 'primeng/fileupload';
+import { FileUploadModule } from 'primeng/fileupload';
 import { CommonModule } from '@angular/common';
 import { PaperData } from './types';
 import { environment } from 'src/environments/environment';
-import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../toast/toast.service';
 
 @Component({
