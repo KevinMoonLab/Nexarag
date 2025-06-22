@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 async def ask_kg(message: ChatMessage, cb, complete):
     logger.info(f"Handling chat request: {message}")
+    logger.info(f"Message ID: {message.messageId}")
     try:
         for chunk in ask_llm_kg_with_conversation(message, message.chatId):
             await cb(chunk)

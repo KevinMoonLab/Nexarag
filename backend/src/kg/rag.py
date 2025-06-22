@@ -10,6 +10,7 @@ from langchain_community.chat_message_histories import ChatMessageHistory, SQLCh
 from langchain_core.chat_history import BaseChatMessageHistory
 from db.util import load_default_kg
 from rabbit.events import ChatMessage
+from langchain_community.chat_message_histories import SQLChatMessageHistory
 
 import os
 import logging
@@ -123,21 +124,14 @@ class NomicEmbeddingAdapter(BaseEmbeddings):
     def prepare_query(self, query: str):
         return self.query_prefix + query
 
-# SQLite storage for conversation histories
-from langchain_community.chat_message_histories import SQLChatMessageHistory
-
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
-    """Get or create a SQLite-backed chat message history for a session"""
     return SQLChatMessageHistory(
         session_id=session_id,
         connection_string="sqlite:///chat_conversations.db"
     )
 
-def create_rag_chain_with_memory(llm_adapter, emb_adapter, kg):
-    """Create a RAG chain with conversation memory"""
-    
+def create_rag_chain_with_memory(llm_adapter, emb_adapter, kg):    
     def retrieve_context(inputs):
-        """Retrieve relevant documents and abstracts"""
         question = inputs["question"]
         prepared_question = emb_adapter.prepare_query(question)
 
@@ -174,11 +168,13 @@ def create_rag_chain_with_memory(llm_adapter, emb_adapter, kg):
             retrieval_query=abstract_query,
         )
 
-        retrieved_docs = doc_vector.similarity_search_with_score(prepared_question, k=10)
-        retrieved_abstracts = abstract_vector.similarity_search_with_score(prepared_question, k=10)
+        retrieved_docs = doc_vector.similarity_search_with_score(prepared_question, k=30)
+        retrieved_abstracts = abstract_vector.similarity_search_with_score(prepared_question, k=30)
         
         context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_docs])
         abstract_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_abstracts])
+
+        logger.info(f"Retrieved chunks {context_text} and abstracts {abstract_text} for question: {question}")
         
         return {
             "prefix": inputs.get("prefix", default_prefix),
@@ -188,10 +184,7 @@ def create_rag_chain_with_memory(llm_adapter, emb_adapter, kg):
             "chat_history": inputs.get("chat_history", [])
         }
     
-    # Create the chain: retrieve context -> format prompt -> LLM
     chain = retrieve_context | prompt_template_with_history | llm_adapter
-    
-    # Wrap with message history
     chain_with_history = RunnableWithMessageHistory(
         chain,
         get_session_history,
@@ -202,7 +195,6 @@ def create_rag_chain_with_memory(llm_adapter, emb_adapter, kg):
     return chain_with_history
 
 def ask_llm_kg_with_conversation(message: ChatMessage, session_id: str = "default"):
-    """Ask LLM with conversation memory using built-in LangChain functionality"""
     llm_adapter = LangChainWrapper(adapter=OllamaAdapter(
         model_id=message.model,
         num_ctx=message.numCtx,
@@ -212,11 +204,7 @@ def ask_llm_kg_with_conversation(message: ChatMessage, session_id: str = "defaul
 
     kg = load_default_kg()
     nomic_adapter = NomicEmbeddingAdapter(model_id='nomic-embed-text:v1.5')
-    
-    # Create the chain with conversation memory
     conversational_chain = create_rag_chain_with_memory(llm_adapter, nomic_adapter, kg)
-    
-    # Invoke with session configuration
     response = conversational_chain.stream(
         {"question": message.message, "prefix": message.prefix or default_prefix},
         config={"configurable": {"session_id": session_id}}
@@ -226,8 +214,6 @@ def ask_llm_kg_with_conversation(message: ChatMessage, session_id: str = "defaul
         yield chunk.content if hasattr(chunk, 'content') else str(chunk)
 
 def clear_conversation_history(session_id: str = "default"):
-    """Clear conversation history for a session"""
-    # For SQLite, we create a new instance and clear it
     history = SQLChatMessageHistory(
         session_id=session_id,
         connection_string="sqlite:///chat_conversations.db"
@@ -235,7 +221,6 @@ def clear_conversation_history(session_id: str = "default"):
     history.clear()
 
 def get_conversation_history(session_id: str):
-    """Retrieve conversation history for a session"""
     history = SQLChatMessageHistory(
         session_id=session_id,
         connection_string="sqlite:///chat_conversations.db"
@@ -243,7 +228,6 @@ def get_conversation_history(session_id: str):
     return history.messages
 
 def list_all_sessions():
-    """List all conversation sessions in the database"""
     import sqlite3
     conn = sqlite3.connect("chat_conversations.db")
     cursor = conn.cursor()
@@ -256,7 +240,6 @@ def list_all_sessions():
     return sessions
 
 def get_session_summary(session_id: str):
-    """Get a summary of a conversation session"""
     history = get_conversation_history(session_id)
     if not history:
         return {"session_id": session_id, "message_count": 0, "last_message": None}
@@ -270,19 +253,16 @@ def get_session_summary(session_id: str):
     }
 
 def restore_conversation_from_backup(backup_file: str, target_db: str = "chat_conversations.db"):
-    """Restore conversations from a backup SQLite file"""
     import shutil
     shutil.copy2(backup_file, target_db)
     print(f"Conversations restored from {backup_file}")
 
 def backup_conversations(backup_file: str = "chat_backup.db"):
-    """Create a backup of all conversations"""
     import shutil
     shutil.copy2("chat_conversations.db", backup_file)
     print(f"Conversations backed up to {backup_file}")
 
 async def ask_kg(message: ChatMessage, cb, complete, session_id: str = "default"):
-    """Updated async function to use conversation memory"""
     logger.info(f"Handling chat request: {message}")
     try:
         for chunk in ask_llm_kg_with_conversation(message, session_id):
@@ -291,81 +271,3 @@ async def ask_kg(message: ChatMessage, cb, complete, session_id: str = "default"
     except Exception as e:
         logger.error(f"Error in ask_kg: {e}")
         await complete()
-
-# Keep the original function for backward compatibility
-def ask_llm_kg(message: ChatMessage):
-    """Original function without conversation history"""
-    llm_adapter = OllamaAdapter(
-        model_id=message.model,
-        num_ctx=message.numCtx,
-        num_predict=message.numPredict,
-        temperature=message.temperature,
-    )
-
-    kg = load_default_kg()
-    nomic_adapter = NomicEmbeddingAdapter(model_id='nomic-embed-text:v1.5')
-
-    # Original prompt template without conversation history
-    original_prompt_template = """
-        {prefix}
-
-        Abstracts:
-        {abstracts}
-
-        Chunks:
-        {chunks}
-
-        Question:
-        {question}
-
-        Answer:
-    """
-
-    prepared_question = nomic_adapter.prepare_query(message.message)
-
-    doc_query = """
-        MATCH (c:Chunk)
-        WITH DISTINCT c, vector.similarity.cosine(c.textEmbedding, $embedding) AS score
-        ORDER BY score DESC LIMIT $k
-        RETURN c.text AS text, score, {source: c.source, chunkId: c.chunkId} AS metadata
-    """
-
-    doc_vector = Neo4jVector.from_existing_index(
-        nomic_adapter.embeddings,
-        graph=kg,
-        index_name='paper_chunks',
-        embedding_node_property='textEmbedding',
-        text_node_property='text',
-        retrieval_query=doc_query,
-    )
-
-    abstract_query = """
-        MATCH (c:Paper)
-        WHERE c.abstract IS NOT NULL AND c.title IS NOT NULL
-        WITH DISTINCT c, vector.similarity.cosine(c.abstractEmbedding, $embedding) AS score
-        ORDER BY score DESC LIMIT $k
-        RETURN 'Title: ' + c.title + '\n\n' + 'Abstract: ' + c.abstract AS text, score, {source: c.source, chunkId: c.chunkId} AS metadata
-    """
-
-    abstract_vector = Neo4jVector.from_existing_index(
-        nomic_adapter.embeddings,
-        graph=kg,
-        index_name='abstract_embeddings',
-        embedding_node_property='abstractEmbedding',
-        text_node_property='text',
-        retrieval_query=abstract_query,
-    )
-
-    retrieved_docs = doc_vector.similarity_search_with_score(prepared_question, k=10)
-    retrieved_abstracts = abstract_vector.similarity_search_with_score(prepared_question, k=10)
-    context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_docs])
-    abstract_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_abstracts])
-    prompt = original_prompt_template.format(
-        prefix=message.prefix or default_prefix, 
-        abstracts=abstract_text, 
-        chunks=context_text, 
-        question=message.message
-    )
-
-    for chunk in llm_adapter.stream(prompt):
-        yield chunk
