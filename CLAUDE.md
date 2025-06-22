@@ -131,3 +131,88 @@ docker compose stats
 3. For frontend: Use `nx serve` for development server with live reload
 4. Services communicate via RabbitMQ - check logs for debugging inter-service issues
 5. Use Jupyter notebooks in `backend/notebooks/` for data exploration and prototyping
+
+## Backend Architecture Details
+
+### Service Communication Patterns
+Services communicate asynchronously via RabbitMQ using fan-out exchanges with durable queues. Each service subscribes to relevant channels and publishes events/commands using Pydantic models:
+
+```python
+# Publishing pattern
+await publish_message(ChannelType.ADD_PAPER, AddPapersById(paper_ids=papers))
+
+# Subscription pattern  
+await subscribe_to_queue(ChannelType.GRAPH_UPDATED, handle_update_result, GraphUpdated)
+```
+
+### Database Layer Architecture
+The database service (`backend/src/db/`) was moved from `backend/src/kg/db/` and uses:
+- **Neomodel OGM** with `AsyncStructuredNode` for all models
+- **Vector embeddings** with 768-dimension cosine similarity indices  
+- **Key models**: Paper (with embeddings), Author, PublicationVenue, Document, Chat entities, Tag
+- **Connection management** using context managers for database operations
+
+### Backend Development Commands
+```bash
+# Backend testing (when available)
+cd backend && poetry run pytest
+
+# Run specific service for debugging
+cd backend/src && python -m api.main  # API service
+cd backend/src && python -m kg.main   # Knowledge graph service
+
+# Database operations
+# Access Neo4j directly: http://localhost:7474 (neo4j/password)
+# RabbitMQ management: http://localhost:15672 (guest/guest)
+```
+
+## Frontend Architecture Details
+
+### Component Architecture
+The Angular 19 application uses standalone components with signal-based state management:
+
+- **Shell Structure**: AppComponent → ShellComponent → ViewportComponent
+- **Main Components**: GraphComponent (Cytoscape.js), PlotComponent (Plotly.js), ChatComponent, MenuComponent
+- **State Management**: GraphStore (signals), ChatService, EventService (WebSocket)
+
+### Visualization Libraries Integration
+- **Cytoscape.js**: Graph visualization with context menus, dynamic layouts, node selection syncing
+- **Plotly.js**: PCA visualization of document embeddings with interactive scatter plots
+- **Real-time updates**: WebSocket events drive UI updates (graph_updated, chat_response)
+
+### Frontend Development Commands
+```bash
+cd frontend
+
+# Specific testing commands
+nx test --watch                    # Watch mode testing
+nx test --coverage                 # Coverage reports
+nx build --configuration=production  # Production build
+
+# Linting and formatting
+nx lint --fix                      # Auto-fix linting issues
+```
+
+## Development Environment Setup
+
+### DevContainer Development
+The project includes a devcontainer configuration for backend development:
+```bash
+# Start devcontainer services
+cd .devcontainer && docker compose up -d
+
+# Jupyter Lab will be available at http://localhost:8888
+# Use Python 3.11.11 kernel for notebooks
+```
+
+### Database Service Location
+**Important**: Database models and queries are located in `backend/src/db/` (not `backend/src/kg/db/`). This includes:
+- `models.py`: Neomodel AsyncStructuredNode definitions
+- `queries.py`: Database query operations  
+- `builder.py`: Graph construction logic
+
+## Common Development Issues
+- **Tag Model**: Ensure Tag class exists in `backend/src/db/models.py` when adding tag relationships to Paper
+- **Ollama Models**: Required models must be pulled before LLM functionality works
+- **Rate Limiting**: Semantic Scholar API is rate-limited; graph updates may take several minutes
+- **Service Dependencies**: Services depend on Neo4j and RabbitMQ health checks

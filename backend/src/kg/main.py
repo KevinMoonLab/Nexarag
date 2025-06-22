@@ -2,7 +2,7 @@ import asyncio
 import logging
 from kg.llm.chat import ask_llm_kg_with_conversation
 from kg.llm.visualization import create_plot
-from kg.llm.embeddings import create_document_embeddings, create_abstract_embeddings
+from kg.llm.embeddings import create_document_embeddings
 from rabbit import publish_message, subscribe_to_queue, ChannelType
 from kg.db.util import load_kg_db
 from kg.db.commands import clear_graph
