@@ -7,6 +7,11 @@ from typing import List
 from pydantic import BaseModel
 from langchain_ollama import OllamaLLM
 import re
+import logging
+from urllib.parse import unquote
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 ALLOWED_FILE_TYPES = {"application/pdf", "text/markdown", "text/plain"}
 class UploadFileResponse(BaseModel):
@@ -17,14 +22,58 @@ class UploadFileResponse(BaseModel):
     message: str
     size: int
 
+def clean_filename(filename: str) -> str:
+    if not filename:
+        return filename
+    
+    cleaned = unquote(filename)
+    return cleaned
+
+def get_file_type_from_extension(filename: str) -> str:
+    if not filename:
+        return "unknown"
+    
+    ext = os.path.splitext(filename)[1].lower()
+    
+    if ext == ".pdf":
+        return "application/pdf"
+    elif ext == ".md":
+        return "text/markdown"
+    elif ext == ".txt":
+        return "text/plain"
+    else:
+        return "unknown"
+
+def is_allowed_file(doc: UploadFile) -> bool:
+    if doc.content_type in {"application/pdf", "text/markdown", "text/plain"}:
+        return True
+    
+    if doc.content_type == "application/octet-stream":
+        file_type = get_file_type_from_extension(doc.filename)
+        return file_type in {"application/pdf", "text/markdown", "text/plain"}
+    
+    return False
+
+def get_effective_content_type(doc: UploadFile) -> str:
+    if doc.content_type == "application/octet-stream":
+        return get_file_type_from_extension(doc.filename)
+    return doc.content_type
+
 async def upload_many(docs: List[UploadFile], ollama_base_url: str) -> List[UploadFileResponse]:
     upload_info = []
     for doc in docs:
-        result = await upload(doc, ollama_base_url)
-        upload_info.append(result)
+        try:
+            result = await upload(doc, ollama_base_url)
+            upload_info.append(result)
+        except HTTPException as e:
+            logger.error(f"{e.status_code}: {e.detail}")
+            logger.error(f"Failed to upload {doc.filename}: {e.detail}")
+            # Don't re-raise, continue with other files
+        except Exception as e:
+            logger.error(f"Unexpected error uploading {doc.filename}: {str(e)}")
     return upload_info
 
-def extract_title_ollama(content: str, filename: str, ollama_base_url:str, model: str = "gemma3:12b", max_chars: int = 2000) -> str:
+def extract_title_ollama(content: str, filename: str, ollama_base_url: str, model: str = "gemma3:12b", max_chars: int = 2000) -> str:
     try:
         content_sample = content.strip()[:max_chars]
         
@@ -46,40 +95,32 @@ Document content:
 
 Title:"""
 
-        # Use your existing Ollama setup
         llm = OllamaLLM(model=model, base_url=ollama_base_url)
         response = llm.invoke(prompt)
         
-        # Clean up the response
         title = response.strip()
-        
-        # Remove common prefixes that models sometimes add
         title = re.sub(r'^(Title:\s*|The title is:\s*|"\s*|Title\s*[-:]\s*)', '', title, flags=re.IGNORECASE)
-        title = re.sub(r'["\n\r]+', '', title)  # Remove quotes and newlines
+        title = re.sub(r'["\n\r]+', '', title)
         title = title.strip()
         
-        # Validate the extracted title
         if title and 5 <= len(title) <= 100 and not title.lower().startswith(('i ', 'the document', 'this document')):
             return title
         else:
-            # Fallback to heuristic if AI response is poor
             return extract_title_heuristic(content, filename)
             
     except Exception as e:
-        print(f"Error extracting title with Ollama: {e}")
+        logger.error(f"Error extracting title with Ollama: {e}")
         return extract_title_heuristic(content, filename)
 
 def extract_title_heuristic(content: str, filename: str) -> str:
     lines = content.strip().split('\n')
     
-    # Remove empty lines from the beginning
     while lines and not lines[0].strip():
         lines.pop(0)
     
     if not lines:
         return os.path.splitext(filename)[0]
     
-    # Look for markdown headers first
     for line in lines[:10]:
         line = line.strip()
         if line.startswith('# '):
@@ -87,7 +128,6 @@ def extract_title_heuristic(content: str, filename: str) -> str:
         elif line.startswith('## '):
             return line[3:].strip()
     
-    # Look for lines that might be titles
     for line in lines[:5]:
         line = line.strip()
         if line and len(line) < 100:
@@ -97,18 +137,28 @@ def extract_title_heuristic(content: str, filename: str) -> str:
     
     return os.path.splitext(filename)[0]
 
-async def upload(doc: UploadFile, ollama_base_url:str, extraction_method: str = "ollama", ollama_model: str = "gemma3:12b") -> UploadFileResponse:
-    if doc.content_type not in ALLOWED_FILE_TYPES:
+async def upload(doc: UploadFile, ollama_base_url: str, extraction_method: str = "ollama", ollama_model: str = "gemma3:12b") -> UploadFileResponse:
+    # Check if file is allowed
+    if not is_allowed_file(doc):
+        allowed_extensions = [".pdf", ".md", ".txt"]
         raise HTTPException(
             status_code=400,
-            detail=f"File type {doc.content_type} not allowed. Allowed types are: {ALLOWED_FILE_TYPES}"
+            detail=f"File type not allowed. Allowed file extensions are: {allowed_extensions}. Received: {doc.content_type} for {doc.filename}"
         )
+    
+    # Get effective content type (handles application/octet-stream cases)
+    effective_content_type = get_effective_content_type(doc)
+    
+    # Clean the filename to remove URL encoding
+    clean_name = clean_filename(doc.filename)
+    
+    logger.info(f"Uploading {clean_name} - Original MIME: {doc.content_type}, Effective: {effective_content_type}")
     
     content = await doc.read()
     file_id = create_id()
     extracted_title = None
 
-    if doc.content_type == "application/pdf":
+    if effective_content_type == "application/pdf":
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
             temp_pdf.write(content)
             temp_pdf_path = temp_pdf.name
@@ -116,11 +166,10 @@ async def upload(doc: UploadFile, ollama_base_url:str, extraction_method: str = 
         try:
             markdown_content = pymupdf4llm.to_markdown(temp_pdf_path)
             
-            # Extract title based on method
             if extraction_method == "ollama":
-                extracted_title = extract_title_ollama(markdown_content, doc.filename, ollama_base_url, ollama_model)
+                extracted_title = extract_title_ollama(markdown_content, clean_name, ollama_base_url, ollama_model)
             else:
-                extracted_title = extract_title_heuristic(markdown_content, doc.filename)
+                extracted_title = extract_title_heuristic(markdown_content, clean_name)
             
         except Exception as e:
             os.unlink(temp_pdf_path)
@@ -131,46 +180,58 @@ async def upload(doc: UploadFile, ollama_base_url:str, extraction_method: str = 
         finally:
             os.unlink(temp_pdf_path)
         
-        og_name, _ = os.path.splitext(doc.filename)
+        og_name, _ = os.path.splitext(clean_name)  # Use cleaned name
         markdown_filename = f"{og_name}-{file_id}.md"
         
         with open(f"/docs/{markdown_filename}", "w", encoding="utf-8") as md_file:
             md_file.write(markdown_content)
 
-        with open(f"/docs/{doc.filename}", "wb") as pdf_file:
+        # Save original file with cleaned name
+        with open(f"/docs/{clean_name}", "wb") as pdf_file:
             pdf_file.write(content)
 
         return UploadFileResponse(
             id=file_id,
             path=markdown_filename,
-            og_path=doc.filename,
+            og_path=clean_name,  # Use cleaned name
             name=extracted_title,
             message="PDF uploaded and converted to markdown successfully",
             size=len(markdown_content)
         )
 
-    else:  # Text/markdown files
-        text_content = content.decode('utf-8')
+    else: 
+        try:
+            text_content = content.decode('utf-8')
+        except UnicodeDecodeError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File {clean_name} is not a valid text file"
+            )
         
-        # Extract title based on method
         if extraction_method == "ollama":
-            extracted_title = extract_title_ollama(text_content, doc.filename, ollama_model)
+            extracted_title = extract_title_ollama(text_content, clean_name, ollama_base_url, ollama_model)
         else:
-            extracted_title = extract_title_heuristic(text_content, doc.filename)
+            extracted_title = extract_title_heuristic(text_content, clean_name)
         
-        file_extension = "md" if doc.content_type == "text/markdown" else "txt"
-        filename = f"/docs/{file_id}.{file_extension}"
+        if effective_content_type == "text/markdown" or clean_name.endswith('.md'):
+            file_extension = "md"
+        else:
+            file_extension = "txt"
+            
+        filename = f"{file_id}.{file_extension}"
         
-        with open(filename, "wb") as file:
+        with open(f"/docs/{filename}", "wb") as file:
             file.write(content)
+
+        # Save original file with cleaned name
+        with open(f"/docs/{clean_name}", "wb") as original_file:
+            original_file.write(content)
         
         return UploadFileResponse(
             id=file_id,
             path=filename,
-            og_path=doc.filename,
-            name=extracted_title or os.path.splitext(doc.filename)[0],
+            og_path=clean_name,  # Use cleaned name
+            name=extracted_title or os.path.splitext(clean_name)[0],
             message="File uploaded successfully",
             size=len(content)
         )
-        
-        

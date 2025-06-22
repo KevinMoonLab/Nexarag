@@ -27,6 +27,7 @@ async def handle_documents_created(docs: DocumentsCreated):
         else:
             logger.info(result.message)
             await publish_message(ChannelType.DOCUMENT_GRAPH_UPDATED, DocumentGraphUpdated(doc=new_doc))
+            await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=[]))
 
 async def handle_add_papers(message: AddPapersById):
     logger.info(f"Received add paper request: {message}")

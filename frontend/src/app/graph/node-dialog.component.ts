@@ -93,6 +93,6 @@ export class NodeDialogComponent {
 
   getDocumentUrl(path: string | undefined): string {
     if (!path) return '';
-    return `${environment.apiBaseUrl}/docs/${path}`;
+    return `${environment.apiBaseUrl}/documents/${path}`;
   }
 }

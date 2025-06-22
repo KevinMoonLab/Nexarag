@@ -21,7 +21,7 @@ import { ToastService } from '../toast/toast.service';
     <p-divider />
     <p-fileUpload  
       (onUpload)="onUpload($event)" 
-      [multiple]="false" 
+      [multiple]="selectedNode() == null" 
       [url]="url()"
       accept=".md,.txt,.pdf" 
       maxFileSize="100000000" 
