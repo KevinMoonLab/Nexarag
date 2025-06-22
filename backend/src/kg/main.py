@@ -119,25 +119,16 @@ async def main():
 
     logger.info("Subscribing to RabbitMQ events...")
     await asyncio.gather(
-        # Papers
         subscribe_to_queue(ChannelType.ADD_PAPER, handle_add_papers, AddPapersById),
         subscribe_to_queue(ChannelType.ADD_PAPER_BY_TITLE, handle_add_papers_by_title, AddPapersByTitle),
         subscribe_to_queue(ChannelType.ADD_CITATIONS, handle_add_citations, AddPaperCitations),
         subscribe_to_queue(ChannelType.ADD_REFERENCES, handle_add_references, AddPaperReferences),
-
-        # Chat
         subscribe_to_queue(ChannelType.CHAT_MESSAGE, handle_chat_message, ChatMessage),
         subscribe_to_queue(ChannelType.CHAT_RESPONSE, handle_chat_response, ChatResponse),
         subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message, ChatMessage),
-
-        # Docs
         subscribe_to_queue(ChannelType.DOCUMENTS_CREATED, handle_documents_created, DocumentsCreated),
         subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, create_document_embeddings, DocumentGraphUpdated),
-
-        # Visualization
         subscribe_to_queue(ChannelType.EMBEDDING_PLOT_REQUESTED, handle_plot_request, CreateEmbeddingPlot),
-
-        # Graph
         subscribe_to_queue(ChannelType.CLEAR_GRAPH, handle_clear_graph, ClearGraph),
     )
 

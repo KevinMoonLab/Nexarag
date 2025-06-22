@@ -11,6 +11,7 @@ from langchain_core.chat_history import BaseChatMessageHistory
 from kg.db.util import load_default_kg
 from rabbit.events import ChatMessage
 from langchain_community.chat_message_histories import SQLChatMessageHistory
+from neomodel import db
 
 import os
 import logging
@@ -130,59 +131,81 @@ def get_session_history(session_id: str) -> BaseChatMessageHistory:
         connection_string="sqlite:////data/chat_conversations.db"
     )
 
-def create_rag_chain_with_memory(llm_adapter, emb_adapter, kg):    
-    def retrieve_context(inputs):
-        question = inputs["question"]
-        prepared_question = emb_adapter.prepare_query(question)
+def retrieve_context_wrapper(emb_adapter):
+    return lambda inputs: retrieve_context(emb_adapter, inputs)
 
-        doc_query = """
-            MATCH (c:Chunk)
-            WITH DISTINCT c, vector.similarity.cosine(c.textEmbedding, $embedding) AS score
-            ORDER BY score DESC LIMIT $k
-            RETURN c.text AS text, score, {source: c.source, chunkId: c.chunkId} AS metadata
-        """
-
-        doc_vector = Neo4jVector.from_existing_index(
-            emb_adapter.embeddings,
-            graph=kg,
-            index_name='paper_chunks',
-            embedding_node_property='textEmbedding',
-            text_node_property='text',
-            retrieval_query=doc_query,
-        )
-
-        abstract_query = """
-            MATCH (c:Paper)
-            WHERE c.abstract IS NOT NULL AND c.title IS NOT NULL
-            WITH DISTINCT c, vector.similarity.cosine(c.abstractEmbedding, $embedding) AS score
-            ORDER BY score DESC LIMIT $k
-            RETURN 'Title: ' + c.title + '\n\n' + 'Abstract: ' + c.abstract AS text, score, {source: c.source, chunkId: c.chunkId} AS metadata
-        """
-
-        abstract_vector = Neo4jVector.from_existing_index(
-            emb_adapter.embeddings,
-            graph=kg,
-            index_name='abstract_embeddings',
-            embedding_node_property='abstractEmbedding',
-            text_node_property='text',
-            retrieval_query=abstract_query,
-        )
-
-        retrieved_docs = doc_vector.similarity_search_with_score(prepared_question, k=30)
-        retrieved_abstracts = abstract_vector.similarity_search_with_score(prepared_question, k=30)
-        
-        context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_docs])
-        abstract_text = "\n\n---\n\n".join([doc.page_content for doc, _ in retrieved_abstracts])
-        
-        return {
-            "prefix": inputs.get("prefix", default_prefix),
-            "abstracts": abstract_text,
-            "chunks": context_text,
-            "question": question,
-            "chat_history": inputs.get("chat_history", [])
-        }
+def retrieve_context(emb_adapter, inputs):
+    question = inputs["question"]
+    prepared_question = emb_adapter.prepare_query(question)
+    question_embedding = emb_adapter.embeddings.embed_query(prepared_question)
+    chunk_results = retrieve_similar_chunks(question_embedding, k=30)
+    abstract_results = retrieve_similar_abstracts(question_embedding, k=30)
+    context_text = "\n\n---\n\n".join([result['text'] for result in chunk_results])
+    abstract_text = "\n\n---\n\n".join([result['text'] for result in abstract_results])
     
-    chain = retrieve_context | prompt_template_with_history | llm_adapter
+    return {
+        "prefix": inputs.get("prefix", default_prefix),
+        "abstracts": abstract_text,
+        "chunks": context_text,
+        "question": question,
+        "chat_history": inputs.get("chat_history", [])
+    }
+
+def retrieve_similar_chunks(embedding, k=30):
+    query = """
+        MATCH (c:Chunk)
+        WITH DISTINCT c, vector.similarity.cosine(c.textEmbedding, $embedding) AS score
+        WHERE score > 0.5 
+        ORDER BY score DESC LIMIT $k
+        RETURN c.text AS text, score, c.source AS source, c.chunkId AS chunkId
+    """
+    
+    results, meta = db.cypher_query(
+        query, 
+        {'embedding': embedding, 'k': k}
+    )
+    
+    return [
+        {
+            'text': row[0],
+            'score': row[1],
+            'metadata': {
+                'source': row[2],
+                'chunkId': row[3]
+            }
+        }
+        for row in results
+    ]
+
+def retrieve_similar_abstracts(embedding, k=30):
+    query = """
+        MATCH (p:Paper)
+        WHERE p.abstract IS NOT NULL AND p.title IS NOT NULL
+        WITH DISTINCT p, vector.similarity.cosine(p.abstract_embedding, $embedding) AS score
+        WHERE score > 0.5 
+        ORDER BY score DESC LIMIT $k
+        RETURN 'Title: ' + p.title + '\\n\\n' + 'Abstract: ' + p.abstract AS text, 
+               score, p.paper_id AS paper_id
+    """
+    
+    results, meta = db.cypher_query(
+        query, 
+        {'embedding': embedding, 'k': k}
+    )
+    
+    return [
+        {
+            'text': row[0],
+            'score': row[1],
+            'metadata': {
+                'paper_id': row[2]
+            }
+        }
+        for row in results
+    ]
+
+def create_rag_chain_with_memory(llm_adapter, emb_adapter):
+    chain = retrieve_context_wrapper(emb_adapter) | prompt_template_with_history | llm_adapter
     chain_with_history = RunnableWithMessageHistory(
         chain,
         get_session_history,
@@ -200,9 +223,8 @@ def ask_llm_kg_with_conversation(message: ChatMessage, session_id: str = "defaul
         temperature=message.temperature,
     ))
 
-    kg = load_default_kg()
     nomic_adapter = NomicEmbeddingAdapter(model_id='nomic-embed-text:v1.5')
-    conversational_chain = create_rag_chain_with_memory(llm_adapter, nomic_adapter, kg)
+    conversational_chain = create_rag_chain_with_memory(llm_adapter, nomic_adapter)
     response = conversational_chain.stream(
         {"question": message.message, "prefix": message.prefix or default_prefix},
         config={"configurable": {"session_id": session_id}}
