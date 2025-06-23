@@ -25,12 +25,10 @@ async def handle_documents_created(docs: DocumentsCreated):
     logger.info(f"Received documents: {docs}")
     saved_docs = await add_document_refs(docs)
     for result, new_doc in zip(saved_docs, docs.documents):
-        if not result.success:
-            logger.error(result.message)
-        else:
-            logger.info(result.message)
+        if result.success:
             await publish_message(ChannelType.DOCUMENT_GRAPH_UPDATED, DocumentGraphUpdated(doc=new_doc))
             await publish_message(ChannelType.GRAPH_UPDATED, GraphUpdated(nodeIds=[]))
+        logger.error(result.message)
 
 async def handle_add_papers(message: AddPapersById):
     logger.info(f"Received add paper request: {message}")

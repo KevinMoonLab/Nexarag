@@ -8,7 +8,6 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
-from kg.db.util import load_default_kg
 from rabbit.events import ChatMessage
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 from neomodel import db
@@ -22,7 +21,7 @@ ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 default_prefix = """
     You are a helpful research assistant that provides detailed answers about academic papers using retrieved context as well as your own knowledge.
     The context consists of both abstracts and chunks of text from the papers.
-    Based on the following context, provide as much detail as possible in response to the question based primarily on the context, but also including any existing knowledge you have of the topic.
+    Based on the following context, provide a concise response that directly addresses the question, drawing from the context while also including any existing knowledge you have of the topic.
     If the context lacks the requested information, provide a reasonable response while acknowledging your limited knowledge of the topic.
     Always explicitly cite the title in the context you used to answer the question, if it is available.
     

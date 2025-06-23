@@ -1,7 +1,5 @@
 from kg.db.models import Paper, PublicationVenue, Journal, Author
-from scholar.models import Paper as ScholarPaper
 from typing import List
-from neomodel import adb
 from scholar.api import enrich_papers, enrich_authors, get_citations, get_references
 from scholar.util import retry
 from kg.llm.embeddings import create_abstract_embedding
