@@ -3,8 +3,8 @@ import matplotlib.colors as mcolors
 import pandas as pd
 from sklearn.decomposition import PCA
 from langchain_neo4j import Neo4jVector
-from db.util import load_default_kg
-from kg.rag import NomicEmbeddingAdapter
+from kg.db.util import load_default_kg
+from kg.llm.chat import NomicEmbeddingAdapter
         
 def process_color_vector(raw_color_data, mode, date_format="%Y-%m-%d", compute_norm=False, **kwargs):
     if mode == 'categorical':

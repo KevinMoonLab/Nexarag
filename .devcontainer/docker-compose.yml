@@ -1,32 +1,17 @@
 services:
-  neo4j.dev:
+  nexarag.neo4j.dev:
     image: neo4j:latest
-    container_name: neo4j.dev
+    container_name: nexarag.neo4j.dev
     restart: unless-stopped
     environment:
-      - NEO4J_AUTH=${NEO4J_USERNAME}/${NEO4J_PASSWORD}
-      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_AUTH=neo4j/password
       - NEO4J_apoc_export_file_enabled=true
       - NEO4J_apoc_import_file_enabled=true
       - NEO4J_apoc_import_file_use__neo4j__config=true
-      - NEO4J_PLUGINS=\[\"apoc\"\]
-    ports:
-      - "${NEO4J_DB_PORT}:7474"
-      - "${NEO4J_APP_PORT}:7687"
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.meta.data
+      - NEO4J_PLUGINS=["apoc"]
     volumes:
-      - ${NEO4J_VOLUME}:/data
-      
-  rabbitmq.dev:
-    image: rabbitmq:3.11-management
-    container_name: rabbitmq.dev
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - ${RABBITMQ_VOLUME}:/var/lib/rabbitmq
+      - neo4j_data:/data
 
   nexarag.dev:
     container_name: nexarag.dev
@@ -35,27 +20,39 @@ services:
       dockerfile: ../.devcontainer/Dockerfile
     volumes:
       - ../backend:/app
-    env_file:
-      - .env
     environment:
       - OLLAMA_BASE_URL=http://ollama.dev:11434
     depends_on:
-      - neo4j.dev
-      - rabbitmq.dev
+      - nexarag.neo4j.dev
     ports:
       - "8888:8888"
+      
+  # nexarag.rabbitmq.dev:
+  #   image: rabbitmq:3.11-management
+  #   container_name: rabbitmq.dev
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
+  #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   volumes:
+  #     - ${RABBITMQ_VOLUME}:/var/lib/rabbitmq
 
-  ollama.dev:
-    image: ollama/ollama
-    container_name: ollama.dev
-    ports:
-      - "11434:11434"
-    volumes:
-      - ${OLLAMA_VOLUME}:/root/.ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+  # ollama.dev:
+  #   image: ollama/ollama
+  #   container_name: ollama.dev
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ${OLLAMA_VOLUME}:/root/.ollama
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+
+volumes:
+  neo4j_data:

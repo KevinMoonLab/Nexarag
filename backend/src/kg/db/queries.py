@@ -9,12 +9,26 @@ def get_all_papers(kg):
     return result
 
 def get_graph(kg):
-    cypher = """
+    # Get relationships
+    cypher_rels = """
     MATCH (n)-[r]->(m)
+    WHERE (n:Paper OR n:Author OR n:Document OR n:PublicationVenue OR n:Journal)
+      AND (m:Paper OR m:Author OR m:Document OR m:PublicationVenue OR m:Journal)
     RETURN n, r, m
     """
-    result = run_query(kg, cypher)
-    return result
+    
+    # Get isolated nodes
+    cypher_isolated = """
+    MATCH (n)
+    WHERE (n:Paper OR n:Author OR n:Document OR n:PublicationVenue OR n:Journal)
+      AND NOT (n)-[]-()
+    RETURN n, null as r, null as m
+    """
+    
+    relationships = run_query(kg, cypher_rels)
+    isolated = run_query(kg, cypher_isolated)
+    
+    return relationships + isolated
 
 def search_papers_by_id(kg, paper_id):
     cypher = """

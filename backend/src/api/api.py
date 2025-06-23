@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDisconnect, Depends
 from typing import List
-from db.util import check_connection as check_neo4j_connection, load_kg_db
-from db.queries import search_papers_by_id, get_all_papers, get_graph
+from kg.db.util import check_connection as check_neo4j_connection, load_kg_db
+from kg.db.queries import search_papers_by_id, get_all_papers, get_graph
 from rabbit.commands import (
     AddPaperCitations, AddPaperReferences, AddPapersById, 
     AddPapersByTitle, ClearGraph, PaperTitleWithYear
@@ -10,7 +10,7 @@ from rabbit.events import (
     GraphUpdated, ChatMessage, ChatResponse, ResponseCompleted, DocumentCreated, 
     DocumentsCreated, EmbeddingPlotCreated
 )
-
+from pathlib import Path
 from rabbit.commands import CreateEmbeddingPlot
 from scholar.api import relevance_search
 from scholar.models import Paper
@@ -24,11 +24,12 @@ import bibtexparser
 from contextlib import asynccontextmanager
 import asyncio
 import logging
-from kg.rag import default_prefix
+from kg.llm.chat import default_prefix
 from .types import BibTexPaper, BibTexRequest
 from ollama import Client
 from langchain_ollama.llms import OllamaLLM
 import os
+from fastapi.staticfiles import StaticFiles
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 
 
@@ -79,6 +80,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Nexarag API", description="API for managing the Nexarag knowledge graph", lifespan=lifespan)
 
+app.mount("/documents", StaticFiles(directory="/docs"), name="docs")
+
 @app.websocket("/ws/events/")
 async def websocket_endpoint(websocket: WebSocket, manager: ConnectionManager = Depends(get_connection_manager)):
     await manager.connect(websocket)
@@ -90,10 +93,10 @@ async def websocket_endpoint(websocket: WebSocket, manager: ConnectionManager = 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"], 
+    allow_headers=["*"],
 )
 
 ######################## General ########################
@@ -210,13 +213,56 @@ def get_default_prefix():
 
 @app.post("/docs/upload/{paper_id}", tags=["Documents"])
 async def upload_docs(paper_id:str, docs: List[UploadFile] = File(...)):
-    upload_info = await upload_many(docs)
-    documents = [DocumentCreated(id=doc.id, node_id=paper_id, path=doc.path) for doc in upload_info]
+    upload_info = await upload_many(docs, ollama_base_url)
+    documents = [DocumentCreated(id=doc.id, node_id=paper_id, path=doc.path, og_path=doc.og_path, name=doc.name) for doc in upload_info]
     message = DocumentsCreated(documents=documents)
     await publish_message(ChannelType.DOCUMENTS_CREATED, message)
     return {
         "message": "Files uploaded successfully",
         "files": upload_info
+    }
+
+@app.post("/docs/bulk/upload/", tags=["Documents"])
+async def upload_docs_no_paper(docs: List[UploadFile] = File(...)):
+    logger.info(f"Uploading {len(docs)} documents without associated paper")
+    upload_info = await upload_many(docs, ollama_base_url)
+    documents = [DocumentCreated(id=doc.id, path=doc.path, og_path=doc.og_path, name=doc.name) for doc in upload_info]
+    message = DocumentsCreated(documents=documents)
+    await publish_message(ChannelType.DOCUMENTS_CREATED, message)
+    return {
+        "message": "Files uploaded successfully",
+        "files": upload_info
+    }
+
+@app.get("/docs/list/", tags=["Documents"])
+def list_available_files():
+    """List all files in the documents directory with metadata"""
+    docs_dir = Path("/docs")
+    
+    if not docs_dir.exists():
+        return {"files": [], "message": "Documents directory not found"}
+    
+    files = []
+    
+    for file_path in docs_dir.iterdir():
+        if file_path.is_file():
+            try:
+                stat = file_path.stat()
+                file_info = {
+                    "filename": file_path.name,
+                    "size": stat.st_size,
+                    "extension": file_path.suffix.lower(),
+                    "url": f"/documents/{file_path.name}",
+                }
+                files.append(file_info)
+            except Exception as e:
+                logger.warning(f"Error reading file {file_path.name}: {e}")
+                continue
+    
+    return {
+        "files": files,
+        "total_count": len(files),
+        "total_size": sum(f["size"] for f in files),
     }
 
 ######################## Health ########################

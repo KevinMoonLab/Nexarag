@@ -1,6 +1,6 @@
-export type NodeLabel = 'Author' | 'Paper' | 'Journal' | 'PublicationVenue';
+export type NodeLabel = 'Author' | 'Paper' | 'Journal' | 'PublicationVenue' | 'Document';
 
-export type NodeProperties = AuthorData | PaperData | JournalData | PublicationVenueData;
+export type NodeProperties = AuthorData | PaperData | JournalData | PublicationVenueData | DocumentData;
 
 // Base node type
 export type KnowledgeNode = {
@@ -52,7 +52,13 @@ export type PublicationVenueData = {
     venue_id: string;
 };
 
-export type EdgeType = 'AUTHORED' | 'PUBLISHED_IN' | 'PUBLISHED_AT';
+export type DocumentData = {
+    path: string;
+    name: string;
+    og_path: string;
+};
+
+export type EdgeType = 'AUTHORED' | 'PUBLISHED_IN' | 'PUBLISHED_AT' | 'BELONGS_TO';
 
 // Graph edge type
 export type Edge = {

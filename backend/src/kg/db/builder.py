@@ -1,9 +1,8 @@
-from db.models import Paper, PublicationVenue, Journal, Author
-from scholar.models import Paper as ScholarPaper
+from kg.db.models import Paper, PublicationVenue, Journal, Author
 from typing import List
-from neomodel import adb
 from scholar.api import enrich_papers, enrich_authors, get_citations, get_references
 from scholar.util import retry
+from kg.llm.embeddings import create_abstract_embedding
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -34,6 +33,8 @@ async def create_paper_graph(paper_ids: List[str]):
     all_author_ids = set()
     for paper_data in papers:
         # Build paper dictionary.
+        abstract_embedding = create_abstract_embedding(paper_data.abstract) if paper_data.abstract else None
+
         paper_dicts.append({
             "paper_id": paper_data.paperId,
             "title": paper_data.title.strip() if paper_data.title else "Untitled Paper",
@@ -44,6 +45,7 @@ async def create_paper_graph(paper_ids: List[str]):
             "influential_citation_count": paper_data.influentialCitationCount,
             "publication_types": paper_data.publicationTypes,
             "publication_date": paper_data.publicationDate,
+            "abstract_embedding": abstract_embedding,
         })
 
         # Record paper-author relationships and collect author IDs

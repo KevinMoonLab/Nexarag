@@ -1,9 +1,10 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
 import { GraphStore } from './graph.store';
 import { NodeCardComponent } from './node-dialog-card.component';
-import { AuthorData, JournalData, PaperData, PublicationVenueData } from './types';
+import { AuthorData, JournalData, PaperData, PublicationVenueData, DocumentData } from './types';
 import { DividerModule } from 'primeng/divider';
+import { environment } from "src/environments/environment";
 
 @Component({
     imports: [DialogModule, NodeCardComponent, DividerModule],
@@ -53,6 +54,23 @@ import { DividerModule } from 'primeng/divider';
           <p-divider />
           <app-node-card header="URL" [body]="selectedPublicationVenue()?.url"></app-node-card>
           <p-divider />
+        } @else if (selectedLabel() === 'Document') {
+          <p class="text-xl bold">Document Details</p>
+          <p-divider />
+          <app-node-card header="Name" [body]="selectedDocument()?.name"></app-node-card>
+          <p-divider />
+          <app-node-card header="File Name" [body]="selectedDocument()?.og_path"></app-node-card>
+          <p-divider />
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-file text-primary"></i>
+            <a 
+              [href]="getDocumentUrl(selectedDocument()?.og_path)" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="text-primary hover:text-primary-600 underline cursor-pointer">
+              Open Document
+            </a>
+          </div>
         }
       </div>
     </p-dialog>
@@ -67,8 +85,14 @@ export class NodeDialogComponent {
   selectedPaper = computed(() => this.state.selectedNode()?.properties as PaperData);
   selectedJournal = computed(() => this.state.selectedNode()?.properties as JournalData);
   selectedPublicationVenue = computed(() => this.state.selectedNode()?.properties as PublicationVenueData);
+  selectedDocument = computed(() => this.state.selectedNode()?.properties as DocumentData);
 
   onVisibleChange(visible: boolean) {
     this.visible.set(visible);
+  }
+
+  getDocumentUrl(path: string | undefined): string {
+    if (!path) return '';
+    return `${environment.apiBaseUrl}/documents/${path}`;
   }
 }

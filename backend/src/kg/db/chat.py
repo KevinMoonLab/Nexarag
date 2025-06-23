@@ -1,4 +1,4 @@
-from db.models import ChatResponse, ChatMessage
+from kg.db.models import ChatResponse, ChatMessage
 from rabbit.events import ChatMessage as RabbitChatMessage, ChatResponse as RabbitChatResponse
 
 async def create_chat_message(message: RabbitChatMessage):
