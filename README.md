@@ -34,7 +34,7 @@ ollama pull gemma3:1b
 ```
 
 ### MacOS
-Pull models from the command line. The following are required; pull any other models that your hardware supports for LLM integration.
+Pull models directly from your command line.
 
 ```
 ollama pull nomic-embed-text:v1.5
