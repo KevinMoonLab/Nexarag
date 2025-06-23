@@ -1,8 +1,9 @@
 # Overview
 This is the backend stack consisting of three primary services that communicate asynchronously over RabbitMQ:
 - `api`: FastAPI that services frontend queries and integrates with backend services
-- `db`: Subscribes to frontend and system commands and events (for creating papers, authors, chat messages, etc.) and persists to the `neo4j` database.
 - `kg`: Primary service for creating embeddings, interacting with LLMs, and building visualizations.
+- `rabbit`: Defines the messaging layer between services.
+- `scholar`: Semantic Scholar integration.
 
 # Build & Run
 Development for the backend project can be done inside a devcontainer. The container will be automatically provisioned with a `neo4j` database, a `rabbitmq` instance, and the official Ollama container image. 
