@@ -85,6 +85,7 @@ async def ask_kg(message: ChatMessage, cb, complete):
         await complete()
     except Exception as e:
         logger.error(f"Error in ask_kg: {e}")
+        await cb(f"Error processing request: {e}")
         await complete()
 
 async def handle_plot_request(message: CreateEmbeddingPlot):
@@ -102,7 +103,7 @@ def callbacks(message: ChatMessage):
         await publish_message(ChannelType.RESPONSE_COMPLETED, ResponseCompleted(chatId = message.chatId, responseId = first_response.responseId))
     return (async_chat_callback, async_completion_callback)
 
-async def handle_chat_message(message: ChatMessage):
+async def handle_chat_message_created(message: ChatMessage):
     response_callback, completion_callback = callbacks(message)
     await ask_kg(message, response_callback, completion_callback)
 
@@ -123,7 +124,7 @@ async def main():
         subscribe_to_queue(ChannelType.ADD_REFERENCES, handle_add_references, AddPaperReferences),
         subscribe_to_queue(ChannelType.CHAT_MESSAGE, handle_chat_message, ChatMessage),
         subscribe_to_queue(ChannelType.CHAT_RESPONSE, handle_chat_response, ChatResponse),
-        subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message, ChatMessage),
+        subscribe_to_queue(ChannelType.CHAT_MESSAGE_CREATED, handle_chat_message_created, ChatMessage),
         subscribe_to_queue(ChannelType.DOCUMENTS_CREATED, handle_documents_created, DocumentsCreated),
         subscribe_to_queue(ChannelType.DOCUMENT_GRAPH_UPDATED, create_document_embeddings, DocumentGraphUpdated),
         subscribe_to_queue(ChannelType.EMBEDDING_PLOT_REQUESTED, handle_plot_request, CreateEmbeddingPlot),
