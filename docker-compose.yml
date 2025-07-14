@@ -97,10 +97,9 @@ services:
     image: ollama/ollama
     container_name: nexarag.ollama
     ports:
-      - "11434:11434"
+      - "11435:11434"
     volumes:
       - ollama_data:/root/.ollama
-    profiles: ["with-gpu"]
     deploy:
       resources:
         reservations:
