@@ -87,6 +87,7 @@ services:
       OLLAMA_BASE_URL: http://nexarag.ollama:11434
     volumes:
       - docs_data:/docs
+      - conv_history_data:/data
     depends_on:
       nexarag.neo4j:
         condition: service_healthy
@@ -113,3 +114,4 @@ volumes:
   rabbit_data:
   ollama_data:
   docs_data:
+  conv_history_data:
