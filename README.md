@@ -13,7 +13,7 @@ We are actively seeking feedback for Nexarag, including feature requests, issue 
 ## 1. Docker Compose
 ### Linux/WSL
 ```
-docker compose up -d
+docker compose up -d --build
 ```
 
 ### MacOS
