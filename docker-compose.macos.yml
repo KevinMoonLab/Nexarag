@@ -97,6 +97,5 @@ services:
 volumes:
   neo4j_data:
   rabbit_data:
-  ollama_data:
   docs_data:
   chat_data:

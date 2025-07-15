@@ -1,7 +1,7 @@
-import shutil
-import sqlite3
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
+import shutil
+import sqlite3
 
 def clear_conversation_history(session_id: str = "default"):
     history = SQLChatMessageHistory(
@@ -51,7 +51,7 @@ def restore_conversation_from_backup(backup_file: str, target_db: str = "/data/c
     shutil.copy2(backup_file, target_db)
     print(f"Conversations restored from {backup_file}")
 
-def backup_conversations(backup_file: str = "chat_backup.db"):
+def backup_conversations(backup_file: str = "/data/chat_backup.db"):
     import shutil
-    shutil.copy2("chat_conversations.db", backup_file)
+    shutil.copy2("/data/chat_conversations.db", backup_file)
     print(f"Conversations backed up to {backup_file}")
