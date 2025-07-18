@@ -94,6 +94,7 @@ services:
       nexarag.rabbitmq:
         condition: service_healthy
 
+
   nexarag.ollama:
     image: ollama/ollama
     container_name: nexarag.ollama
