@@ -64,7 +64,7 @@ async def get_all_papers() -> str:
     Returns:
         A formatted string containing information about all papers in the database
     """
-    result = await make_api_request("GET", "/papers/get/all")
+    result = await make_api_request("GET", "/papers/get/all/")
     logger.info(f"Get all papers result: {result}")
     
     if not result:

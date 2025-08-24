@@ -111,7 +111,7 @@ class Chunk(AsyncStructuredNode):
     
     # Relationships
     paper = AsyncRelationshipTo("Paper", "BELONGS_TO_PAPER")
-    project = AsyncRelationshipTo("Project", "BELONGS_TO")
+    # project = AsyncRelationshipTo("Project", "BELONGS_TO")
     next_chunk = AsyncRelationshipTo("Chunk", "NEXT")
     previous_chunk = AsyncRelationshipFrom("Chunk", "NEXT")
 

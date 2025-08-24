@@ -25,8 +25,6 @@ async def create_paper_graph(paper_ids: List[str], project_id: str = None):
     if not new_paper_ids:
         return
     
-    project = Project.get_or_none(project_id)
-
     # Enrich papers
     papers = retry(enrich_papers, new_paper_ids)
     all_author_ids = set()
