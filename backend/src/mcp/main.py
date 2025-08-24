@@ -166,7 +166,7 @@ async def add_paper_references(paper_ids: List[str]) -> str:
 
 @mcp.tool()
 async def relevance_search_papers(query: str) -> str:
-    """Search for papers by relevance using a text query.
+    """Search for papers in Semantic Scholar by relevance using a text query.
 
     Args:
         query: The search query to find relevant papers
