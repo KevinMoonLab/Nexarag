@@ -21,7 +21,6 @@ default_prefix = """
     Use the conversation history to provide contextually relevant responses and refer back to previous exchanges when appropriate.
 """
 
-# Updated prompt template with conversation history using MessagesPlaceholder
 prompt_template_with_history = ChatPromptTemplate.from_messages([
     ("system", """{prefix}
 

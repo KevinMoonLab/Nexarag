@@ -8,6 +8,7 @@ We are actively seeking feedback for Nexarag, including feature requests, issue 
 - [Docker](https://docs.docker.com/engine/install/)
 - **(Windows Only)** [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
 - **(MacOS Only)** [Ollama Desktop](https://ollama.com/download/mac)
+- **(Optional)** [Claude Desktop (for MCP)](https://claude.ai/download)
 
 # Local Deployment
 ## 1. Docker Compose
@@ -46,3 +47,23 @@ The Nexarag frontend application will be served at `http://localhost:5000`.
 
 # Semantic Scholar
 Please note that we are rate-limited by the Semantic Scholar API, so enriching BibTex uploads with data and updating the graph after adding papers from a Semantic Scholar search may take several minutes to complete.
+
+## 4. (Optional) MCP Integration
+Add the following to your Claude Desktop Config:
+```
+{
+    "mcpServers": {
+        "nexarag": {
+            "command": "npx",
+            "args": [
+            "-y",
+            "mcp-remote",
+            "http://localhost:9000/mcp"
+            ],
+            "env": {
+            "MCP_TRANSPORT_STRATEGY": "http-only"
+            }
+        }
+    }
+}
+```
