@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/KevinMoonLab/Nexarag"><img src="nexarag.png" alt="Nexarag"></a>
+  <a href="https://github.com/KevinMoonLab/Nexarag"><img src="nexarag.png" alt="Nexarag" width="400"></a>
 </p>
 
 # Overview
