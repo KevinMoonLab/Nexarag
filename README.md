@@ -1,16 +1,20 @@
+<p align="center">
+  <a href="https://github.com/KevinMoonLab/Nexarag"><img src="nexarag.png" alt="Nexarag" width="400"></a>
+</p>
+
 # Overview
 
-Nexarag is an open-source platform for ingesting research papers, building knowledge graphs, and querying them with agentic AI.
+**Nexarag** is an open-source platform for building knowledge graphs from research papers and querying them with AI, enabling transparent and reproducible literature analysis without the hallucinations of traditional RAG systems. Deploy locally with full privacy control or integrate with any LLM via the standardized Model Context Protocol (MCP).
 
 # Feedback
 
 We are actively seeking feedback for Nexarag, including feature requests, issue reports, training material, etc. Please submit to `nexarag.ai@gmail.com`.
 
 # Pre-Requisites
-
-* [Docker](https://docs.docker.com/engine/install/)
-* **(Windows Only)** [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
-* **(MacOS Only)** [Ollama Desktop](https://ollama.com/download/mac)
+- [Docker](https://docs.docker.com/engine/install/)
+- **(Windows Only)** [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
+- **(MacOS Only)** [Ollama Desktop](https://ollama.com/download/mac)
+- **(Optional)** [Claude Desktop (for MCP)](https://claude.ai/download)
 
 # Local Deployment
 
@@ -71,6 +75,25 @@ ollama pull gemma3:1b
 
 The Nexarag frontend application will be served at `http://localhost:5000`.
 
-# Semantic Scholar
+## 4. (Optional) MCP Integration
+Add the following to your Claude Desktop Config:
+```
+{
+    "mcpServers": {
+        "nexarag": {
+            "command": "npx",
+            "args": [
+            "-y",
+            "mcp-remote",
+            "http://localhost:9000/mcp"
+            ],
+            "env": {
+            "MCP_TRANSPORT_STRATEGY": "http-only"
+            }
+        }
+    }
+}
+```
 
-Please note that we are rate-limited by the Semantic Scholar API, so enriching BibTeX uploads with data and updating the graph after adding papers from a Semantic Scholar search may take several minutes to complete.
+# Semantic Scholar
+Please note that we are rate-limited by the Semantic Scholar API, so enriching BibTex uploads with data and updating the graph after adding papers from a Semantic Scholar search may take several minutes to complete.

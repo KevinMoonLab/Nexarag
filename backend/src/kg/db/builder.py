@@ -1,4 +1,4 @@
-from kg.db.models import Paper, PublicationVenue, Journal, Author
+from kg.db.models import Paper, PublicationVenue, Journal, Author, Project
 from typing import List
 from scholar.api import enrich_papers, enrich_authors, get_citations, get_references
 from scholar.util import retry
@@ -8,7 +8,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def create_paper_graph(paper_ids: List[str]):
+async def create_paper_graph(paper_ids: List[str], project_id: str = None):
     paper_dicts = []
     author_dicts = {}
     journal_dicts = {}
@@ -24,15 +24,11 @@ async def create_paper_graph(paper_ids: List[str]):
 
     if not new_paper_ids:
         return
-
+    
     # Enrich papers
     papers = retry(enrich_papers, new_paper_ids)
-
-    # First pass: Collect paper data and relationship info,
-    # and accumulate all unique author IDs from all papers
     all_author_ids = set()
     for paper_data in papers:
-        # Build paper dictionary.
         abstract_embedding = create_abstract_embedding(paper_data.abstract) if paper_data.abstract else None
 
         paper_dicts.append({
@@ -48,12 +44,10 @@ async def create_paper_graph(paper_ids: List[str]):
             "abstract_embedding": abstract_embedding,
         })
 
-        # Record paper-author relationships and collect author IDs
         for author in paper_data.authors:
             all_author_ids.add(author.authorId)
             paper_author_relations.append((paper_data.paperId, author.authorId))
 
-        # Process Journal data & relationships
         if paper_data.journal and paper_data.journal.name:
             journal_name = paper_data.journal.name.strip()
             if journal_name not in journal_dicts:
@@ -64,7 +58,6 @@ async def create_paper_graph(paper_ids: List[str]):
                 }
             paper_journal_relations.append((paper_data.paperId, journal_name))
 
-        # Process Publication Venue data & relationships
         if paper_data.publicationVenue and paper_data.publicationVenue.id:
             venue_id = paper_data.publicationVenue.id
             if venue_id not in venue_dicts:
@@ -94,7 +87,6 @@ async def create_paper_graph(paper_ids: List[str]):
             "h_index": author_data.hIndex,
         }
 
-    # Create or update nodes
     try:
         await Paper.create_or_update(*paper_dicts)
         await Author.create_or_update(*author_dicts.values())
@@ -103,7 +95,6 @@ async def create_paper_graph(paper_ids: List[str]):
     except:
         logger.error("Error creating or updating nodes in the graph database")
 
-    # Create author relationships
     for paper_id, author_id in paper_author_relations:
         try:
             paper = await Paper.nodes.get_or_none(paper_id=paper_id)
@@ -113,7 +104,6 @@ async def create_paper_graph(paper_ids: List[str]):
         except:
             logger.error(f"Error connecting author {author_id} to paper {paper_id}")
 
-    # Create journal relationships
     for paper_id, journal_name in paper_journal_relations:
         try:
             paper = await Paper.nodes.get_or_none(paper_id=paper_id)
@@ -123,7 +113,6 @@ async def create_paper_graph(paper_ids: List[str]):
         except:
             logger.error(f"Error connecting journal {journal_name} to paper {paper_id}")
 
-    # Create publication venue relationships
     for paper_id, venue_id in paper_venue_relations:
         try:
             paper = await Paper.nodes.get_or_none(paper_id=paper_id)
@@ -135,12 +124,10 @@ async def create_paper_graph(paper_ids: List[str]):
 
 
 async def add_citations(paper_ids):
-    # Create paper graph
     await create_paper_graph(paper_ids)
 
     paper_dict = {}
 
-    # Add citations to paper
     all_citations = []
     for paper_id in paper_ids:
         citations = retry(get_citations, paper_id)
@@ -151,43 +138,35 @@ async def add_citations(paper_ids):
             if citation_id not in paper_dict:
                 paper_dict[citation_id] = paper_id
     
-    # Add to graph
     await create_paper_graph(all_citations)
 
-    # Add relationships
     for paper_id, citation_id in paper_dict.items():
         paper = await Paper.nodes.get_or_none(paper_id=paper_id)
         reference = await Paper.nodes.get_or_none(paper_id=citation_id)
         if paper and reference:
             await paper.citations.connect(reference)
     
-    # Return citation ids
     return list(paper_dict.keys())
 
 async def add_references(paper_ids):
-    # Create paper graph
     await create_paper_graph(paper_ids)
 
     paper_dict = {}
 
-    # Add citations to paper
     for paper_id in paper_ids:
         references = get_references(paper_id)
         reference_ids = [reference.paperId for reference in references]
         
-        # Add to graph
         await create_paper_graph(reference_ids)
 
         for reference_id in reference_ids:
             if reference_id not in paper_dict:
                 paper_dict[reference_id] = paper_id
     
-    # Add relationships
     for paper_id, reference_id in paper_dict.items():
         paper = await Paper.nodes.get(paper_id=paper_id)
         reference = await Paper.nodes.get(paper_id=reference_id)
         if paper and reference:
             await paper.references.connect(reference)
 
-    # Return reference ids
     return list(paper_dict.keys())

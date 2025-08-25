@@ -70,6 +70,19 @@ services:
     depends_on:
       - nexarag.api
 
+  nexarag.mcp:
+    image: nexarag.mcp:latest
+    container_name: nexarag.mcp
+    build: 
+      context: ./backend/src/mcp
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MCP_PORT=9000
+    restart: unless-stopped
+
   nexarag.kg:
     image: nexarag.kg:latest
     build:
@@ -97,6 +110,5 @@ services:
 volumes:
   neo4j_data:
   rabbit_data:
-  ollama_data:
   docs_data:
   chat_data:

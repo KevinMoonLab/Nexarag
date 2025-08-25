@@ -55,6 +55,7 @@ class DocumentGraphUpdated(BaseModel):
 
 class DocumentsCreated(BaseModel):
     documents: List[DocumentCreated]
+    project_id: Optional[str] = None
 
 class DocumentUploaded(BaseModel):
     id: str

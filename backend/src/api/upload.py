@@ -230,7 +230,7 @@ async def upload(doc: UploadFile, ollama_base_url: str, extraction_method: str =
         return UploadFileResponse(
             id=file_id,
             path=filename,
-            og_path=clean_name,  # Use cleaned name
+            og_path=clean_name,
             name=extracted_title or os.path.splitext(clean_name)[0],
             message="File uploaded successfully",
             size=len(content)
