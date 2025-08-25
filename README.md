@@ -71,9 +71,6 @@ ollama pull gemma3:1b
 
 The Nexarag frontend application will be served at `http://localhost:5000`.
 
-# Semantic Scholar
-Please note that we are rate-limited by the Semantic Scholar API, so enriching BibTex uploads with data and updating the graph after adding papers from a Semantic Scholar search may take several minutes to complete.
-
 ## 4. (Optional) MCP Integration
 Add the following to your Claude Desktop Config:
 ```
@@ -93,3 +90,6 @@ Add the following to your Claude Desktop Config:
     }
 }
 ```
+
+# Semantic Scholar
+Please note that we are rate-limited by the Semantic Scholar API, so enriching BibTex uploads with data and updating the graph after adding papers from a Semantic Scholar search may take several minutes to complete.
