@@ -4,7 +4,7 @@
 
 # Overview
 
-Nexarag is an open-source platform for ingesting research papers, building knowledge graphs, and querying them with agentic AI.
+Nexarag is an open-source platform for building knowledge graphs from research papers and querying them with AI, enabling transparent and reproducible literature analysis without the hallucinations of traditional RAG systems. Deploy locally with full privacy control or integrate with any LLM via the standardized Model Context Protocol (MCP).
 
 # Feedback
 
