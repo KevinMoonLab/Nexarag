@@ -1,3 +1,7 @@
+<p align="center">
+  <a href="https://github.com/KevinMoonLab/Nexarag"><img src="nexarag.png" alt="Nexarag"></a>
+</p>
+
 # Overview
 
 Nexarag is an open-source platform for ingesting research papers, building knowledge graphs, and querying them with agentic AI.
