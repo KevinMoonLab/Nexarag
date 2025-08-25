@@ -1,5 +1,5 @@
 # Overview 
-Frontend Angular application that provides [Cytoscape.js](https://js.cytoscape.org/) and [D3.js](https://d3js.org/) visualizations of Nexarag knowledge graphs. Also provides graph-building features, [Semantic Scholar](https://www.semanticscholar.org/) integration, and LLM talk-to-your-data (TTYD) chat capabilities.
+Frontend Angular application that provides [Cytoscape.js](https://js.cytoscape.org/) and [D3.js](https://d3js.org/) visualizations of Nexarag knowledge graphs. Also provides graph-building features, [Semantic Scholar](https://www.semanticscholar.org/) integration, and LLM talk-to-your-data (TTYD) chat capabilities. The `frontend` service in the compose stack serves the static Angular files and routes API requests via `nginx`.
 
 # Local Development
 ## First Deployment
