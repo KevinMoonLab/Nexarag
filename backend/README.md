@@ -6,7 +6,7 @@ This is the backend stack consisting of four primary services that communicate a
 - `rabbit`: Defines the messaging layer between services.
 - `scholar`: Semantic Scholar integration.
 
-# Build & Run
+# Local Development
 Development for the backend project can be done inside a devcontainer. The container will be automatically provisioned with a `neo4j` database, a `rabbitmq` instance, and the official Ollama container image. 
 
 1. Copy the `.env.example` file into `Nexarag/.devcontainer/.env`, modifying the values for your system
