@@ -4,7 +4,7 @@ This is the backend stack consisting of four primary services that communicate a
 - `kg`: Primary service for creating embeddings, interacting with LLMs, and building visualizations.
 - `rabbit`: Defines the messaging layer between services.
 - `scholar`: Semantic Scholar integration.
-- `mcp`: Provides MCP access to the API and context generation for external LLM hosts.
+- `mcp`: FastMCP service that provides MCP access to the API and context generation for external LLM hosts.
 
 # Build & Run
 Development for the backend project can be done inside a devcontainer. The container will be automatically provisioned with a `neo4j` database, a `rabbitmq` instance, and the official Ollama container image. 
