@@ -2,7 +2,7 @@
 This is the Angular frontend web application for Nexarag.
 
 ## First Time Deployment
-1. Install [NVM](https://github.com/nvm-sh/nvm) for your platform (Linux is much easier)
+1. Install [NVM](https://github.com/nvm-sh/nvm) for your platform (Linux is recommended for local development)
 2. Install [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 3. In `Nexarag/frontend`, run `npm install`
 
