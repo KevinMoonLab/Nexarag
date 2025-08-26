@@ -115,7 +115,7 @@ class KnowledgeGraphManager:
             # Get Neo4j connection
             kg = load_kg(self.config)
             
-            # APOC exports to import directory, so use relative path
+            # APOC exports to import directory, which is now mounted as dumps volume
             export_filename = f"{name}.graphml"
             
             # Use APOC to export the entire graph
@@ -138,31 +138,19 @@ class KnowledgeGraphManager:
                 export_result = result[0]
                 logger.info(f"Export completed: {export_result}")
                 
-                # Copy the exported file to dumps directory for persistence
-                if self._copy_to_dumps(export_filename):
-                    logger.info(f"Successfully copied {export_filename} to dumps directory")
-                    
-                    # Update metadata
-                    metadata = self._load_metadata()
-                    metadata[name] = {
-                        'created_at': datetime.now().isoformat(),
-                        'description': description,
-                        'nodes': export_result.get('nodes', 0),
-                        'relationships': export_result.get('relationships', 0),
-                        'export_time': export_result.get('time', 0)
-                    }
-                    self._save_metadata(metadata)
-                    
-                    # Clean up import directory
-                    import_file = self.import_directory / export_filename
-                    if import_file.exists():
-                        import_file.unlink()
-                    
-                    logger.info(f"Successfully exported knowledge graph: {name}")
-                    return True
-                else:
-                    logger.error(f"Failed to copy exported file to dumps directory")
-                    return False
+                # Update metadata
+                metadata = self._load_metadata()
+                metadata[name] = {
+                    'created_at': datetime.now().isoformat(),
+                    'description': description,
+                    'nodes': export_result.get('nodes', 0),
+                    'relationships': export_result.get('relationships', 0),
+                    'export_time': export_result.get('time', 0)
+                }
+                self._save_metadata(metadata)
+                
+                logger.info(f"Successfully exported knowledge graph: {name}")
+                return True
             else:
                 logger.error("Export query returned no results")
                 return False
@@ -174,10 +162,11 @@ class KnowledgeGraphManager:
     def import_knowledge_graph(self, name: str) -> bool:
         """Import knowledge graph using APOC procedures."""
         try:
-            # Check if file exists
-            import_path = f"/dumps/{name}.graphml"
-            file_path = self.dumps_directory / f"{name}.graphml"
+            # APOC imports from import directory, which is now mounted as dumps volume
+            import_filename = f"{name}.graphml"
             
+            # Check if file exists in dumps directory (same as import directory now)
+            file_path = self.dumps_directory / import_filename
             if not file_path.exists():
                 logger.error(f"Import file not found: {file_path}")
                 return False
@@ -201,8 +190,8 @@ class KnowledgeGraphManager:
             RETURN file, nodes, relationships, time, done
             """
             
-            logger.info(f"Importing knowledge graph from {import_path}")
-            result = kg.query(import_query, {"importPath": import_path})
+            logger.info(f"Importing knowledge graph from {import_filename}")
+            result = kg.query(import_query, {"importPath": import_filename})
             
             if result and len(result) > 0:
                 import_result = result[0]
@@ -312,51 +301,6 @@ class KnowledgeGraphManager:
             
         except Exception as e:
             logger.error(f"Error exporting knowledge graph: {e}")
-            return False
-    
-    def import_knowledge_graph(self, name: str) -> bool:
-        """Import knowledge graph using APOC procedures."""
-        try:
-            # Check if file exists
-            import_path = f"/dumps/{name}.graphml"
-            file_path = self.dumps_directory / f"{name}.graphml"
-            
-            if not file_path.exists():
-                logger.error(f"Import file not found: {file_path}")
-                return False
-            
-            # Get Neo4j connection
-            kg = load_kg(self.config)
-            
-            # Clear existing data first
-            logger.info("Clearing existing graph data...")
-            clear_query = "MATCH (n) DETACH DELETE n"
-            kg.query(clear_query)
-            
-            # Import the graph
-            import_query = """
-            CALL apoc.import.graphml($importPath, {
-                readLabels: true,
-                storeNodeIds: false,
-                defaultRelationshipType: "RELATED"
-            })
-            YIELD file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data
-            RETURN file, nodes, relationships, time, done
-            """
-            
-            logger.info(f"Importing knowledge graph from {import_path}")
-            result = kg.query(import_query, {"importPath": import_path})
-            
-            if result and len(result) > 0:
-                import_result = result[0]
-                logger.info(f"Import completed: {import_result}")
-                return True
-            else:
-                logger.error("Import query returned no results")
-                return False
-                
-        except Exception as e:
-            logger.error(f"Error importing knowledge graph: {e}")
             return False
     
     def delete_knowledge_graph(self, name: str) -> bool:

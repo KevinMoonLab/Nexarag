@@ -13,6 +13,7 @@ services:
     volumes:
       - neo4j_data:/data
       - kg_dumps:/dumps
+      - kg_dumps:/var/lib/neo4j/import
     healthcheck:
       test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password", "MATCH (n) RETURN COUNT(n);"]
       interval: 10s

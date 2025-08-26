@@ -13,15 +13,15 @@ def get_graph(kg):
     # Get relationships
     cypher_rels = """
     MATCH (n)-[r]->(m)
-    WHERE (n:Paper OR n:Author OR n:Document OR n:PublicationVenue OR n:Journal)
-      AND (m:Paper OR m:Author OR m:Document OR m:PublicationVenue OR m:Journal)
+    WHERE (n:Paper OR n:Author OR n:Document OR n:PublicationVenue OR n:Journal OR n:ChatMessage OR n:ChatResponse)
+      AND (m:Paper OR m:Author OR m:Document OR m:PublicationVenue OR m:Journal OR m:ChatMessage OR m:ChatResponse)
     RETURN n, r, m
     """
     
     # Get isolated nodes
     cypher_isolated = """
     MATCH (n)
-    WHERE (n:Paper OR n:Author OR n:Document OR n:PublicationVenue OR n:Journal)
+    WHERE (n:Paper OR n:Author OR n:Document OR n:PublicationVenue OR n:Journal OR n:ChatMessage OR n:ChatResponse)
       AND NOT (n)-[]-()
     RETURN n, null as r, null as m
     """
