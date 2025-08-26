@@ -1,17 +1,16 @@
 """
 Knowledge Graph Management Module
-Handles export, import, and switching between different Neo4j databases.
+Handles export, import, and switching between different Neo4j databases using APOC procedures.
 """
 
 import os
-import subprocess
 import json
 from typing import List, Dict, Optional
 from datetime import datetime
 from pathlib import Path
 import logging
 from dataclasses import dataclass
-from .util import load_config, check_connection
+from .util import load_config, check_connection, load_kg
 
 logger = logging.getLogger(__name__)
 
@@ -29,10 +28,6 @@ class KnowledgeGraphManager:
         self.dumps_directory.mkdir(exist_ok=True)
         self.metadata_file = self.dumps_directory / "kg_metadata.json"
         self.config = load_config()
-        
-    def get_neo4j_container_name(self) -> str:
-        """Get the Neo4j container name from environment or default."""
-        return os.getenv("NEO4J_CONTAINER_NAME", "nexarag.neo4j")
         
     def _load_metadata(self) -> Dict[str, Dict]:
         """Load metadata about knowledge graphs."""
@@ -58,7 +53,7 @@ class KnowledgeGraphManager:
         metadata = self._load_metadata()
         kg_list = []
         
-        for dump_file in self.dumps_directory.glob("*.dump"):
+        for dump_file in self.dumps_directory.glob("*.graphml"):
             name = dump_file.stem
             file_path = str(dump_file)
             
@@ -86,21 +81,168 @@ class KnowledgeGraphManager:
         return sorted(kg_list, key=lambda x: x.created_at, reverse=True)
     
     def export_knowledge_graph(self, name: str, description: Optional[str] = None) -> bool:
-        """Export current knowledge graph to a dump file."""
+        """Export current knowledge graph using APOC procedures."""
         try:
-            dump_path = self.dumps_directory / f"{name}.dump"
-            container_name = self.get_neo4j_container_name()
-            database_name = self.config['database']['database']
+            # Get Neo4j connection
+            kg = load_kg(self.config)
             
-            # Use docker exec to run neo4j-admin dump inside the container
-            # Neo4j 5.x uses different command structure
-            cmd = [
-                "docker", "exec", container_name,
-                "neo4j-admin", "database", "dump",
-                "--to-path=/dumps",
-                f"--database={database_name}",
-                "--overwrite-destination=true"
-            ]
+            export_path = f"/dumps/{name}.graphml"
+            
+            # Use APOC to export the entire graph
+            export_query = """
+            CALL apoc.export.graphml.all($exportPath, {
+                useTypes: true,
+                storeNodeIds: false,
+                readLabels: true,
+                defaultRelationshipType: "RELATED"
+            })
+            YIELD file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data
+            RETURN file, nodes, relationships, time, done
+            """
+            
+            logger.info(f"Exporting knowledge graph to {export_path}")
+            
+            result = kg.query(export_query, {"exportPath": export_path})
+            
+            if result and len(result) > 0:
+                export_result = result[0]
+                logger.info(f"Export completed: {export_result}")
+                
+                # Update metadata
+                metadata = self._load_metadata()
+                metadata[name] = {
+                    'created_at': datetime.now().isoformat(),
+                    'description': description,
+                    'nodes': export_result.get('nodes', 0),
+                    'relationships': export_result.get('relationships', 0),
+                    'export_time': export_result.get('time', 0)
+                }
+                self._save_metadata(metadata)
+                
+                logger.info(f"Successfully exported knowledge graph to {export_path}")
+                return True
+            else:
+                logger.error("Export query returned no results")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Error exporting knowledge graph: {e}")
+            return False
+    
+    def import_knowledge_graph(self, name: str) -> bool:
+        """Import knowledge graph using APOC procedures."""
+        try:
+            # Check if file exists
+            import_path = f"/dumps/{name}.graphml"
+            file_path = self.dumps_directory / f"{name}.graphml"
+            
+            if not file_path.exists():
+                logger.error(f"Import file not found: {file_path}")
+                return False
+            
+            # Get Neo4j connection
+            kg = load_kg(self.config)
+            
+            # Clear existing data first
+            logger.info("Clearing existing graph data...")
+            clear_query = "MATCH (n) DETACH DELETE n"
+            kg.query(clear_query)
+            
+            # Import the graph
+            import_query = """
+            CALL apoc.import.graphml($importPath, {
+                readLabels: true,
+                storeNodeIds: false,
+                defaultRelationshipType: "RELATED"
+            })
+            YIELD file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data
+            RETURN file, nodes, relationships, time, done
+            """
+            
+            logger.info(f"Importing knowledge graph from {import_path}")
+            result = kg.query(import_query, {"importPath": import_path})
+            
+            if result and len(result) > 0:
+                import_result = result[0]
+                logger.info(f"Import completed: {import_result}")
+                return True
+            else:
+                logger.error("Import query returned no results")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Error importing knowledge graph: {e}")
+            return False
+    
+    def delete_knowledge_graph(self, name: str) -> bool:
+        """Delete a knowledge graph file."""
+        try:
+            file_path = self.dumps_directory / f"{name}.graphml"
+            if file_path.exists():
+                file_path.unlink()
+                
+                # Remove from metadata
+                metadata = self._load_metadata()
+                if name in metadata:
+                    del metadata[name]
+                    self._save_metadata(metadata)
+                
+                logger.info(f"Successfully deleted knowledge graph: {name}")
+                return True
+            else:
+                logger.warning(f"Knowledge graph file not found: {name}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Error deleting knowledge graph: {e}")
+            return False
+    
+    def get_current_kg_info(self) -> Dict[str, any]:
+        """Get information about the currently active knowledge graph."""
+        try:
+            kg = load_kg(self.config)
+            
+            # Get basic stats about the current graph
+            stats_query = """
+            MATCH (n)
+            OPTIONAL MATCH (n)-[r]->()
+            RETURN 
+                count(DISTINCT n) as nodes,
+                count(r) as relationships,
+                collect(DISTINCT labels(n)) as node_labels
+            """
+            
+            result = kg.query(stats_query)
+            
+            if result and len(result) > 0:
+                stats = result[0]
+                # Flatten nested labels
+                all_labels = []
+                for label_list in stats.get('node_labels', []):
+                    all_labels.extend(label_list)
+                unique_labels = list(set(all_labels))
+                
+                return {
+                    "database": self.config['database']['database'],
+                    "uri": self.config['database']['uri'],
+                    "status": "active",
+                    "nodes": stats.get('nodes', 0),
+                    "relationships": stats.get('relationships', 0),
+                    "node_types": unique_labels
+                }
+            else:
+                return {
+                    "database": self.config['database']['database'],
+                    "uri": self.config['database']['uri'],
+                    "status": "active",
+                    "nodes": 0,
+                    "relationships": 0,
+                    "node_types": []
+                }
+                
+        except Exception as e:
+            logger.error(f"Error getting current KG info: {e}")
+            return {"status": "error", "message": str(e)}
             
             logger.info(f"Exporting knowledge graph with command: {' '.join(cmd)}")
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
@@ -131,72 +273,56 @@ class KnowledgeGraphManager:
             return False
     
     def import_knowledge_graph(self, name: str) -> bool:
-        """Import knowledge graph from a dump file."""
+        """Import knowledge graph using APOC procedures."""
         try:
-            dump_path = self.dumps_directory / f"{name}.dump"
-            if not dump_path.exists():
-                logger.error(f"Dump file not found: {dump_path}")
+            # Check if file exists
+            import_path = f"/dumps/{name}.graphml"
+            file_path = self.dumps_directory / f"{name}.graphml"
+            
+            if not file_path.exists():
+                logger.error(f"Import file not found: {file_path}")
                 return False
             
-            container_name = self.get_neo4j_container_name()
-            database_name = self.config['database']['database']
+            # Get Neo4j connection
+            kg = load_kg(self.config)
             
-            # Stop Neo4j database first
-            stop_cmd = [
-                "docker", "exec", container_name,
-                "cypher-shell", "-u", self.config['database']['username'],
-                "-p", self.config['database']['password'],
-                f"STOP DATABASE {database_name}"
-            ]
+            # Clear existing data first
+            logger.info("Clearing existing graph data...")
+            clear_query = "MATCH (n) DETACH DELETE n"
+            kg.query(clear_query)
             
-            subprocess.run(stop_cmd, capture_output=True, text=True)
+            # Import the graph
+            import_query = """
+            CALL apoc.import.graphml($importPath, {
+                readLabels: true,
+                storeNodeIds: false,
+                defaultRelationshipType: "RELATED"
+            })
+            YIELD file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data
+            RETURN file, nodes, relationships, time, done
+            """
             
-            # Load the database
-            # Neo4j 5.x uses different command structure
-            load_cmd = [
-                "docker", "exec", container_name,
-                "neo4j-admin", "database", "load",
-                "--from-path=/dumps",
-                f"--database={database_name}",
-                "--overwrite-destination=true"
-            ]
+            logger.info(f"Importing knowledge graph from {import_path}")
+            result = kg.query(import_query, {"importPath": import_path})
             
-            # Copy our named dump to the expected location
-            expected_dump = self.dumps_directory / f"{database_name}.dump"
-            if expected_dump.exists():
-                expected_dump.unlink()
-            dump_path.copy(expected_dump)
-            
-            logger.info(f"Loading knowledge graph with command: {' '.join(load_cmd)}")
-            result = subprocess.run(load_cmd, capture_output=True, text=True, timeout=300)
-            
-            if result.returncode != 0:
-                logger.error(f"Load failed: {result.stderr}")
+            if result and len(result) > 0:
+                import_result = result[0]
+                logger.info(f"Import completed: {import_result}")
+                return True
+            else:
+                logger.error("Import query returned no results")
                 return False
-            
-            # Start the database again
-            start_cmd = [
-                "docker", "exec", container_name,
-                "cypher-shell", "-u", self.config['database']['username'],
-                "-p", self.config['database']['password'],
-                f"START DATABASE {database_name}"
-            ]
-            
-            subprocess.run(start_cmd, capture_output=True, text=True)
-            
-            logger.info(f"Successfully loaded knowledge graph from {dump_path}")
-            return True
-            
+                
         except Exception as e:
             logger.error(f"Error importing knowledge graph: {e}")
             return False
     
     def delete_knowledge_graph(self, name: str) -> bool:
-        """Delete a knowledge graph dump file."""
+        """Delete a knowledge graph file."""
         try:
-            dump_path = self.dumps_directory / f"{name}.dump"
-            if dump_path.exists():
-                dump_path.unlink()
+            file_path = self.dumps_directory / f"{name}.graphml"
+            if file_path.exists():
+                file_path.unlink()
                 
                 # Remove from metadata
                 metadata = self._load_metadata()
@@ -207,7 +333,7 @@ class KnowledgeGraphManager:
                 logger.info(f"Successfully deleted knowledge graph: {name}")
                 return True
             else:
-                logger.warning(f"Knowledge graph dump not found: {name}")
+                logger.warning(f"Knowledge graph file not found: {name}")
                 return False
                 
         except Exception as e:
@@ -217,13 +343,46 @@ class KnowledgeGraphManager:
     def get_current_kg_info(self) -> Dict[str, any]:
         """Get information about the currently active knowledge graph."""
         try:
-            # This would require querying the database for statistics
-            # For now, return basic info
-            return {
-                "database": self.config['database']['database'],
-                "uri": self.config['database']['uri'],
-                "status": "active"
-            }
+            kg = load_kg(self.config)
+            
+            # Get basic stats about the current graph
+            stats_query = """
+            MATCH (n)
+            OPTIONAL MATCH (n)-[r]->()
+            RETURN 
+                count(DISTINCT n) as nodes,
+                count(r) as relationships,
+                collect(DISTINCT labels(n)) as node_labels
+            """
+            
+            result = kg.query(stats_query)
+            
+            if result and len(result) > 0:
+                stats = result[0]
+                # Flatten nested labels
+                all_labels = []
+                for label_list in stats.get('node_labels', []):
+                    all_labels.extend(label_list)
+                unique_labels = list(set(all_labels))
+                
+                return {
+                    "database": self.config['database']['database'],
+                    "uri": self.config['database']['uri'],
+                    "status": "active",
+                    "nodes": stats.get('nodes', 0),
+                    "relationships": stats.get('relationships', 0),
+                    "node_types": unique_labels
+                }
+            else:
+                return {
+                    "database": self.config['database']['database'],
+                    "uri": self.config['database']['uri'],
+                    "status": "active",
+                    "nodes": 0,
+                    "relationships": 0,
+                    "node_types": []
+                }
+                
         except Exception as e:
             logger.error(f"Error getting current KG info: {e}")
             return {"status": "error", "message": str(e)}
