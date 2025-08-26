@@ -1,21 +1,21 @@
-# Build stage
-FROM node:18-alpine AS build
+# Build stage - Using standard node image instead of alpine for better compatibility
+FROM node:18 AS build
 WORKDIR /app
 
-# Set npm to skip optional dependencies and use legacy peer deps
+# Set npm configurations for better compatibility
 RUN npm config set fund false
 RUN npm config set audit false
-RUN npm config set legacy-peer-deps true
 
 # Copy package files first for better caching
 COPY package*.json ./
 
-# Install dependencies with specific flags for compatibility
-RUN npm ci --only=production=false --platform=linux --arch=x64 || npm install --platform=linux --arch=x64
+# Install dependencies
+RUN npm install --verbose
 
 # Copy application source
 COPY . .
 
+# Install nx globally
 RUN npm install -g nx
 
 # Build application
@@ -38,7 +38,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copy custom mime.types
 COPY mime.types /etc/nginx/mime.types
 
-# Expose port 80 
+# Expose port 80
 EXPOSE 80
 
 # Start NGINX
