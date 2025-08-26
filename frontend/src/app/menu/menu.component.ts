@@ -5,12 +5,13 @@ import { DividerModule } from 'primeng/divider';
 import { AddDataComponent } from "./add-data.component";
 import { FilterComponent } from './filter.component';
 import { SettingsComponent } from './settings.component';
+import { KgManagementComponent } from '../kg/kg-management.component';
 import { GraphStore } from '../graph/graph.store';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, ButtonModule, DividerModule, AddDataComponent, FilterComponent, SettingsComponent],
+  imports: [CommonModule, ButtonModule, DividerModule, AddDataComponent, FilterComponent, SettingsComponent, KgManagementComponent],
   template: `
     <div class="h-screen text-white flex transition-all duration-300" [ngClass]="{'w-[40rem]': expanded(), 'w-16': !expanded()}">
       <div *ngIf="expanded()" class="flex-grow">
@@ -22,6 +23,9 @@ import { GraphStore } from '../graph/graph.store';
         </ng-container>
         <ng-container *ngIf="selectedTab() === 2">
           <app-settings />
+        </ng-container>
+        <ng-container *ngIf="selectedTab() === 3">
+          <app-kg-management />
         </ng-container>
       </div>
 
@@ -48,6 +52,7 @@ export class MenuComponent {
     { icon: 'pi pi-plus', label: 'Add Data' },
     { icon: 'pi pi-sliders-v', label: 'Filter' },
     { icon: 'pi pi-cog', label: 'Settings' },
+    { icon: 'pi pi-database', label: 'Knowledge Graphs' },
     { icon: 'pi pi-chart-line', label: 'Plot' }
   ];
 
@@ -56,7 +61,7 @@ export class MenuComponent {
   }
 
   selectTab(index: number) {
-    if (index === 3) {
+    if (index === 4) {
       this.viewportStore.showPlot.update(prev => !prev);
       return;
     }

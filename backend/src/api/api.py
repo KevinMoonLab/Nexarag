@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Query, WebSocket, WebSocketDiscon
 from typing import List
 from kg.db.util import check_connection as check_neo4j_connection, load_kg_db
 from kg.db.queries import search_papers_by_id, get_all_papers, get_graph
+from kg.db.kg_manager import KnowledgeGraphManager, KnowledgeGraphInfo
 from rabbit.commands import (
     AddPaperCitations, AddPaperReferences, AddPapersById, 
     AddPapersByTitle, ClearGraph, PaperTitleWithYear
@@ -295,3 +296,43 @@ def ask_ollama_model(model:str, question:str):
 async def create_plot(cmd: CreateEmbeddingPlot):
     await publish_message(ChannelType.EMBEDDING_PLOT_REQUESTED, cmd)
     return cmd
+
+######################## Knowledge Graph Management ########################
+kg_manager = KnowledgeGraphManager()
+
+@app.get("/kg/list/", response_model=List[KnowledgeGraphInfo], tags=["Knowledge Graphs"])
+def list_knowledge_graphs():
+    """List all available knowledge graph dumps."""
+    return kg_manager.list_knowledge_graphs()
+
+@app.post("/kg/export/", tags=["Knowledge Graphs"])
+def export_knowledge_graph(name: str, description: str = None):
+    """Export the current knowledge graph to a dump file."""
+    success = kg_manager.export_knowledge_graph(name, description)
+    if success:
+        return {"message": f"Knowledge graph exported successfully as '{name}'", "success": True}
+    else:
+        return {"message": "Failed to export knowledge graph", "success": False}
+
+@app.post("/kg/import/", tags=["Knowledge Graphs"])
+def import_knowledge_graph(name: str):
+    """Import a knowledge graph from a dump file."""
+    success = kg_manager.import_knowledge_graph(name)
+    if success:
+        return {"message": f"Knowledge graph '{name}' imported successfully", "success": True}
+    else:
+        return {"message": f"Failed to import knowledge graph '{name}'", "success": False}
+
+@app.delete("/kg/delete/", tags=["Knowledge Graphs"])
+def delete_knowledge_graph(name: str):
+    """Delete a knowledge graph dump file."""
+    success = kg_manager.delete_knowledge_graph(name)
+    if success:
+        return {"message": f"Knowledge graph '{name}' deleted successfully", "success": True}
+    else:
+        return {"message": f"Failed to delete knowledge graph '{name}'", "success": False}
+
+@app.get("/kg/current/", tags=["Knowledge Graphs"])
+def get_current_kg_info():
+    """Get information about the currently active knowledge graph."""
+    return kg_manager.get_current_kg_info()
