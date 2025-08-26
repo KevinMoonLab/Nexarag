@@ -251,6 +251,7 @@ export class ProjectsComponent implements OnInit {
                         detail: response.message
                     });
                     this.loadCurrentKgInfo(); // Refresh current info
+                    this.state.refreshGraph(); // Refresh the graph visualization
                 } else {
                     this.messageService.add({
                         severity: 'error',

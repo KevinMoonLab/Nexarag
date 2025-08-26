@@ -6,6 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { KnowledgeGraphService, KnowledgeGraphInfo } from './kg.service';
+import { GraphStore } from '../graph/graph.store';
 
 @Component({
   selector: 'app-kg-selector',
@@ -54,6 +55,7 @@ import { KnowledgeGraphService, KnowledgeGraphInfo } from './kg.service';
 export class KgSelectorComponent implements OnInit {
   private kgService = inject(KnowledgeGraphService);
   private messageService = inject(MessageService);
+  private graphStore = inject(GraphStore);
 
   knowledgeGraphs = signal<KnowledgeGraphInfo[]>([]);
   loading = signal(false);
@@ -88,6 +90,7 @@ export class KgSelectorComponent implements OnInit {
               summary: 'Success',
               detail: `Switched to knowledge graph: ${this.selectedKg}`
             });
+            this.graphStore.refreshGraph(); // Refresh the graph visualization
           } else {
             this.messageService.add({
               severity: 'error',
