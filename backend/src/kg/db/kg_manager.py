@@ -5,6 +5,8 @@ Handles export, import, and switching between different Neo4j databases using AP
 
 import os
 import json
+import subprocess
+import shutil
 from typing import List, Dict, Optional
 from datetime import datetime
 from pathlib import Path
@@ -28,6 +30,33 @@ class KnowledgeGraphManager:
         self.dumps_directory.mkdir(exist_ok=True)
         self.metadata_file = self.dumps_directory / "kg_metadata.json"
         self.config = load_config()
+        self.import_directory = Path("/var/lib/neo4j/import")
+        
+    def _copy_to_dumps(self, filename: str) -> bool:
+        """Copy a file from Neo4j import directory to dumps directory."""
+        try:
+            source = self.import_directory / filename
+            dest = self.dumps_directory / filename
+            if source.exists():
+                shutil.copy2(source, dest)
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Error copying {filename} to dumps: {e}")
+            return False
+    
+    def _copy_from_dumps(self, filename: str) -> bool:
+        """Copy a file from dumps directory to Neo4j import directory."""
+        try:
+            source = self.dumps_directory / filename
+            dest = self.import_directory / filename
+            if source.exists():
+                shutil.copy2(source, dest)
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Error copying {filename} from dumps: {e}")
+            return False
         
     def _load_metadata(self) -> Dict[str, Dict]:
         """Load metadata about knowledge graphs."""
@@ -86,7 +115,8 @@ class KnowledgeGraphManager:
             # Get Neo4j connection
             kg = load_kg(self.config)
             
-            export_path = f"/dumps/{name}.graphml"
+            # APOC exports to import directory, so use relative path
+            export_filename = f"{name}.graphml"
             
             # Use APOC to export the entire graph
             export_query = """
@@ -100,27 +130,39 @@ class KnowledgeGraphManager:
             RETURN file, nodes, relationships, time, done
             """
             
-            logger.info(f"Exporting knowledge graph to {export_path}")
+            logger.info(f"Exporting knowledge graph to {export_filename}")
             
-            result = kg.query(export_query, {"exportPath": export_path})
+            result = kg.query(export_query, {"exportPath": export_filename})
             
             if result and len(result) > 0:
                 export_result = result[0]
                 logger.info(f"Export completed: {export_result}")
                 
-                # Update metadata
-                metadata = self._load_metadata()
-                metadata[name] = {
-                    'created_at': datetime.now().isoformat(),
-                    'description': description,
-                    'nodes': export_result.get('nodes', 0),
-                    'relationships': export_result.get('relationships', 0),
-                    'export_time': export_result.get('time', 0)
-                }
-                self._save_metadata(metadata)
-                
-                logger.info(f"Successfully exported knowledge graph to {export_path}")
-                return True
+                # Copy the exported file to dumps directory for persistence
+                if self._copy_to_dumps(export_filename):
+                    logger.info(f"Successfully copied {export_filename} to dumps directory")
+                    
+                    # Update metadata
+                    metadata = self._load_metadata()
+                    metadata[name] = {
+                        'created_at': datetime.now().isoformat(),
+                        'description': description,
+                        'nodes': export_result.get('nodes', 0),
+                        'relationships': export_result.get('relationships', 0),
+                        'export_time': export_result.get('time', 0)
+                    }
+                    self._save_metadata(metadata)
+                    
+                    # Clean up import directory
+                    import_file = self.import_directory / export_filename
+                    if import_file.exists():
+                        import_file.unlink()
+                    
+                    logger.info(f"Successfully exported knowledge graph: {name}")
+                    return True
+                else:
+                    logger.error(f"Failed to copy exported file to dumps directory")
+                    return False
             else:
                 logger.error("Export query returned no results")
                 return False
