@@ -20,7 +20,7 @@ We are actively seeking feedback for Nexarag, including feature requests, issue 
 
 ## 0. Clone the Repository
 
-```
+```bash
 git clone https://github.com/KevinMoonLab/Nexarag.git
 cd Nexarag
 ```
@@ -33,18 +33,18 @@ Use the appropriate file for your hardware:
 
 * **CPU:**
 
-  ```
+  ```bash
   docker compose -f docker-compose.cpu.yml up -d
   ```
 * **GPU:**
 
-  ```
+  ```bash
   docker compose -f docker-compose.gpu.yml up -d
   ```
 
 ### MacOS
 
-```
+```bash
 docker compose -f docker-compose.macos.yml up -d
 ```
 
@@ -56,7 +56,7 @@ Browse the full library of Ollama models [here](https://ollama.com/library). The
 
 Models can be pulled through the command line in the `ollama` Docker container.
 
-```
+```bash
 docker exec -it nexarag.ollama /bin/bash
 ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
@@ -66,7 +66,7 @@ ollama pull gemma3:1b
 
 Pull models directly from your command line.
 
-```
+```bash
 ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
 ```
@@ -76,8 +76,10 @@ ollama pull gemma3:1b
 The Nexarag frontend application will be served at `http://localhost:5000`.
 
 ## 4. (Optional) MCP Integration
+### Claude Desktop
 Add the following to your Claude Desktop Config:
-```
+
+```json
 {
     "mcpServers": {
         "nexarag": {
@@ -93,6 +95,12 @@ Add the following to your Claude Desktop Config:
         }
     }
 }
+```
+
+### Ollama
+From the command line:
+```bash
+ollmcp -u http://localhost:9000/mcp -m gpt-oss:20b
 ```
 
 # Semantic Scholar
