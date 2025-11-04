@@ -7,13 +7,19 @@ tags:
   - Neo4j
   - MCP
 authors:
-  - name: TODO: First Author
+  - name: Thomas J. Kerby
     affiliation: 1
-  - name: TODO: Second Author
-    affiliation: 1
+  - name: Benjamin N. Fuller
+    affiliation: 3
+  - name: Kevin R. Moon
+    affiliation: 2
 affiliations:
-  - name: TODO: Your Institution, City, Country
+  - name: Brigham Young University, Provo, UT
     index: 1
+  - name: Utah State University, Logan, UT
+    index: 2
+  - name: Independent Researcher
+    index: 3
 date: 2025-11-04
 bibliography: paper.bib
 ---
