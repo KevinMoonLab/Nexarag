@@ -61,8 +61,8 @@ ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
 ```
 
-**Repository:** <https://github.com/REPLACE-WITH-YOUR-ORG/nexarag>  
-**License:** OSI‑approved license (e.g., MIT/Apache‑2.0/BSD‑3‑Clause).
+**Repository:** [https://github.com/REPLACE-WITH-YOUR-ORG/nexarag](https://github.com/KevinMoonLab/Nexarag)
+**License:** GNU General Public License v3.0.
 
 # Quality control
 
