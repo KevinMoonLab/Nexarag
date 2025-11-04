@@ -62,6 +62,7 @@ ollama pull gemma3:1b
 ```
 
 **Repository:** [https://github.com/REPLACE-WITH-YOUR-ORG/nexarag](https://github.com/KevinMoonLab/Nexarag)
+
 **License:** GNU General Public License v3.0.
 
 # Quality control
