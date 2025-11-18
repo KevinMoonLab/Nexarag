@@ -38,7 +38,7 @@ services:
   nexarag.api:
     image: nexarag.api:latest
     build:
-      context: ./src/backend/src
+      context: ../../src/backend/src
       dockerfile: api/Dockerfile
     container_name: nexarag.api
     restart: unless-stopped
@@ -51,7 +51,7 @@ services:
       NEO4J_DATABASE: neo4j
       RABBITMQ_PASSWORD: guest
       RABBITMQ_USERNAME: guest
-      OLLAMA_BASE_URL: http://nexarag.ollama:11434
+      OLLAMA_BASE_URL: http://host.docker.internal:11434    
     depends_on:
       nexarag.neo4j:
         condition: service_healthy
@@ -64,7 +64,7 @@ services:
   nexarag.frontend:
     image: nexarag.frontend:latest
     build:
-      context: ./src/frontend
+      context: ../../src/frontend
       dockerfile: Dockerfile
     container_name: nexarag.frontend
     restart: unless-stopped
@@ -73,10 +73,30 @@ services:
     depends_on:
       - nexarag.api
 
+  nexarag.mcp:
+    image: nexarag.mcp:latest
+    container_name: nexarag.mcp
+    build: 
+      context: ../../src/backend/src
+      dockerfile: nexarag_mcp/Dockerfile
+    ports:
+      - "9000:9000"
+    environment:
+      - NEO4J_URI=bolt://nexarag.neo4j:7687
+      - ALLOW_DANGEROUS_REQUESTS=true
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=password
+      - NEO4J_DATABASE=neo4j
+      - PYTHONUNBUFFERED=1
+      - MCP_PORT=9000
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - DEFAULT_MODEL=qwen3:8b
+    restart: unless-stopped
+
   nexarag.kg:
     image: nexarag.kg:latest
     build:
-      context: ./src/backend/src
+      context: ../../src/backend/src
       dockerfile: kg/Dockerfile
     container_name: nexarag.kg
     restart: unless-stopped
@@ -87,10 +107,10 @@ services:
       NEO4J_DATABASE: neo4j
       RABBITMQ_PASSWORD: guest
       RABBITMQ_USERNAME: guest
-      OLLAMA_BASE_URL: http://nexarag.ollama:11434
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
     volumes:
       - docs_data:/docs
-      - conv_history_data:/data
+      - chat_data:/data
       - ./kg_dumps:/dumps
     depends_on:
       nexarag.neo4j:
@@ -98,18 +118,8 @@ services:
       nexarag.rabbitmq:
         condition: service_healthy
 
-
-  nexarag.ollama:
-    image: ollama/ollama
-    container_name: nexarag.ollama
-    ports:
-      - "11435:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-
 volumes:
   neo4j_data:
   rabbit_data:
-  ollama_data:
   docs_data:
-  conv_history_data:
+  chat_data:
