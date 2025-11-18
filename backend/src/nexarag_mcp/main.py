@@ -5,16 +5,54 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 import os
 import logging
+from langchain_ollama.llms import OllamaLLM
+from kg.db.util import load_default_kg
+from langchain_neo4j import GraphCypherQAChain
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 port = os.environ.get("MCP_PORT", 9000)
 api_port = os.environ.get("API_PORT", 8000)
+default_model = os.environ.get("DEFAULT_MODEL", "gemma3:1b")
 
 mcp = FastMCP("nexarag")
 API_BASE_URL = f"http://nexarag.api:{api_port}"
 API_TIMEOUT = 30.0
+ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+allow_dangerous_requests = os.getenv("ALLOW_DANGEROUS_REQUESTS", "false").lower() == "true"
+
+def language_to_cypher(question: str, model: str = "gemma3:1b"):
+    logger.info(f"Ollama base URL: {ollama_base_url}, Model: {model}")
+    llm = OllamaLLM(model=model, base_url=ollama_base_url)
+    graph = load_default_kg()
+    logger.info("Loaded default knowledge graph for Cypher queries.")
+    cypher_chain = GraphCypherQAChain.from_llm(
+        graph=graph,
+        llm=llm,
+        validate_cypher=True,
+        return_direct=True,
+        return_intermediate_steps=True,
+        allow_dangerous_requests=allow_dangerous_requests,
+    )
+
+    out = cypher_chain.invoke({"query": question})
+    cypher = out['intermediate_steps'][0]['query']
+    rows = out['result']
+
+    logger.info(f"Generated Cypher: {cypher}")
+    return {
+        "cypher": cypher,
+        "rows": rows,
+    }
+
+@mcp.tool()
+def execute_language_to_cypher_query(question: str) -> dict:
+    try:
+        return language_to_cypher(question)
+    except Exception as e:
+        logger.error(f"Error executing language to cypher query: {e}")
+        return {"error": str(e)}
 
 async def make_api_request(method: str, endpoint: str, json_data: dict = None) -> Any:
     """Make a request to the papers API with proper error handling."""
@@ -146,7 +184,6 @@ async def add_paper_references(paper_ids: List[str]) -> str:
     Args:
         paper_ids: List of paper IDs to add references for
     """
-    # Prepare the request body
     request_body = paper_ids
     
     result = await make_api_request("POST", "/papers/references/add/", json_data=request_body)
@@ -199,7 +236,6 @@ async def relevance_search_papers(query: str) -> str:
     logger.info(f"Relevance search returned unexpected result type: {type(result)}")
     return str(result)
 
-# Add FastAPI healthcheck endpoint using custom_route
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request: Request) -> JSONResponse:
     """Health check endpoint for container orchestration."""

@@ -32,6 +32,7 @@ from langchain_ollama.llms import OllamaLLM
 import os
 from fastapi.staticfiles import StaticFiles
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+default_model = os.environ.get("DEFAULT_MODEL", "gemma3:1b")
 
 
 ######################## Configuration ########################

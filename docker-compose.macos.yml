@@ -77,13 +77,20 @@ services:
     image: nexarag.mcp:latest
     container_name: nexarag.mcp
     build: 
-      context: ./backend/src/mcp
-      dockerfile: Dockerfile
+      context: ./backend/src
+      dockerfile: nexarag_mcp/Dockerfile
     ports:
       - "9000:9000"
     environment:
+      - NEO4J_URI=bolt://nexarag.neo4j:7687
+      - ALLOW_DANGEROUS_REQUESTS=true
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=password
+      - NEO4J_DATABASE=neo4j
       - PYTHONUNBUFFERED=1
       - MCP_PORT=9000
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - DEFAULT_MODEL=qwen3:8b
     restart: unless-stopped
 
   nexarag.kg:
