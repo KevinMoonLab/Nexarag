@@ -38,7 +38,7 @@ services:
   nexarag.api:
     image: nexarag.api:latest
     build:
-      context: ./backend/src
+      context: ./src/backend/src
       dockerfile: api/Dockerfile
     container_name: nexarag.api
     restart: unless-stopped
@@ -64,7 +64,7 @@ services:
   nexarag.frontend:
     image: nexarag.frontend:latest
     build:
-      context: ./frontend
+      context: ./src/frontend
       dockerfile: Dockerfile
     container_name: nexarag.frontend
     restart: unless-stopped
@@ -76,7 +76,7 @@ services:
   nexarag.kg:
     image: nexarag.kg:latest
     build:
-      context: ./backend/src
+      context: ./src/backend/src
       dockerfile: kg/Dockerfile
     container_name: nexarag.kg
     restart: unless-stopped
