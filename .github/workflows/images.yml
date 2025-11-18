@@ -2,12 +2,11 @@ name: Build Nexarag images
 
 on:
   push:
-    branches: [ bnf/testing ]
+    branches: [ main ]
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -42,6 +41,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Force the owner/repo part to lowercase for Docker/OCI tag validity
+      - name: Compute lowercase image prefix
+        id: img
+        run: |
+          repo="${GITHUB_REPOSITORY,,}"
+          echo "prefix=$repo" >> "$GITHUB_OUTPUT"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -59,7 +65,7 @@ jobs:
           file: ${{ matrix.service.dockerfile }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ steps.img.outputs.prefix }}/${{ matrix.service.name }}:latest
+            ${{ env.REGISTRY }}/${{ steps.img.outputs.prefix }}/${{ matrix.service.name }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
