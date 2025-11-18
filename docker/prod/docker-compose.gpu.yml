@@ -1,0 +1,133 @@
+services:
+  nexarag.neo4j:
+    image: neo4j:latest
+    container_name: nexarag.neo4j
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.meta.data
+      - NEO4J_PLUGINS=["apoc"]
+    volumes:
+      - neo4j_data:/data
+      - ./kg_dumps:/dumps
+      - ./kg_dumps:/var/lib/neo4j/import
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password", "MATCH (n) RETURN COUNT(n);"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nexarag.rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: nexarag.rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nexarag.api:
+    image: ghcr.io/kevinmoonlab/nexarag/nexarag.api:latest
+    container_name: nexarag.api
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    environment:
+      NEO4J_URI: bolt://nexarag.neo4j:7687
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: password
+      NEO4J_DATABASE: neo4j
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_USERNAME: guest
+      OLLAMA_BASE_URL: http://nexarag.ollama:11434
+    depends_on:
+      nexarag.neo4j:
+        condition: service_healthy
+      nexarag.rabbitmq:
+        condition: service_healthy
+    volumes:
+      - docs_data:/docs
+      - ./kg_dumps:/dumps
+
+  nexarag.frontend:
+    image: ghcr.io/kevinmoonlab/nexarag/nexarag.frontend:latest
+    container_name: nexarag.frontend
+    restart: unless-stopped
+    ports:
+      - 5000:80
+    depends_on:
+      - nexarag.api
+
+  nexarag.mcp:
+    image: ghcr.io/kevinmoonlab/nexarag/nexarag.mcp:latest
+    container_name: nexarag.mcp
+    ports:
+      - "9000:9000"
+    environment:
+      NEO4J_URI: bolt://nexarag.neo4j:7687
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: password
+      NEO4J_DATABASE: neo4j
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_USERNAME: guest
+      OLLAMA_BASE_URL: http://nexarag.ollama:11434
+      PYTHONUNBUFFERED: 1
+      MCP_PORT: 9000
+    restart: unless-stopped
+    depends_on:
+      nexarag.neo4j:
+        condition: service_healthy
+
+  nexarag.kg:
+    image: ghcr.io/kevinmoonlab/nexarag/nexarag.kg:latest
+    container_name: nexarag.kg
+    restart: unless-stopped
+    environment:
+      NEO4J_URI: bolt://nexarag.neo4j:7687
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: password
+      NEO4J_DATABASE: neo4j
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_USERNAME: guest
+      OLLAMA_BASE_URL: http://nexarag.ollama:11434
+    volumes:
+      - docs_data:/docs
+      - conv_history_data:/data
+      - ./kg_dumps:/dumps
+    depends_on:
+      nexarag.neo4j:
+        condition: service_healthy
+      nexarag.rabbitmq:
+        condition: service_healthy
+
+  nexarag.ollama:
+    image: ollama/ollama
+    container_name: nexarag.ollama
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  neo4j_data:
+  rabbit_data:
+  ollama_data:
+  docs_data:
+  conv_history_data:
+
