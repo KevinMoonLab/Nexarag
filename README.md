@@ -98,7 +98,13 @@ Add the following to your Claude Desktop Config:
 ```
 
 ### Ollama
-From the command line:
+First install [pipx](https://github.com/pypa/pipx), then run:
+
+```bash
+pipx install ollmcp
+```
+
+To start the MCP client:
 ```bash
 ollmcp -u http://localhost:9000/mcp -m gpt-oss:20b
 ```
