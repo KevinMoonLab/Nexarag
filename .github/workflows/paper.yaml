@@ -1,10 +1,10 @@
-name: Nexarag Paper PDF
+name: Nexarag Draft PDF
 on: [push]
 
 jobs:
   paper:
     runs-on: ubuntu-latest
-    name: Nexarag Paper PDF
+    name: Nexarag Draft PDF
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,4 +17,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: paper
-          path: paper.pdf
+          path: nexarag_draft.pdf
