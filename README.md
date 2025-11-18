@@ -49,8 +49,13 @@ docker compose -f docker-compose.macos.yml up -d
 ```
 
 ## 2. Pull Ollama Models
+To support all internal features, Nexarag requires:
 
-Browse the full library of Ollama models [here](https://ollama.com/library). The `nomic-embed-text:v1.5` model is required. A language model is also required for LLM integration, and we recommend `gemma3:1b` as a default option. However, this can be easily replaced with another supported language model depending on your hardware and preferences.
+* An embedding model, such as `nomic-embed-text:v1.5`
+* A language model, such as `gemma3:1b`
+* An MCP-capable model, such as `qwen3:8b`
+
+Browse the full library of Ollama models [here](https://ollama.com/library) and choose any model from these families that your hardware supports.  Defaults that run on most hardware are provided below.
 
 ### Linux/WSL
 
@@ -60,6 +65,7 @@ Models can be pulled through the command line in the `ollama` Docker container.
 docker exec -it nexarag.ollama /bin/bash
 ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
+ollama pull qwen3:8b
 ```
 
 ### MacOS
@@ -69,6 +75,7 @@ Pull models directly from your command line.
 ```bash
 ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
+ollama pull qwen3:8b
 ```
 
 ## 3. Launch Application
