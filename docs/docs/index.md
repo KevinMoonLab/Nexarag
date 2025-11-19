@@ -4,9 +4,8 @@
 # Usage Guides
 * [Quick Start](https://github.com/KevinMoonLab/Nexarag)
 * [Building Knowledge Graphs](usage/build.md)
-* [Exploring Knowledge Graphs](usage/query.md)
+* [Exploring Knowledge Graphs](usage/share.md)
 * [Sharing Knowledge Graphs](usage/share.md)
-* [Advanced Configuration](usage/env.md)
 
 # Development Guides
 * [Frontend](development/frontend.md)
