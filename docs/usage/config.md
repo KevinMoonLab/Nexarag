@@ -17,3 +17,4 @@ A number of advanced settings can be applied using environment variables. Copy [
 | `EMBEDDING_CHUNK_SIZE`    | `500`                   | Size of text chunks (in characters or tokens, depending on implementation) used before generating embeddings. |
 | `EMBEDDING_CHUNK_OVERLAP` | `100`                   | Number of overlapping characters/tokens between embedding chunks to preserve context.                         |
 | `EMBEDDING_MODEL`         | `nomic-embed-text:v1.5` | Model identifier used for generating vector embeddings.                                                       |
+| `DEFAULT_MODEL` | `gemma3:1b` | Default LLM used for chatting and generating Cypher queries |
