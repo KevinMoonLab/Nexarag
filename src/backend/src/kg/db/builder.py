@@ -3,12 +3,15 @@ from typing import List
 from scholar.api import enrich_papers, enrich_authors, get_citations, get_references
 from scholar.util import retry
 from kg.llm.embeddings import create_abstract_embedding
+import os
+
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "nomic-embed-text:v1.5")
 
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def create_paper_graph(paper_ids: List[str], project_id: str = None):
+async def create_paper_graph(paper_ids: List[str], model_id: str = EMBEDDING_MODEL):
     paper_dicts = []
     author_dicts = {}
     journal_dicts = {}
@@ -29,7 +32,14 @@ async def create_paper_graph(paper_ids: List[str], project_id: str = None):
     papers = retry(enrich_papers, new_paper_ids)
     all_author_ids = set()
     for paper_data in papers:
-        abstract_embedding = create_abstract_embedding(paper_data.abstract) if paper_data.abstract else None
+        if paper_data.abstract is not None:
+            try: 
+                abstract_embedding = create_abstract_embedding(paper_data.abstract, model_id)
+            except Exception as e:
+                logger.error(f"Error creating abstract embedding for paperId: {paper_data.paperId}: {e}")
+                abstract_embedding = None
+        else:
+            abstract_embedding = None
 
         paper_dicts.append({
             "paper_id": paper_data.paperId,

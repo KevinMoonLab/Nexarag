@@ -95,6 +95,8 @@ import { ChatMessage, ChatResponse, ModelDetails } from "./types";
     }
 
     private handleChatResponse(data: ChatResponse) {
+      if (data.message === '') return;
+
       this.stopTyping();
       this.responseMessageList.update(prev => [...prev, data]);
     }

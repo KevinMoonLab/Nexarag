@@ -7,8 +7,9 @@ import logging
 import os
 logger = logging.getLogger(__name__)
 
-DEFAULT_CHUNK_SIZE = int(os.getenv("DEFAULT_CHUNK_SIZE", 500))
-DEFAULT_CHUNK_OVERLAP = int(os.getenv("DEFAULT_CHUNK_OVERLAP", 100))
+DEFAULT_CHUNK_SIZE = int(os.getenv("EMBEDDING_CHUNK_SIZE", 500))
+DEFAULT_CHUNK_OVERLAP = int(os.getenv("EMBEDDING_CHUNK_OVERLAP", 100))
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "nomic-embed-text:v1.5")
 
 
 def paper_data_from_file(md_text, paper_id, text_splitter):
@@ -29,7 +30,7 @@ def remove_references_section(text):
     return split_result[0] if split_result else text
 
 
-async def create_chunk_nodes_with_embeddings(md_text, paper_id, text_splitter, model_id='nomic-embed-text:v1.5'):
+async def create_chunk_nodes_with_embeddings(md_text, paper_id, text_splitter, model_id=EMBEDDING_MODEL):
     node_count = 0
     nomic_adapter = NomicEmbeddingAdapter(model_id=model_id)
     chunks = paper_data_from_file(md_text, paper_id, text_splitter)

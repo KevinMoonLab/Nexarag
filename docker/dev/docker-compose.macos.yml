@@ -108,8 +108,9 @@ services:
       RABBITMQ_PASSWORD: guest
       RABBITMQ_USERNAME: guest
       OLLAMA_BASE_URL: http://host.docker.internal:11434
-      DEFAULT_CHUNK_SIZE: 500
-      DEFAULT_CHUNK_OVERLAP: 100
+      EMBEDDING_CHUNK_SIZE: 500
+      EMBEDDING_CHUNK_OVERLAP: 100
+      EMBEDDING_MODEL: nomic-embed-text:v1.5
     volumes:
       - docs_data:/docs
       - chat_data:/data
