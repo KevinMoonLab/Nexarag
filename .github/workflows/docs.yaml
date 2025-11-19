@@ -2,7 +2,7 @@ name: Build and Deploy Docs
 
 on:
   push:
-    branches: [ bnf/make-docs ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
