@@ -51,7 +51,8 @@ services:
       NEO4J_DATABASE: neo4j
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
-      OLLAMA_BASE_URL: http://host.docker.internal:${OLLAMA_PORT:-11434}    
+      OLLAMA_BASE_URL: http://host.docker.internal:${OLLAMA_PORT:-11434}   
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gemma3:1b} 
     depends_on:
       nexarag.neo4j:
         condition: service_healthy
@@ -90,7 +91,7 @@ services:
       - PYTHONUNBUFFERED=1
       - MCP_PORT=${MCP_PORT:-9000}
       - OLLAMA_BASE_URL=http://host.docker.internal:${OLLAMA_PORT:-11434}
-      - DEFAULT_MODEL=qwen3:8b
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-qwen3:8b}
     restart: unless-stopped
 
   nexarag.kg:
@@ -111,6 +112,7 @@ services:
       EMBEDDING_CHUNK_SIZE: ${EMBEDDING_CHUNK_SIZE:-500}
       EMBEDDING_CHUNK_OVERLAP: ${EMBEDDING_CHUNK_OVERLAP:-100}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text:v1.5}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gemma3:1b}
     volumes:
       - docs_data:/docs
       - chat_data:/data

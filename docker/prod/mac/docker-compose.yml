@@ -52,6 +52,7 @@ services:
       EMBEDDING_CHUNK_SIZE: ${EMBEDDING_CHUNK_SIZE:-500}
       EMBEDDING_CHUNK_OVERLAP: ${EMBEDDING_CHUNK_OVERLAP:-100}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text:v1.5}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gemma3:1b}
     depends_on:
       nexarag.neo4j:
         condition: service_healthy
@@ -105,6 +106,7 @@ services:
       EMBEDDING_CHUNK_SIZE: ${EMBEDDING_CHUNK_SIZE:-500}
       EMBEDDING_CHUNK_OVERLAP: ${EMBEDDING_CHUNK_OVERLAP:-100}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text:v1.5}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gemma3:1b}
     volumes:
       - docs_data:/docs
       - chat_data:/data
