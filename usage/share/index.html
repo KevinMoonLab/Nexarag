@@ -180,14 +180,18 @@
 <li>Identify the desired export and click "Load".</li>
 </ol>
 <h3 id="switching-knowledge-graphs">Switching Knowledge Graphs</h3>
-<p><strong>Option 1: Quick Selector</strong>
-1. Use the dropdown at the top of the screen.
-2. Select a knowledge graph from the list.
-3. The system will automatically load the selected KG.</p>
-<p><strong>Option 2: Management Interface</strong>
-1. Open the projects workspace.
-2. Click "Load" button on any knowledge graph card.
-3. Confirm the action.</p>
+<p><strong>Option 1: Quick Selector</strong></p>
+<ol>
+<li>Use the dropdown at the top of the screen.</li>
+<li>Select a knowledge graph from the list.</li>
+<li>The system will automatically load the selected KG.</li>
+</ol>
+<p><strong>Option 2: Management Interface</strong></p>
+<ol>
+<li>Open the projects workspace.</li>
+<li>Click "Load" button on any knowledge graph card.</li>
+<li>Confirm the action.</li>
+</ol>
 <h3 id="deleting-knowledge-graphs">Deleting Knowledge Graphs</h3>
 <ol>
 <li>Open the projects workspace.</li>
@@ -204,17 +208,21 @@
 <li><code>GET /kg/current/</code> - Get current knowledge graph information</li>
 </ul>
 <h3 id="docker-changes">Docker Changes</h3>
-<p>Added <code>kg_dumps</code> volume to all docker-compose files:
-- <code>docker-compose.cpu.yml</code>
-- <code>docker-compose.gpu.yml</code> 
-- <code>docker-compose.macos.yml</code></p>
+<p>Added <code>kg_dumps</code> volume to all docker-compose files:</p>
+<ul>
+<li><code>docker-compose.cpu.yml</code></li>
+<li><code>docker-compose.gpu.yml</code> </li>
+<li><code>docker-compose.macos.yml</code></li>
+</ul>
 <p>This volume is mounted at <code>/dumps</code> in the Neo4j container and shared with API and KG services.</p>
 <h3 id="knowledgegraphmanager-class">KnowledgeGraphManager Class</h3>
-<p>Located in <code>backend/src/kg/db/kg_manager.py</code>, this class handles:
-- Exporting databases using <code>neo4j-admin database dump</code>
-- Loading databases using <code>neo4j-admin database load</code>
-- Managing metadata for saved knowledge graphs
-- File operations for dump files</p>
+<p>Located in <code>backend/src/kg/db/kg_manager.py</code>, this class handles:</p>
+<ul>
+<li>Exporting databases using <code>neo4j-admin database dump</code></li>
+<li>Loading databases using <code>neo4j-admin database load</code></li>
+<li>Managing metadata for saved knowledge graphs</li>
+<li>File operations for dump files</li>
+</ul>
 <h2 id="frontend-implementation">Frontend Implementation</h2>
 <h3 id="new-components">New Components</h3>
 <ol>
@@ -222,20 +230,12 @@
 <li>Full knowledge graph management interface</li>
 <li>Export form with name and description</li>
 <li>Grid view of available knowledge graphs</li>
-<li>
-<p>Load/delete actions for each KG</p>
-</li>
-<li>
-<p><strong>KgSelectorComponent</strong> (<code>frontend/src/app/kg/kg-selector.component.ts</code>)</p>
-</li>
+<li>Load/delete actions for each KG</li>
+<li><strong>KgSelectorComponent</strong> (<code>frontend/src/app/kg/kg-selector.component.ts</code>)</li>
 <li>Compact dropdown selector</li>
 <li>Quick switching between knowledge graphs</li>
-<li>
-<p>Positioned at top of main viewport</p>
-</li>
-<li>
-<p><strong>KnowledgeGraphService</strong> (<code>frontend/src/app/kg/kg.service.ts</code>)</p>
-</li>
+<li>Positioned at top of main viewport</li>
+<li><strong>KnowledgeGraphService</strong> (<code>frontend/src/app/kg/kg.service.ts</code>)</li>
 <li>HTTP service for KG API calls</li>
 <li>TypeScript interfaces for API responses</li>
 </ol>
@@ -248,14 +248,18 @@
 </ul>
 <h2 id="technical-notes">Technical Notes</h2>
 <h3 id="neo4j-commands">Neo4j Commands</h3>
-<p>The system uses Neo4j 5.x admin commands:
-- Export: <code>neo4j-admin database dump --to-path=/dumps --database=&lt;name&gt; --overwrite-destination=true</code>
-- Import: <code>neo4j-admin database load --from-path=/dumps --database=&lt;name&gt; --overwrite-destination=true</code></p>
+<p>The system uses Neo4j 5.x admin commands:</p>
+<ul>
+<li>Export: <code>neo4j-admin database dump --to-path=/dumps --database=&lt;name&gt; --overwrite-destination=true</code></li>
+<li>Import: <code>neo4j-admin database load --from-path=/dumps --database=&lt;name&gt; --overwrite-destination=true</code></li>
+</ul>
 <h3 id="database-operations">Database Operations</h3>
-<p>When loading a knowledge graph:
-1. Neo4j database is stopped
-2. Dump file is loaded
-3. Database is restarted</p>
+<p>When loading a knowledge graph:</p>
+<ol>
+<li>Neo4j database is stopped</li>
+<li>Dump file is loaded</li>
+<li>Database is restarted</li>
+</ol>
 <p>This ensures data consistency but causes a brief service interruption.</p>
 <h3 id="metadata-storage">Metadata Storage</h3>
 <p>Knowledge graph metadata is stored in <code>kg_metadata.json</code> within the dumps volume:</p>

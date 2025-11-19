@@ -144,16 +144,16 @@ cd Nexarag
 <h2 id="2-docker-compose">2. Docker Compose</h2>
 <p>Use the appropriate file for your hardware, from <code>docker/dev</code>:</p>
 <ul>
-<li><strong>CPU:</strong></li>
-</ul>
-<p><code>bash
-  docker compose -f docker-compose.cpu.yml up -d</code>
-* <strong>GPU:</strong></p>
-<p><code>bash
-  docker compose -f docker-compose.gpu.yml up -d</code>
-* <strong>MacOS:</strong>
+<li><strong>CPU:</strong>
   <code>bash
-  docker compose -f docker-compose.mac.yml up -d</code></p>
+  docker compose -f docker-compose.cpu.yml up -d</code></li>
+<li><strong>GPU:</strong>
+  <code>bash
+  docker compose -f docker-compose.gpu.yml up -d</code></li>
+<li><strong>MacOS:</strong>
+  <code>bash
+  docker compose -f docker-compose.mac.yml up -d</code></li>
+</ul>
 <h2 id="3-configure-dev-environment">3. Configure dev environment</h2>
 <ul>
 <li><a href="../frontend/">Frontend</a></li>

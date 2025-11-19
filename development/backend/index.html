@@ -129,12 +129,14 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="backend">Backend</h1>
-<p>This is the backend stack consisting of three primary services (<code>api</code>, <code>kg</code>, <code>mcp</code>) and two libraries (<code>rabbit</code>, <code>scholar</code>) that communicate asynchronously over RabbitMQ:
-- <code>api</code>: <a href="https://github.com/fastapi/fastapi">FastAPI</a> endpoints that service frontend queries and integrate with backend services.
-- <code>mcp</code>: <a href="https://github.com/modelcontextprotocol/python-sdk">FastMCP</a> service that provides MCP access to the API and context generation for external LLM hosts.
-- <code>kg</code>: Primary service for creating embeddings, interacting with LLMs, and building visualizations.
-- <code>rabbit</code>: Defines the messaging layer between services.
-- <code>scholar</code>: Semantic Scholar integration.</p>
+<p>This is the backend stack consisting of three primary services (<code>api</code>, <code>kg</code>, <code>mcp</code>) and two libraries (<code>rabbit</code>, <code>scholar</code>) that communicate asynchronously over RabbitMQ:</p>
+<ul>
+<li><code>api</code>: <a href="https://github.com/fastapi/fastapi">FastAPI</a> endpoints that service frontend queries and integrate with backend services.</li>
+<li><code>mcp</code>: <a href="https://github.com/modelcontextprotocol/python-sdk">FastMCP</a> service that provides MCP access to the API and context generation for external LLM hosts.</li>
+<li><code>kg</code>: Primary service for creating embeddings, interacting with LLMs, and building visualizations.</li>
+<li><code>rabbit</code>: Defines the messaging layer between services.</li>
+<li><code>scholar</code>: Semantic Scholar integration.</li>
+</ul>
 <h2 id="local-development">Local Development</h2>
 <p>Development for the backend project can be done inside a devcontainer. The container will be automatically provisioned with a <code>neo4j</code> database, a <code>rabbitmq</code> instance, and the official Ollama container image. </p>
 <ol>
