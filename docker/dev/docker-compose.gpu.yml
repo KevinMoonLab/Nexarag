@@ -38,7 +38,7 @@ services:
   nexarag.api:
     image: nexarag.api:latest
     build:
-      context: ./src/backend/src
+      context: ../../src/backend/src
       dockerfile: api/Dockerfile
     container_name: nexarag.api
     restart: unless-stopped
@@ -51,7 +51,7 @@ services:
       NEO4J_DATABASE: neo4j
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
-      OLLAMA_BASE_URL: http://nexarag.ollama:${OLLAMA_PORT:-11434}
+      OLLAMA_BASE_URL: http://nexarag.ollama:11434
       EMBEDDING_CHUNK_SIZE: ${EMBEDDING_CHUNK_SIZE:-500}
       EMBEDDING_CHUNK_OVERLAP: ${EMBEDDING_CHUNK_OVERLAP:-100}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text:v1.5}
@@ -68,7 +68,7 @@ services:
   nexarag.frontend:
     image: nexarag.frontend:latest
     build:
-      context: ./src/frontend
+      context: ../../src/frontend
       dockerfile: Dockerfile
     container_name: nexarag.frontend
     restart: unless-stopped
@@ -81,7 +81,7 @@ services:
     image: nexarag.mcp:latest
     container_name: nexarag.mcp
     build:
-      context: ./src/backend/src
+      context: ../../src/backend/src
       dockerfile: nexarag_mcp/Dockerfile
     ports:
       - "${MCP_PORT:-9000}:9000"
@@ -92,7 +92,7 @@ services:
       NEO4J_DATABASE: neo4j
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
-      OLLAMA_BASE_URL: http://nexarag.ollama:${OLLAMA_PORT:-11434}
+      OLLAMA_BASE_URL: http://nexarag.ollama:11434
       PYTHONUNBUFFERED: 1
       MCP_PORT: ${MCP_PORT:-9000}
       DEFAULT_MODEL: ${DEFAULT_MODEL:-qwen3:8b}
@@ -101,7 +101,7 @@ services:
   nexarag.kg:
     image: nexarag.kg:latest
     build:
-      context: ./src/backend/src
+      context: ../../src/backend/src
       dockerfile: kg/Dockerfile
     container_name: nexarag.kg
     restart: unless-stopped
@@ -112,7 +112,7 @@ services:
       NEO4J_DATABASE: neo4j
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
-      OLLAMA_BASE_URL: http://host.docker.internal:${OLLAMA_PORT:-11434}
+      OLLAMA_BASE_URL: http://nexarag.ollama:11434
       EMBEDDING_CHUNK_SIZE: ${EMBEDDING_CHUNK_SIZE:-500}
       EMBEDDING_CHUNK_OVERLAP: ${EMBEDDING_CHUNK_OVERLAP:-100}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text:v1.5}
@@ -132,7 +132,7 @@ services:
     image: ollama/ollama
     container_name: nexarag.ollama
     ports:
-      - "11435:11434"
+      - "${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama_data:/root/.ollama
     deploy:
