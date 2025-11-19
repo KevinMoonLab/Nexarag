@@ -2,7 +2,7 @@ name: Build Nexarag images
 
 on:
   push:
-    branches: [ main ]
+    branches: [ bnf/testing ]
   workflow_dispatch:
 
 env:
