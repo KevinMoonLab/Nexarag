@@ -25,7 +25,7 @@ We are actively seeking feedback for Nexarag, including feature requests, issue 
 Choose a Dockerfile compatible with your OS and hardware:
 
 * [MacOS](docker/prod/mac/docker-compose.yml)
-* [Linux/WSL (CPU)](docker/prod/gpu/docker-compose.yml)
+* [Linux/WSL (CPU)](docker/prod/cpu/docker-compose.yml)
 * [Linux/WSL (GPU)](docker/prod/gpu/docker-compose.yml)
 
 ## 2. Run Nexarag
