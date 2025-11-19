@@ -15,6 +15,7 @@ The Knowledge Graph Management feature provides:
 ## Quick Start
 
 ### Exporting Knowledge Graphs
+
 1. Click the cog menu item to access the projects workspace.
 2. Enter a name for your export.
 3. **[Optional]** Add a description.
@@ -22,6 +23,7 @@ The Knowledge Graph Management feature provides:
 5. The current Neo4j database will be saved as a dump file to `kg_dumps` in the same folder as the Docker compose file.
 
 ### Import Knowledge Graphs
+
 1. Copy the `kg_dumps` file to the target, in the same folder as the Docker compose file. 
 2. Run `docker compose restart`.
 3. In the Nexarag frontend, open the projects workspace.
@@ -29,16 +31,19 @@ The Knowledge Graph Management feature provides:
 
 ### Switching Knowledge Graphs
 **Option 1: Quick Selector**
+
 1. Use the dropdown at the top of the screen.
 2. Select a knowledge graph from the list.
 3. The system will automatically load the selected KG.
 
 **Option 2: Management Interface**
+
 1. Open the projects workspace.
 2. Click "Load" button on any knowledge graph card.
 3. Confirm the action.
 
 ### Deleting Knowledge Graphs
+
 1. Open the projects workspace.
 2. Click "Delete" button on the knowledge graph card
 3. Confirm the deletion in the popup dialog.
@@ -56,6 +61,7 @@ The Knowledge Graph Management feature provides:
 ### Docker Changes
 
 Added `kg_dumps` volume to all docker-compose files:
+
 - `docker-compose.cpu.yml`
 - `docker-compose.gpu.yml` 
 - `docker-compose.macos.yml`
@@ -65,6 +71,7 @@ This volume is mounted at `/dumps` in the Neo4j container and shared with API an
 ### KnowledgeGraphManager Class
 
 Located in `backend/src/kg/db/kg_manager.py`, this class handles:
+
 - Exporting databases using `neo4j-admin database dump`
 - Loading databases using `neo4j-admin database load`
 - Managing metadata for saved knowledge graphs
@@ -79,12 +86,10 @@ Located in `backend/src/kg/db/kg_manager.py`, this class handles:
    - Export form with name and description
    - Grid view of available knowledge graphs
    - Load/delete actions for each KG
-
 2. **KgSelectorComponent** (`frontend/src/app/kg/kg-selector.component.ts`)
    - Compact dropdown selector
    - Quick switching between knowledge graphs
    - Positioned at top of main viewport
-
 3. **KnowledgeGraphService** (`frontend/src/app/kg/kg.service.ts`)
    - HTTP service for KG API calls
    - TypeScript interfaces for API responses
@@ -101,12 +106,14 @@ Located in `backend/src/kg/db/kg_manager.py`, this class handles:
 ### Neo4j Commands
 
 The system uses Neo4j 5.x admin commands:
+
 - Export: `neo4j-admin database dump --to-path=/dumps --database=<name> --overwrite-destination=true`
 - Import: `neo4j-admin database load --from-path=/dumps --database=<name> --overwrite-destination=true`
 
 ### Database Operations
 
 When loading a knowledge graph:
+
 1. Neo4j database is stopped
 2. Dump file is loaded
 3. Database is restarted
@@ -116,6 +123,7 @@ This ensures data consistency but causes a brief service interruption.
 ### Metadata Storage
 
 Knowledge graph metadata is stored in `kg_metadata.json` within the dumps volume:
+
 ```json
 {
   "kg_name": {

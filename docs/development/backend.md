@@ -1,5 +1,6 @@
 # Backend
 This is the backend stack consisting of three primary services (`api`, `kg`, `mcp`) and two libraries (`rabbit`, `scholar`) that communicate asynchronously over RabbitMQ:
+
 - `api`: [FastAPI](https://github.com/fastapi/fastapi) endpoints that service frontend queries and integrate with backend services.
 - `mcp`: [FastMCP](https://github.com/modelcontextprotocol/python-sdk) service that provides MCP access to the API and context generation for external LLM hosts.
 - `kg`: Primary service for creating embeddings, interacting with LLMs, and building visualizations.
