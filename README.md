@@ -26,11 +26,11 @@ Choose a Dockerfile compatible with your OS and hardware:
 * [Linux/WSL (GPU)](docker/prod/gpu/docker-compose.yml)
 
 ## 2. Run Nexarag
-* Start the compose stack:
+Start the compose stack:
 ```bash
 docker compose up -d
 ```
-* Visit Nexarag in your browser at `http://localhost:5000`. 
+Visit Nexarag in your browser at `http://localhost:5000`. 
 
 ## 3. Pull Ollama Models
 To support all internal features, Nexarag requires:

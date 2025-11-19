@@ -116,6 +116,7 @@ class KnowledgeGraphManager:
             kg = load_kg(self.config)
             
             # APOC exports to import directory, which is now mounted as dumps volume
+            name = name.strip().replace(" ", "_")
             export_filename = f"{name}.graphml"
             
             # Use APOC to export the entire graph
