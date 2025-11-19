@@ -13,6 +13,9 @@ See also:
 
 We are actively seeking feedback for Nexarag, including feature requests, issue reports, training material, etc. Please submit to `nexarag.ai@gmail.com`.
 
+# Test Coverage
+- [Test Coverage Report](https://conexusinc.testpad.com/project/13/folder/f0/report/?auth=ebe0b54cd8fa170ad052b6ae8bc4ca41)
+
 # Pre-Requisites
 - [Docker](https://docs.docker.com/engine/install/)
 - **(Windows Only)** [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
