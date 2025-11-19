@@ -19,7 +19,7 @@ We are actively seeking feedback for Nexarag, including feature requests, issue 
 - **(MacOS Only)** [Ollama Desktop](https://ollama.com/download/mac)
 - **(Optional)** [Claude Desktop (for MCP)](https://claude.ai/download)
 
-# Local Deployment
+# Quick Start
 
 ## 1. Download Docker compose file
 Choose a Dockerfile compatible with your OS and hardware:
