@@ -98,7 +98,7 @@ pipx install ollmcp
 
 To start the MCP client:
 ```bash
-ollmcp -u http://localhost:9000/mcp -m gpt-oss:20b
+ollmcp -u http://localhost:9000/mcp -m qwen3:8b
 ```
 
 # Semantic Scholar
