@@ -22,7 +22,15 @@ API_TIMEOUT = 30.0
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 allow_dangerous_requests = os.getenv("ALLOW_DANGEROUS_REQUESTS", "false").lower() == "true"
 
-def language_to_cypher(question: str, model: str = "gemma3:1b"):
+@mcp.tool()
+def execute_language_to_cypher_query(question: str) -> dict:
+    try:
+        return language_to_cypher(question, model=default_model)
+    except Exception as e:
+        logger.error(f"Error executing language to cypher query: {e}")
+        return {"error": str(e)}
+    
+def language_to_cypher(question: str, model: str = default_model):
     logger.info(f"Ollama base URL: {ollama_base_url}, Model: {model}")
     llm = OllamaLLM(model=model, base_url=ollama_base_url)
     graph = load_default_kg()
@@ -45,14 +53,6 @@ def language_to_cypher(question: str, model: str = "gemma3:1b"):
         "cypher": cypher,
         "rows": rows,
     }
-
-@mcp.tool()
-def execute_language_to_cypher_query(question: str) -> dict:
-    try:
-        return language_to_cypher(question)
-    except Exception as e:
-        logger.error(f"Error executing language to cypher query: {e}")
-        return {"error": str(e)}
 
 async def make_api_request(method: str, endpoint: str, json_data: dict = None) -> Any:
     """Make a request to the papers API with proper error handling."""
