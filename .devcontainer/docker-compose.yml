@@ -16,43 +16,16 @@ services:
   nexarag.dev:
     container_name: nexarag.dev
     build:
-      context: ../backend
-      dockerfile: ../.devcontainer/Dockerfile
+      context: ../src/backend
+      dockerfile: ../../.devcontainer/Dockerfile
     volumes:
-      - ../backend:/app
+      - ../src/backend:/app
     environment:
       - OLLAMA_BASE_URL=http://ollama.dev:11434
     depends_on:
       - nexarag.neo4j.dev
     ports:
       - "8888:8888"
-      
-  # nexarag.rabbitmq.dev:
-  #   image: rabbitmq:3.11-management
-  #   container_name: rabbitmq.dev
-  #   environment:
-  #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
-  #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
-  #   ports:
-  #     - "5672:5672"
-  #     - "15672:15672"
-  #   volumes:
-  #     - ${RABBITMQ_VOLUME}:/var/lib/rabbitmq
-
-  # ollama.dev:
-  #   image: ollama/ollama
-  #   container_name: ollama.dev
-  #   ports:
-  #     - "11434:11434"
-  #   volumes:
-  #     - ${OLLAMA_VOLUME}:/root/.ollama
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             count: all
-  #             capabilities: [gpu]
 
 volumes:
   neo4j_data:

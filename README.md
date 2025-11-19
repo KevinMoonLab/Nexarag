@@ -6,6 +6,9 @@
 
 **Nexarag** is an open-source platform for building knowledge graphs from research papers and querying them with AI, enabling transparent and reproducible literature analysis without the hallucinations of traditional RAG systems. Deploy locally with full privacy control or integrate with any LLM via the standardized Model Context Protocol (MCP).
 
+See also:
+* [Usage and Development Guides](https://kevinmoonlab.github.io/Nexarag/)
+
 # Feedback
 
 We are actively seeking feedback for Nexarag, including feature requests, issue reports, training material, etc. Please submit to `nexarag.ai@gmail.com`.
@@ -16,68 +19,59 @@ We are actively seeking feedback for Nexarag, including feature requests, issue 
 - **(MacOS Only)** [Ollama Desktop](https://ollama.com/download/mac)
 - **(Optional)** [Claude Desktop (for MCP)](https://claude.ai/download)
 
-# Local Deployment
+# Quick Start
 
-## 0. Clone the Repository
+## 1. Download Docker compose file
+Choose a Dockerfile compatible with your OS and hardware:
 
+* [MacOS](docker/prod/mac/docker-compose.yml)
+* [Linux/WSL (CPU)](docker/prod/cpu/docker-compose.yml)
+* [Linux/WSL (GPU)](docker/prod/gpu/docker-compose.yml)
+
+**[Optional]**: Move the Docker compose file to a location on your drive, e.g. `~/Nexarag`.
+
+## 2. Run Nexarag
+From the same directory as the downloaded `docker-compose.yml`, run:
+```bash
+docker compose up -d
 ```
-git clone https://github.com/KevinMoonLab/Nexarag.git
-cd Nexarag
-```
+Visit Nexarag in your browser at `http://localhost:5000`. 
 
-## 1. Docker Compose
+## 3. Pull Ollama Models
+To support all internal features, Nexarag requires:
 
-### Linux/WSL
+* An embedding model, such as `nomic-embed-text:v1.5`
+* A language model, such as `gemma3:1b`
+* An MCP-capable model, such as `qwen3:8b`
 
-Use the appropriate file for your hardware:
-
-* **CPU:**
-
-  ```
-  docker compose -f docker-compose.cpu.yml up -d
-  ```
-* **GPU:**
-
-  ```
-  docker compose -f docker-compose.gpu.yml up -d
-  ```
-
-### MacOS
-
-```
-docker compose -f docker-compose.macos.yml up -d
-```
-
-## 2. Pull Ollama Models
-
-Browse the full library of Ollama models [here](https://ollama.com/library). The `nomic-embed-text:v1.5` model is required. A language model is also required for LLM integration, and we recommend `gemma3:1b` as a default option. However, this can be easily replaced with another supported language model depending on your hardware and preferences.
+Browse the full library of Ollama models [here](https://ollama.com/library) and choose any model from these families that your hardware supports.  Defaults that run on most hardware are provided below.
 
 ### Linux/WSL
 
 Models can be pulled through the command line in the `ollama` Docker container.
 
-```
+```bash
 docker exec -it nexarag.ollama /bin/bash
 ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
+ollama pull qwen3:8b
 ```
 
 ### MacOS
 
 Pull models directly from your command line.
 
-```
+```bash
 ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
+ollama pull qwen3:8b
 ```
-
-## 3. Launch Application
-
-The Nexarag frontend application will be served at `http://localhost:5000`.
 
 ## 4. (Optional) MCP Integration
+### Claude Desktop
 Add the following to your Claude Desktop Config:
-```
+
+```json
 {
     "mcpServers": {
         "nexarag": {
@@ -93,6 +87,18 @@ Add the following to your Claude Desktop Config:
         }
     }
 }
+```
+
+### Ollama
+First install [pipx](https://github.com/pypa/pipx), then run:
+
+```bash
+pipx install ollmcp
+```
+
+To start the MCP client:
+```bash
+ollmcp -u http://localhost:9000/mcp -m qwen3:8b
 ```
 
 # Semantic Scholar
