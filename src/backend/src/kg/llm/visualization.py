@@ -1,10 +1,12 @@
+from llm.paper_similarity import Neo4jPaperVectorStore
 import numpy as np
 import matplotlib.colors as mcolors
 import pandas as pd
 from sklearn.decomposition import PCA
-from langchain_neo4j import Neo4jVector
 from kg.db.util import load_default_kg
 from kg.llm.chat import NomicEmbeddingAdapter
+from kg.db.util import load_default_kg
+from kg.llm.adapter import NomicEmbeddingAdapter
         
 def process_color_vector(raw_color_data, mode, date_format="%Y-%m-%d", compute_norm=False, **kwargs):
     if mode == 'categorical':
@@ -18,14 +20,9 @@ def process_color_vector(raw_color_data, mode, date_format="%Y-%m-%d", compute_n
         norm = None
 
     elif mode == 'date':
-        # Convert the raw data to a pandas Series and then to datetime.
         dates_series = pd.to_datetime(pd.Series(raw_color_data), format=date_format, errors='coerce')
-        # Convert datetime values to Unix timestamp (seconds)
-        # Note: dates_series.astype('int64') converts to nanoseconds.
         date_ints = dates_series.astype('int64')
-        # Some NaT values turn into the minimum int64; replace those with NaN.
         date_ints = date_ints.where(date_ints != np.iinfo('int64').min)
-        # Convert from nanoseconds to seconds.
         processed = date_ints / 1e9
         norm = None
         if compute_norm:
@@ -38,6 +35,28 @@ def process_color_vector(raw_color_data, mode, date_format="%Y-%m-%d", compute_n
         raise ValueError("Invalid mode. Choose 'categorical', 'continuous', or 'date'.")
 
     return processed, norm
+    
+
+def create_plot(model_id, queries, color_var, labels=None, n_docs=10, n_components=0.95):
+    if labels is None:
+        labels = queries
+
+    kg = load_default_kg()
+    nomic_adapter = NomicEmbeddingAdapter(model_id=model_id)
+
+    # Our tiny custom vector store
+    vector_store = Neo4jPaperVectorStore(kg, nomic_adapter)
+
+    return generate_plot_from_query(
+        queries,
+        vector_store,
+        color_var,
+        n_docs=n_docs,
+        n_components=n_components,
+        labels=labels
+    )
+
+
 
 def generate_plot_from_query(
     query,
@@ -91,36 +110,8 @@ def generate_plot_from_query(
         return reduced_embeddings, dates, all_paper_ids
     else:
         raise Exception(f'color_var must be one of: labels, citationCount, dates. Current value is {color_var}')
-    
-def create_plot(model_id, queries, color_var, labels=None, n_docs=10, n_components=0.95):
-    if labels is None:
-        labels = queries
 
-    kg = load_default_kg()
-    vis_query = """
-        MATCH (p:Paper)
-        WHERE p.abstract IS NOT NULL AND p.abstract <> ''
-        WITH DISTINCT p, vector.similarity.cosine(p.abstract_embedding, $embedding) AS score
-        ORDER BY score DESC LIMIT $k
-        RETURN p.abstract AS text, score, apoc.map.merge(properties(p), {paper_id: p.paper_id}) AS metadata
-    """
 
-    nomic_adapter = NomicEmbeddingAdapter(model_id=model_id)
 
-    abstract_vector = Neo4jVector.from_existing_index(
-        nomic_adapter.embeddings,
-        graph=kg, 
-        index_name='abstract_embedding',
-        embedding_node_property='abstract_embedding',
-        text_node_property='abstract',
-        retrieval_query=vis_query,
-    )
 
-    return generate_plot_from_query(
-        queries,
-        abstract_vector,
-        color_var,
-        n_docs=n_docs,
-        n_components=n_components,
-        labels=labels
-    )
+

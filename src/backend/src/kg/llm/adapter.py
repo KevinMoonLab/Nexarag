@@ -87,7 +87,9 @@ class NomicEmbeddingAdapter(BaseEmbeddings):
     def __init__(self, model_id):
         self.embeddings = OllamaEmbeddings(model=model_id, base_url=ollama_base_url)
         self.query_prefix = ""
+
     def embed_query(self, text: str):
         return self.embeddings.embed_query(text)
+    
     def prepare_query(self, query: str):
         return self.query_prefix + query
