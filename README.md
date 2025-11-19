@@ -28,8 +28,10 @@ Choose a Dockerfile compatible with your OS and hardware:
 * [Linux/WSL (CPU)](docker/prod/cpu/docker-compose.yml)
 * [Linux/WSL (GPU)](docker/prod/gpu/docker-compose.yml)
 
+**[Optional]**: Move the Docker compose file to a location on your drive, e.g. `~/Nexarag`.
+
 ## 2. Run Nexarag
-Start the compose stack:
+From the same directory as the downloaded `docker-compose.yml`, run:
 ```bash
 docker compose up -d
 ```
