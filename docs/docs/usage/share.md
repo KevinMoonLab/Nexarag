@@ -145,3 +145,4 @@ The `kg_dumps` volume persists knowledge graphs across container restarts. Howev
 4. **KG Comparison**: Compare differences between knowledge graphs
 5. **Scheduled Exports**: Automatic periodic backups
 6. **Cloud Storage**: Upload/download KGs to/from cloud storage
+

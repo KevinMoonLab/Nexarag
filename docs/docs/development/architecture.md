@@ -1,4 +1,4 @@
-# Nexarag System Overview
+# System Overview
 
 **Nexarag** is a platform for exploring and interacting with research literature through dynamic knowledge graphs. It enables users to upload papers, generate semantic embeddings, and leverage these representations for intelligent querying and visual exploration.
 
