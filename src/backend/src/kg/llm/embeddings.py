@@ -1,9 +1,14 @@
-from kg.db.util import load_default_kg
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from rabbit.events import DocumentGraphUpdated
 from kg.llm.chat import NomicEmbeddingAdapter
 from kg.db.models import Paper, Chunk
 import re
+import logging
+import os
+logger = logging.getLogger(__name__)
+
+DEFAULT_CHUNK_SIZE = int(os.getenv("DEFAULT_CHUNK_SIZE", 500))
+DEFAULT_CHUNK_OVERLAP = int(os.getenv("DEFAULT_CHUNK_OVERLAP", 100))
 
 
 def paper_data_from_file(md_text, paper_id, text_splitter):
@@ -33,9 +38,19 @@ async def create_chunk_nodes_with_embeddings(md_text, paper_id, text_splitter, m
     # Get the paper node
     paper_node = await Paper.nodes.get_or_none(paper_id=paper_id)
     
+    logger.info(f"Creating chunk nodes for paperId: {paper_id}, total chunks: {len(chunks)}")
     for chunk in chunks:
-        # Compute embedding
-        embedding = nomic_adapter.embed_query(chunk['text'])
+        try:
+            embedding = nomic_adapter.embed_query(chunk['text'])
+        except Exception as e:
+            logger.error(f"Error creating chunk node for chunkId: {chunk['chunkId']}: {e}")
+            logger.error(f"Chunk text: {chunk['text'][:-10]}...")
+            logger.error("The DEFAULT_CHUNK_SIZE is likely too large for the embedding model.")
+            continue    
+
+        if embedding is None:
+            logger.error(f"Embedding is None for chunkId: {chunk['chunkId']}")
+            continue
         
         # Create or get chunk using neomodel
         chunk_node = await Chunk(
@@ -74,8 +89,8 @@ async def create_document_embeddings(update: DocumentGraphUpdated):
     
     # Chunk the content
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size = 5000,
-        chunk_overlap  = 200,
+        chunk_size = DEFAULT_CHUNK_SIZE,
+        chunk_overlap  = DEFAULT_CHUNK_OVERLAP,
         length_function = len,
         is_separator_regex = False,
     )

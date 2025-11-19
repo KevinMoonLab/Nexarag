@@ -2,7 +2,6 @@ from .models import Paper, Author, PartialPaper, Citation, PaperRelevanceResult
 from .util import RateLimitExceededError, retry
 import requests
 import json
-from typing import List
 
 DEFAULT_PAPER_FIELDS = "title,abstract,venue,publicationVenue,year,referenceCount,citationCount,influentialCitationCount,publicationTypes,publicationDate,journal,authors"
 DEFAULT_AUTHOR_FIELDS = "authorId,url,name,affiliations,homepage,paperCount,citationCount,hIndex"
@@ -97,7 +96,11 @@ def get_references(paper_id: str) -> list[Citation]:
     response = requests.get(base_url, params=params)
     if response.status_code == 200:
         data = response.json()
-        references = [d['citedPaper'] for d in data['data'] if d['citedPaper']['paperId'] is not None]
+        references = [
+            d["citedPaper"]
+            for d in (data.get("data") or [])
+            if d.get("citedPaper") and d["citedPaper"].get("paperId") is not None
+        ]
         return Citation.schema().load(references, many=True)
     elif response.status_code == 429:
         raise RateLimitExceededError("Rate limit exceeded. Please wait before retrying.")

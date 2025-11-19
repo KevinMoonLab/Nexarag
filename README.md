@@ -108,8 +108,6 @@ cd Nexarag
 
 ## 2. Docker Compose
 
-### Linux/WSL
-
 Use the appropriate file for your hardware, from `docker/dev`:
 
 * **CPU:**
@@ -122,7 +120,7 @@ Use the appropriate file for your hardware, from `docker/dev`:
   ```bash
   docker compose -f docker-compose.gpu.yml up -d
   ```
-* **MacOS**:
+* **MacOS:**
   ```bash
   docker compose -f docker-compose.mac.yml up -d
   ```
