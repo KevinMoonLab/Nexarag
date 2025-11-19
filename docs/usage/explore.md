@@ -1,5 +1,6 @@
 # Exploring Knowledge Graphs
 There are three ways to explore Nexarag knowledge graphs: 
+
 * Built-in LLM chat feature
 * Interactive visualization tools
 * Filtering

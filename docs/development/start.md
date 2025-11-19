@@ -12,12 +12,10 @@ cd Nexarag
 Use the appropriate file for your hardware, from `docker/dev`:
 
 * **CPU:**
-
   ```bash
   docker compose -f docker-compose.cpu.yml up -d
   ```
 * **GPU:**
-
   ```bash
   docker compose -f docker-compose.gpu.yml up -d
   ```
@@ -27,5 +25,6 @@ Use the appropriate file for your hardware, from `docker/dev`:
   ```
 
 ## 3. Configure dev environment
+
 * [Frontend](./frontend.md)
 * [Backend](./backend.md)
