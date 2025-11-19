@@ -109,6 +109,10 @@ class KnowledgeGraphManager:
         
         return sorted(kg_list, key=lambda x: x.created_at, reverse=True)
     
+    def format_export_name(self, filename: str) -> str:
+        return f"{filename.strip().replace(' ', '_')}.graphml"
+
+    
     def export_knowledge_graph(self, name: str, description: Optional[str] = None) -> bool:
         """Export current knowledge graph using APOC procedures."""
         try:
@@ -116,8 +120,7 @@ class KnowledgeGraphManager:
             kg = load_kg(self.config)
             
             # APOC exports to import directory, which is now mounted as dumps volume
-            name = name.strip().replace(" ", "_")
-            export_filename = f"{name}.graphml"
+            export_filename = self.format_export_name(name)
             
             # Use APOC to export the entire graph
             export_query = """
@@ -164,7 +167,7 @@ class KnowledgeGraphManager:
         """Import knowledge graph using APOC procedures."""
         try:
             # APOC imports from import directory, which is now mounted as dumps volume
-            import_filename = f"{name}.graphml"
+            import_filename = self.format_export_name(name)
             
             # Check if file exists in dumps directory (same as import directory now)
             file_path = self.dumps_directory / import_filename
