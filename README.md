@@ -18,37 +18,21 @@ We are actively seeking feedback for Nexarag, including feature requests, issue 
 
 # Local Deployment
 
-## 0. Clone the Repository
+## 1. Download Docker compose file
+Choose a Dockerfile compatible with your OS and hardware:
 
+* [MacOS](docker/prod/mac/docker-compose.yml)
+* [Linux/WSL (CPU)](docker/prod/gpu/docker-compose.yml)
+* [Linux/WSL (GPU)](docker/prod/gpu/docker-compose.yml)
+
+## 2. Run Nexarag
+* Start the compose stack:
 ```bash
-git clone https://github.com/KevinMoonLab/Nexarag.git
-cd Nexarag
+docker compose up -d
 ```
+* Visit Nexarag in your browser at `http://localhost:5000`. 
 
-## 1. Docker Compose
-
-### Linux/WSL
-
-Use the appropriate file for your hardware:
-
-* **CPU:**
-
-  ```bash
-  docker compose -f docker-compose.cpu.yml up -d
-  ```
-* **GPU:**
-
-  ```bash
-  docker compose -f docker-compose.gpu.yml up -d
-  ```
-
-### MacOS
-
-```bash
-docker compose -f docker-compose.macos.yml up -d
-```
-
-## 2. Pull Ollama Models
+## 3. Pull Ollama Models
 To support all internal features, Nexarag requires:
 
 * An embedding model, such as `nomic-embed-text:v1.5`
@@ -77,10 +61,6 @@ ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
 ollama pull qwen3:8b
 ```
-
-## 3. Launch Application
-
-The Nexarag frontend application will be served at `http://localhost:5000`.
 
 ## 4. (Optional) MCP Integration
 ### Claude Desktop
@@ -115,6 +95,42 @@ To start the MCP client:
 ```bash
 ollmcp -u http://localhost:9000/mcp -m gpt-oss:20b
 ```
+
+
+# Development
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/KevinMoonLab/Nexarag.git
+cd Nexarag
+```
+
+## 2. Docker Compose
+
+### Linux/WSL
+
+Use the appropriate file for your hardware, from `docker/dev`:
+
+* **CPU:**
+
+  ```bash
+  docker compose -f docker-compose.cpu.yml up -d
+  ```
+* **GPU:**
+
+  ```bash
+  docker compose -f docker-compose.gpu.yml up -d
+  ```
+* **MacOS**:
+  ```bash
+  docker compose -f docker-compose.mac.yml up -d
+  ```
+
+## 3. Configure dev environment
+* [Frontend](src/frontend/README.md): Configure Angular dev server.
+* [Backend](src/backend/README.md): Run Docker dev containers.
+
 
 # Semantic Scholar
 Please note that we are rate-limited by the Semantic Scholar API, so enriching BibTex uploads with data and updating the graph after adding papers from a Semantic Scholar search may take several minutes to complete.
