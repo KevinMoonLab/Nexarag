@@ -6,6 +6,7 @@
 * [Building Knowledge Graphs](usage/build.md)
 * [Exploring Knowledge Graphs](usage/share.md)
 * [Sharing Knowledge Graphs](usage/share.md)
+* [Advanced Configuration](usage/config.md)
 
 # Development Guides
 * [Frontend](development/frontend.md)
