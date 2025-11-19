@@ -1,32 +1,19 @@
-# Building Knowledge Graphs
-## Semantic Scholar
-Nexarag uses Semantic Scholar to populate author and publication data, and to search for relevant papers.
-1. Click the plus menu item in the left sidebar. 
-2. Enter a search term.
-3. Select papers from the search results to add to the graph.
-4. Click 'Add Data' to add nodes to the graph.
+# Advanced Configuration
+A number of advanced settings can be applied using environment variables. Copy [.env.example](https://github.com/KevinMoonLab/Nexarag/blob/bnf/make-docs/docker/.env.example) into the same folder as your docker compose file, and modify the values as needed.
 
-## BibTex
-Nexarag can ingest BibTex files and produce a graph enriched with data from Semantic Scholar. 
-1. Click the plus menu item in the left sidebar.
-2. Select the BibTex tab.
-3. Paste in the contents of your BibTex file.
-4. Click submit.
-5. After all papers have been referenced in Semantic Scholar, they will appear automatically in the graph.
 
-## Document Upload
-Documents can be added to the graph as singleton nodes or associated with existing papers. 
-
-### Add Document to Paper Node
-1. Right click on a blue Paper node in the graph.
-2. Click 'Add Documents' 
-3. Click 'Choose' and select a document.
-4. Click 'Upload' to upload the file.
-5. The node will be automatically added to your graph, and the file is accessible by right clicking on the purple document node and selecting 'Details'. Embeddings are generated automatically. 
-
-## References & Citations
-Knowledge graphs can be further enriched by adding citations and references for specific papers.
-
-1. Right click on a blue paper node.
-2. Select 'Add Citations' or 'Add References'
-3. Wait for the graph to populate with data from Semantic Scholar.
+## Environment Variables
+| Name                      | Default                 | Description                                                                                                   |
+| ------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `COMPOSE_PROJECT_NAME`    | `nexarag`               | Overrides the default Docker Compose project name to group containers under a unified prefix.                 |
+| `NEO4J_USERNAME`          | `neo4j`                 | Username for authenticating with the Neo4j database.                                                          |
+| `NEO4J_PASSWORD`          | `password`              | Password for the Neo4j user.                                                                                  |
+| `RABBITMQ_USERNAME`       | `guest`                 | Username for connecting to RabbitMQ.                                                                          |
+| `RABBITMQ_PASSWORD`       | `guest`                 | Password for the RabbitMQ user.                                                                               |
+| `API_PORT`                | `8000`                  | Port exposed by the API service.                                                                              |
+| `FRONTEND_PORT`           | `5000`                  | Port for serving the frontend application.                                                                    |
+| `OLLAMA_PORT`             | `11434`                 | Port used by the Ollama server for model inference.                                                           |
+| `MCP_PORT`                | `9000`                  | Port for the MCP service.                                                                                     |
+| `EMBEDDING_CHUNK_SIZE`    | `500`                   | Size of text chunks (in characters or tokens, depending on implementation) used before generating embeddings. |
+| `EMBEDDING_CHUNK_OVERLAP` | `100`                   | Number of overlapping characters/tokens between embedding chunks to preserve context.                         |
+| `EMBEDDING_MODEL`         | `nomic-embed-text:v1.5` | Model identifier used for generating vector embeddings.                                                       |
