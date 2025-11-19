@@ -1,16 +1,47 @@
-# Knowledge Graph Export/Load Feature
+# Sharing Knowledge Graphs
 
-This feature allows users to export, save, and switch between different Neo4j knowledge graphs in the Nexarag platform.
+The Nexarag graph manager feature allows users to export, save, and switch between different Neo4j knowledge graphs in the Nexarag platform.
 
 ## Overview
 
 The Knowledge Graph Management feature provides:
 
-1. **Export Current KG**: Save the current knowledge graph to a dump file
-2. **Import/Load KG**: Switch to a previously saved knowledge graph
-3. **List Available KGs**: View all saved knowledge graphs with metadata
-4. **Delete KGs**: Remove unwanted knowledge graph dumps
-5. **Quick Selector**: Dropdown menu to quickly switch between knowledge graphs
+1. **Export Current KG**: Save the current knowledge graph to a dump file.
+2. **Import/Load KG**: Switch to a previously saved knowledge graph.
+3. **List Available KGs**: View all saved knowledge graphs with metadata.
+4. **Delete KGs**: Remove unwanted knowledge graph dumps.
+5. **Quick Selector**: Dropdown menu to quickly switch between knowledge graphs.
+
+## Quick Start
+
+### Exporting Knowledge Graphs
+1. Click the cog menu item to access the projects workspace.
+2. Enter a name for your export.
+3. **[Optional]** Add a description.
+4. Click "Export Knowledge Graph"
+5. The current Neo4j database will be saved as a dump file to `kg_dumps` in the same folder as the Docker compose file.
+
+### Import Knowledge Graphs
+1. Copy the `kg_dumps` file to the target, in the same folder as the Docker compose file. 
+2. Run `docker compose restart`.
+3. In the Nexarag frontend, open the projects workspace.
+4. Identify the desired export and click "Load".
+
+### Switching Knowledge Graphs
+**Option 1: Quick Selector**
+1. Use the dropdown at the top of the screen.
+2. Select a knowledge graph from the list.
+3. The system will automatically load the selected KG.
+
+**Option 2: Management Interface**
+1. Open the projects workspace.
+2. Click "Load" button on any knowledge graph card.
+3. Confirm the action.
+
+### Deleting Knowledge Graphs
+1. Open the projects workspace.
+2. Click "Delete" button on the knowledge graph card
+3. Confirm the deletion in the popup dialog.
 
 ## Backend Implementation
 
@@ -64,34 +95,6 @@ Located in `backend/src/kg/db/kg_manager.py`, this class handles:
 - Added KG selector dropdown at the top of the main viewport
 - Toast notifications for all operations
 - Confirmation dialogs for destructive actions
-
-## Usage
-
-### Exporting a Knowledge Graph
-
-1. Open the Knowledge Graphs tab in the menu
-2. Enter a name for your export (required)
-3. Optionally add a description
-4. Click "Export Knowledge Graph"
-5. The current Neo4j database will be saved as a dump file
-
-### Switching Knowledge Graphs
-
-**Option 1: Quick Selector**
-1. Use the dropdown at the top of the screen
-2. Select a knowledge graph from the list
-3. The system will automatically load the selected KG
-
-**Option 2: Management Interface**
-1. Open the Knowledge Graphs tab
-2. Click "Load" button on any knowledge graph card
-3. Confirm the action
-
-### Deleting Knowledge Graphs
-
-1. Open the Knowledge Graphs tab
-2. Click "Delete" button on the knowledge graph card
-3. Confirm the deletion in the popup dialog
 
 ## Technical Notes
 
