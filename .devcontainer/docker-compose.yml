@@ -17,7 +17,7 @@ services:
     container_name: nexarag.dev
     build:
       context: ../src/backend
-      dockerfile: ../.devcontainer/Dockerfile
+      dockerfile: ../../.devcontainer/Dockerfile
     volumes:
       - ../src/backend:/app
     environment:
