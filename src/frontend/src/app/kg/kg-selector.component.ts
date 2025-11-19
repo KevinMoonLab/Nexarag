@@ -26,7 +26,7 @@ import { GraphStore } from '../graph/graph.store';
         styleClass="w-48"
         (onChange)="onSelectionChange()">
         <ng-template pTemplate="selectedItem" let-option>
-          <div *ngIf="option">{{ option }}</div>
+          <div *ngIf="option">{{ option.name }}</div>
         </ng-template>
         <ng-template pTemplate="item" let-option>
           <div class="flex flex-col">
@@ -90,7 +90,7 @@ export class KgSelectorComponent implements OnInit {
               summary: 'Success',
               detail: `Switched to knowledge graph: ${this.selectedKg}`
             });
-            this.graphStore.refreshGraph(); // Refresh the graph visualization
+            this.graphStore.refreshGraph();
           } else {
             this.messageService.add({
               severity: 'error',

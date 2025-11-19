@@ -12,30 +12,33 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { KnowledgeGraphService, KnowledgeGraphInfo, CurrentKgInfo } from '../kg/kg.service';
 import { GraphStore } from '../graph/graph.store';
+import { Divider } from "primeng/divider";
 
 
 @Component({
     imports: [
-        CommonModule,
-        ButtonModule,
-        CardModule,
-        InputTextModule,
-        TextareaModule,
-        DropdownModule,
-        ConfirmDialogModule,
-        ToastModule,
-        DialogModule,
-        FormsModule,
-        DatePipe
-    ],
+    CommonModule,
+    ButtonModule,
+    CardModule,
+    InputTextModule,
+    TextareaModule,
+    DropdownModule,
+    ConfirmDialogModule,
+    ToastModule,
+    DialogModule,
+    FormsModule,
+    DatePipe,
+    Divider
+],
     providers: [ConfirmationService, MessageService],
     selector: 'app-projects',
     template: `
-        <div class="p-4 h-full overflow-auto">
-            <h3 class="text-xl font-bold text-white mb-4">Knowledge Graph Projects</h3>
-            
+        <div class="h-full overflow-auto">  
+            <h3 class="text-xl font-bold">Knowledge Graph Projects</h3>
+            <p-divider />
+        
             <!-- Current KG Info -->
-            <div class="mb-6 p-4 bg-gray-800 rounded-lg">
+            <div class="p-4 bg-gray-800 rounded-lg">
                 <h4 class="text-lg font-semibold text-white mb-3">Current Project</h4>
                 <div class="flex items-center justify-between">
                     <div class="text-gray-300">
@@ -53,8 +56,10 @@ import { GraphStore } from '../graph/graph.store';
                 </div>
             </div>
 
+            <p-divider />
+
             <!-- Export Section -->
-            <div class="mb-6 p-4 bg-gray-800 rounded-lg">
+            <div class="p-4 bg-gray-800 rounded-lg">
                 <h4 class="text-lg font-semibold text-white mb-3">Export Current Project</h4>
                 <div class="grid grid-cols-1 gap-4">
                     <div>
@@ -87,6 +92,8 @@ import { GraphStore } from '../graph/graph.store';
                 </div>
             </div>
 
+            <p-divider />
+
             <!-- Projects List -->
             <div class="p-4 bg-gray-800 rounded-lg">
                 <div class="flex items-center justify-between mb-4">
@@ -105,7 +112,7 @@ import { GraphStore } from '../graph/graph.store';
                     No saved projects found. Export your current project to get started.
                 </div>
 
-                <div class="grid grid-cols-1 gap-4" *ngIf="knowledgeGraphs().length > 0">
+                <div class="grid grid-cols-1 gap-4 max-h-96 overflow-auto" *ngIf="knowledgeGraphs().length > 0">
                     <div *ngFor="let kg of knowledgeGraphs()" class="border border-gray-600 rounded-lg p-4 bg-gray-700">
                         <div class="mb-3">
                             <h5 class="font-semibold text-lg text-white">{{ kg.name }}</h5>

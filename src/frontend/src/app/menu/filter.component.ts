@@ -6,14 +6,15 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { InputSwitchModule } from 'primeng/inputswitch';
+import { SliderModule } from 'primeng/slider';
 import { GraphStore } from '../graph/graph.store';
 
 @Component({
   selector: 'app-filter',
   standalone: true,
   imports: [
-    CommonModule, ButtonModule, DividerModule, InputTextModule, 
-    FormsModule, MultiSelectModule, InputSwitchModule
+    CommonModule, ButtonModule, DividerModule, InputTextModule,
+    FormsModule, MultiSelectModule, InputSwitchModule, SliderModule
   ],
   template: `
     <div class="flex flex-col space-y-6 h-screen w-full bg-white text-black px-4 py-6">
@@ -52,6 +53,15 @@ import { GraphStore } from '../graph/graph.store';
           <span>Enable weighting</span>
           <p-inputSwitch [(ngModel)]="nodeWeighting"></p-inputSwitch>
         </div>
+      </div>
+
+      <p-divider />
+
+      <!-- Node Attraction Factor -->
+      <div class="flex flex-col space-y-2">
+        <label class="text-sm font-semibold text-black">Node Repulsion</label>
+        <p-slider [(ngModel)]="graphStore.nodeRepulsion" [min]="0" [max]="100" [step]=1></p-slider>
+        <div class="text-sm text-gray-600">{{ graphStore.nodeRepulsion() }}</div>
       </div>
 
       <p-divider />

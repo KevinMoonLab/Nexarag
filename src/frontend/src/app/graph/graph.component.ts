@@ -206,7 +206,7 @@ export class GraphComponent {
         elements: this.cytoscapeGraph(),
         layout: {
             name: 'cose',
-            nodeRepulsion: () => 90000,
+            nodeRepulsion: () => this.#graphStore.nodeRepulsion() * 10000,
         } as CoseLayoutOptions,
         style: this.styleSheet(),
       };

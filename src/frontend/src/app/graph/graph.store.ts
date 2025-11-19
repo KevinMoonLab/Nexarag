@@ -23,9 +23,6 @@ export class GraphStore {
     });
     searchTerm = signal('');
     weightNodes = signal(false);
-
-    logger = effect(() => console.log('GraphStore: graph updated', this.graph()));
-
     filteredGraph = computed(() => {
         const selectedNodeTypes = this.selectedDisplayFilters();
         const searchTerm = this.searchTerm();
@@ -129,7 +126,7 @@ export class GraphStore {
             id: 'bulk-add-documents',
             content: 'Bulk Add Documents',
             tooltipText: 'Add Documents in Bulk',
-            selector: 'core', // 'core' targets the canvas/background
+            selector: 'core',
             onClickFunction: () => this.bulkAddDocuments(),
             show: true,
         },
@@ -224,6 +221,8 @@ export class GraphStore {
     public addNodes(nodes: KnowledgeNode[]) {
         this.graph.update((prevGraph) => ({ ...prevGraph, nodes: [...prevGraph.nodes, ...nodes] }));
     }
+
+    nodeRepulsion = signal(9);
 
     graphNodeRepresentations = computed(() => {
         const nodeMap = new Map<string, KnowledgeNode>();

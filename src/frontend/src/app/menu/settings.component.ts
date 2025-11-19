@@ -9,17 +9,20 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../toast/toast.service';
+import { ProjectsComponent } from './projects.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
   imports: [
     CommonModule, ButtonModule, DividerModule, InputTextModule, 
-    FormsModule, MultiSelectModule, InputSwitchModule
+    FormsModule, MultiSelectModule, InputSwitchModule, ProjectsComponent
   ],
   template: `
-    <div class="flex flex-col space-y-6 h-screen w-full bg-white text-black p-4">
-        <p-button label="Clear Graph" severity="danger" (click)="clearGraph()" />
+    <div class="flex flex-col space-y-6 justify-center w-full bg-white text-black p-4 h-full">
+        <app-projects />
+        <p-divider />
+        <p-button label="Clear Current Graph" severity="danger" (click)="clearGraph()" />
     </div>
     <p-divider />
   `,
