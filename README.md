@@ -7,8 +7,7 @@
 **Nexarag** is an open-source platform for building knowledge graphs from research papers and querying them with AI, enabling transparent and reproducible literature analysis without the hallucinations of traditional RAG systems. Deploy locally with full privacy control or integrate with any LLM via the standardized Model Context Protocol (MCP).
 
 See also:
-* [Sharing Knowledge Graphs](/docs/KNOWLEDGE_GRAPH_MANAGEMENT.md)
-* [Design Overview](/docs/architecture.md)
+* [Usage and Development Guides](/docs/usage/share.md)
 
 # Feedback
 
@@ -99,40 +98,6 @@ To start the MCP client:
 ```bash
 ollmcp -u http://localhost:9000/mcp -m gpt-oss:20b
 ```
-
-
-# Development
-
-## 1. Clone the Repository
-
-```bash
-git clone https://github.com/KevinMoonLab/Nexarag.git
-cd Nexarag
-```
-
-## 2. Docker Compose
-
-Use the appropriate file for your hardware, from `docker/dev`:
-
-* **CPU:**
-
-  ```bash
-  docker compose -f docker-compose.cpu.yml up -d
-  ```
-* **GPU:**
-
-  ```bash
-  docker compose -f docker-compose.gpu.yml up -d
-  ```
-* **MacOS:**
-  ```bash
-  docker compose -f docker-compose.mac.yml up -d
-  ```
-
-## 3. Configure dev environment
-* [Frontend](src/frontend/README.md): Configure Angular dev server.
-* [Backend](src/backend/README.md): Run Docker dev containers.
-
 
 # Semantic Scholar
 Please note that we are rate-limited by the Semantic Scholar API, so enriching BibTex uploads with data and updating the graph after adding papers from a Semantic Scholar search may take several minutes to complete.

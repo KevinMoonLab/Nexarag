@@ -9,6 +9,7 @@
 * [Advanced Configuration](usage/config.md)
 
 # Development Guides
+* [Quick Start](development/start.md)
 * [Frontend](development/frontend.md)
 * [Backend](development/backend.md)
 * [Design](development/architecture.md)
