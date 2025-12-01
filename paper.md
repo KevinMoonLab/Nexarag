@@ -32,7 +32,7 @@ Large language models (LLMs) are widely used in research workflows but struggle 
 
 Traditional retrieval‑augmented generation (RAG) systems rely primarily on embedding‑based similarity [@Lewis2020; @Guu2020; @reimers-2019-sentence-bert], which often misses long‑range semantic structure and relationships across documents, especially in long‑context, multi‑document settings [@wang-etal-2024-leave; @gao2023retrieval]. This weakens controllability, auditability, and reproducibility for complex research tasks. Knowledge graphs provide a structured and interpretable alternative by modeling entities and relations explicitly [@reinanda2020knowledge]. However, existing KG‑powered tooling is either proprietary and expensive or technically demanding to deploy and maintain. Nexarag fills this gap with a researcher‑friendly platform that automates KG creation from academic inputs, supports semantic exploration, and standardizes LLM access via MCP [@anthropic2024mcp], enabling reproducible literature synthesis across local and cloud settings.
 
-# State of the field (brief)
+# State of the field
 
 RAG improves access to external knowledge and has become a standard strategy for knowledge‑intensive NLP [@Lewis2020; @Guu2020; @gao2023retrieval], yet it struggles with long contexts and multi‑step reasoning when similarity search is the only primitive [@wang-etal-2024-leave]. KGs address this by enabling path‑based queries and explicit relation reasoning while preserving transparency and updatability [@reinanda2020knowledge; @sahlab2022knowledge; @Xu2024]. Nexarag’s contribution is to operationalize these advantages in a package that researchers can run locally, share with collaborators, and connect to a wide range of LLM hosts through MCP [@anthropic2024mcp].
 
@@ -69,7 +69,7 @@ ollama pull gemma3:1b
 
 Nexarag emphasizes verifiable operation through containerized deployment and a guided quick start [@boettiger2015docker]. Reviewers can launch the full stack with Docker Compose, query/persist KGs in Neo4j, and exercise end‑to‑end flows (semantic search, citation expansion, MCP tools). A worked MCP chat transcript and an automatically generated literature review illustrate that the system’s graph building, retrieval, and reporting features execute as described. The repository includes example datasets/notebooks and scripts for running tests where applicable, supporting broader reproducibility goals in research practice [@rothacher2023eleven].
 
-# Use cases (optional)
+# Use cases
 
 - **Reproducible literature reviews.** Build a KG from a seed set (e.g., via BibTeX), expand by citations, and generate a structured review through the MCP interface [@sahlab2022knowledge]. 
 - **Private research contexts.** Run entirely offline (air‑gapped) with local LLMs for sensitive domains (e.g., healthcare, legal, proprietary research) [@boettiger2015docker].
@@ -77,7 +77,7 @@ Nexarag emphasizes verifiable operation through containerized deployment and a g
 
 # Acknowledgements
 
-We acknowledge the open‑source ecosystems behind Neo4j, Cytoscape.js, D3.js, RabbitMQ, FastAPI, Ollama, and the Model Context Protocol, as well as contributors and users who provided feedback during development.
+We acknowledge the open‑source ecosystems behind Neo4j, Cytoscape.js, D3.js, RabbitMQ, FastAPI, Ollama, and the Model Context Protocol, as well as contributors and users who provided feedback during development. This research was supported in part by the NSF under Grant 221235.
 
 # References
 
