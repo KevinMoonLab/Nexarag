@@ -90,6 +90,8 @@ Generative AI tools were used in the development of the software, supporting cod
 * ChatGPT with the GPT-4o model for writing tasks
 * Claude Code with the Sonnet 4 model for coding tasks
 
+All AI-generated material was explicitly reviewed by at least one author, and all major design decisions were formalized by both authors. 
+
 # Acknowledgements
 
 We acknowledge the open‑source ecosystems behind Neo4j, Cytoscape.js, D3.js, RabbitMQ, FastAPI, Ollama, and the Model Context Protocol, as well as contributors and users who provided feedback during development. This research was supported in part by the NSF under Grant 221235.
