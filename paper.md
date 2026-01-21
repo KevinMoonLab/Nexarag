@@ -32,9 +32,10 @@ Large language models (LLMs) are widely used in research workflows but struggle 
 
 Traditional retrieval‑augmented generation (RAG) systems rely primarily on embedding‑based similarity [@Lewis2020; @Guu2020; @reimers-2019-sentence-bert], which often misses long‑range semantic structure and relationships across documents, especially in long‑context, multi‑document settings [@wang-etal-2024-leave; @gao2023retrieval]. This weakens controllability, auditability, and reproducibility for complex research tasks. Knowledge graphs provide a structured and interpretable alternative by modeling entities and relations explicitly [@reinanda2020knowledge]. However, existing KG‑powered tooling is either proprietary and expensive or technically demanding to deploy and maintain. Nexarag fills this gap with a researcher‑friendly platform that automates KG creation from academic inputs, supports semantic exploration, and standardizes LLM access via MCP [@anthropic2024mcp], enabling reproducible literature synthesis across local and cloud settings.
 
-# State of the field
-
 RAG improves access to external knowledge and has become a standard strategy for knowledge‑intensive NLP [@Lewis2020; @Guu2020; @gao2023retrieval], yet it struggles with long contexts and multi‑step reasoning when similarity search is the only primitive [@wang-etal-2024-leave]. KGs address this by enabling path‑based queries and explicit relation reasoning while preserving transparency and updatability [@reinanda2020knowledge; @sahlab2022knowledge; @Xu2024]. Nexarag’s contribution is to operationalize these advantages in a package that researchers can run locally, share with collaborators, and connect to a wide range of LLM hosts through MCP [@anthropic2024mcp].
+
+# Software Design
+In designing Nexarag we emphasized four principles: (1) ease-of-use (in deployment and practical application), (2) flexibility (in model selection and configuration), (3) modularity (to promote scale and independent contribution), and (4) privacy and security. For ease-of-use, we chose popular frontend technologies like Angular, D3.js, and Cytoscape.js and leveraged existing component libraries to provide a simple and familiar frontend user interface with intuitive tools for building knowledge graphs, searching for relevant papers, conversing with LLMs, and visualizing data. Nexarag is also fully containerized, with release artifacts produced by automated build pipelines readily available for local deployment through Docker. For flexibility, we integrate with Ollama and support any embedding model and LLM that is also supported by the user's hardware, making it simple to switch between models for different tasks and as new models are released. Users can also plug in their preferred LLM or coding agent of choice using the built-in MCP server. Additionally, Nexarag features a highly modular design, with distinct services for the REST API, the neo4j knowledge graph, the MCP server, and the frontend application, all bound together with a RabbitMQ messaging backbone. This allows components to scale horizontally, and to minimize the blast radius of contributions in a single service. Finally, Nexarag supports on-premises, air-gapped deployments, offering privacy and security that is not available in cloud-based applications.
 
 # Software overview
 
@@ -65,20 +66,29 @@ ollama pull gemma3:1b
 
 **License:** GNU General Public License v3.0.
 
-# Quality control
-
-Nexarag emphasizes verifiable operation through containerized deployment and a guided quick start [@boettiger2015docker]. Reviewers can launch the full stack with Docker Compose, query/persist KGs in Neo4j, and exercise end‑to‑end flows (semantic search, citation expansion, MCP tools). A worked MCP chat transcript and an automatically generated literature review illustrate that the system’s graph building, retrieval, and reporting features execute as described. The repository includes example datasets/notebooks and scripts for running tests where applicable, supporting broader reproducibility goals in research practice [@rothacher2023eleven].
-
-# Use cases
+## Use cases
 
 - **Reproducible literature reviews.** Build a KG from a seed set (e.g., via BibTeX), expand by citations, and generate a structured review through the MCP interface [@sahlab2022knowledge]. 
 - **Private research contexts.** Run entirely offline (air‑gapped) with local LLMs for sensitive domains (e.g., healthcare, legal, proprietary research) [@boettiger2015docker].
 - **Collaborative curation.** Share/export/import graphs across teams to support longitudinal projects.
+
+## Quality control
+
+Nexarag emphasizes verifiable operation through containerized deployment and a guided quick start [@boettiger2015docker]. Reviewers can launch the full stack with Docker Compose, query/persist KGs in Neo4j, and exercise end‑to‑end flows (semantic search, citation expansion, MCP tools). A worked MCP chat transcript and an automatically generated literature review illustrate that the system’s graph building, retrieval, and reporting features execute as described. The repository includes example datasets/notebooks and scripts for running tests where applicable, supporting broader reproducibility goals in research practice [@rothacher2023eleven].
+
+# Research impact statement
+
+Nexarag addresses a growing need in LLM-assisted research for transparent, reproducible, and inspectable context construction beyond embedding-only retrieval. While many RAG systems remain opaque and difficult to reproduce, Nexarag operationalizes knowledge-graph–based context building in a form that researchers can deploy locally, inspect visually, and share across projects. By combining Neo4j-backed knowledge graphs with standardized access through the Model Context Protocol (MCP), the software provides a reproducible bridge between structured scholarly knowledge and LLM-driven analysis.
+
+Although Nexarag is a relatively new project and has not yet accumulated extensive downstream citations, it demonstrates credible near-term research impact through its design, documentation, and reproducible reference materials. The repository includes end-to-end examples that reproduce literature expansion, graph construction, semantic querying, and LLM-mediated synthesis from fixed inputs, allowing independent researchers to verify behavior and compare results across models and deployment environments. Containerized deployment and air-gapped operation further support use in domains where reproducibility, auditability, or data sensitivity are critical.
+
+Nexarag is positioned to serve as shared research infrastructure for studies on retrieval-augmented generation, knowledge-graph–augmented reasoning, and AI-assisted literature review workflows. Its model-agnostic design, enabled by MCP, allows researchers to interchange local or API-hosted LLMs while holding the underlying knowledge graph and retrieval logic fixed. This supports direct comparison of LLM behavior under identical, graph-derived contexts, facilitating methodological research on controllability, hallucination reduction, and long-context reasoning. By lowering the technical barrier to building, inspecting, and sharing reproducible knowledge graph contexts, Nexarag enables researchers to move beyond ad hoc, model-coupled RAG pipelines toward more transparent and portable AI-assisted research practices.
+
+# AI usage disclosure
+Generative AI tools were used in the development of the software, supporting code reviews, providing minor features in the frontend, and identifying and fixing bugs. It was also used to generate some of the documentation, and assisted with paper authoring.
 
 # Acknowledgements
 
 We acknowledge the open‑source ecosystems behind Neo4j, Cytoscape.js, D3.js, RabbitMQ, FastAPI, Ollama, and the Model Context Protocol, as well as contributors and users who provided feedback during development. This research was supported in part by the NSF under Grant 221235.
 
 # References
-
-Please place bibliographic entries for works discussed in a `paper.bib` file and cite them inline (e.g., `@key`). For submission, ensure all citation keys resolve and that venues are written out in full.
