@@ -1,0 +1,130 @@
+services:
+  nexarag.neo4j:
+    image: neo4j:latest
+    container_name: nexarag.neo4j
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.meta.data
+      - NEO4J_PLUGINS=["apoc"]
+    volumes:
+      - neo4j_data:/data
+      - ./kg_dumps:/dumps
+      - ./kg_dumps:/var/lib/neo4j/import
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password", "MATCH (n) RETURN COUNT(n);"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nexarag.rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: nexarag.rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nexarag.api:
+    image: nexarag.api:latest
+    build:
+      context: ../../src/backend/src
+      dockerfile: api/Dockerfile
+    container_name: nexarag.api
+    restart: unless-stopped
+    ports:
+      - ${API_PORT:-8000}:8000
+    environment:
+      NEO4J_URI: bolt://nexarag.neo4j:7687
+      NEO4J_USERNAME: ${NEO4J_USERNAME:-neo4j}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-password}
+      NEO4J_DATABASE: neo4j
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
+      OLLAMA_BASE_URL: http://host.docker.internal:${OLLAMA_PORT:-11434}   
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gemma3:1b} 
+    depends_on:
+      nexarag.neo4j:
+        condition: service_healthy
+      nexarag.rabbitmq:
+        condition: service_healthy
+    volumes:
+      - docs_data:/docs
+      - ./kg_dumps:/dumps
+
+  nexarag.frontend:
+    image: nexarag.frontend:latest
+    build:
+      context: ../../src/frontend
+      dockerfile: Dockerfile
+    container_name: nexarag.frontend
+    restart: unless-stopped
+    ports:
+      - ${FRONTEND_PORT:-500}:80
+    depends_on:
+      - nexarag.api
+
+  nexarag.mcp:
+    image: nexarag.mcp:latest
+    container_name: nexarag.mcp
+    build: 
+      context: ../../src/backend/src
+      dockerfile: nexarag_mcp/Dockerfile
+    ports:
+      - "${MCP_PORT:-9000}:9000"
+    environment:
+      - NEO4J_URI=bolt://nexarag.neo4j:7687
+      - ALLOW_DANGEROUS_REQUESTS=true
+      - NEO4J_USERNAME=${NEO4J_USERNAME:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
+      - NEO4J_DATABASE=neo4j
+      - PYTHONUNBUFFERED=1
+      - MCP_PORT=${MCP_PORT:-9000}
+      - OLLAMA_BASE_URL=http://host.docker.internal:${OLLAMA_PORT:-11434}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-qwen3:8b}
+    restart: unless-stopped
+
+  nexarag.kg:
+    image: nexarag.kg:latest
+    build:
+      context: ../../src/backend/src
+      dockerfile: kg/Dockerfile
+    container_name: nexarag.kg
+    restart: unless-stopped
+    environment:
+      NEO4J_URI: bolt://nexarag.neo4j:7687
+      NEO4J_USERNAME: ${NEO4J_USERNAME:-neo4j}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-password}
+      NEO4J_DATABASE: neo4j
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
+      OLLAMA_BASE_URL: http://host.docker.internal:${OLLAMA_PORT:-11434}
+      EMBEDDING_CHUNK_SIZE: ${EMBEDDING_CHUNK_SIZE:-500}
+      EMBEDDING_CHUNK_OVERLAP: ${EMBEDDING_CHUNK_OVERLAP:-100}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text:v1.5}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gemma3:1b}
+    volumes:
+      - docs_data:/docs
+      - chat_data:/data
+      - ./kg_dumps:/dumps
+    depends_on:
+      nexarag.neo4j:
+        condition: service_healthy
+      nexarag.rabbitmq:
+        condition: service_healthy
+
+volumes:
+  neo4j_data:
+  rabbit_data:
+  docs_data:
+  chat_data:
