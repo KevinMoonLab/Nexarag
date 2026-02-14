@@ -38,7 +38,7 @@ From the same directory as the downloaded `docker-compose.yml`, run:
 ```bash
 docker compose up -d
 ```
-Visit Nexarag in your browser at `http://localhost:5000`. 
+Visit Nexarag in your browser at `http://localhost:5000` (or 5100 on MacOS). 
 
 ## 3. Pull Ollama Models
 To support all internal features, Nexarag requires:
