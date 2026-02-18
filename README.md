@@ -13,6 +13,8 @@ See also:
 
 We are actively seeking feedback for Nexarag, including feature requests, issue reports, training material, etc. Please submit to `nexarag.ai@gmail.com`.
 
+Please submit any bugs to the [issues page](https://github.com/KevinMoonLab/Nexarag/issues).
+
 # Test Coverage
 - [Test Coverage Report](https://conexusinc.testpad.com/project/13/folder/f0/report/?auth=ebe0b54cd8fa170ad052b6ae8bc4ca41)
 
