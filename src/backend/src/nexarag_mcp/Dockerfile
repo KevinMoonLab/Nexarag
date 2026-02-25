@@ -2,15 +2,15 @@
 FROM python:3.11-slim
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 WORKDIR /app
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV UV_SYSTEM_PYTHON=1
-COPY pyproject.toml /app/pyproject.toml
+ENV UV_PROJECT_ENVIRONMENT=/app/.venv
+ENV PATH="/app/.venv/bin:${PATH}"
+COPY pyproject.toml uv.lock /app/
 RUN --mount=type=cache,target=/root/.cache/uv \
-    python -c "import tomllib; from pathlib import Path; p=Path('/app/pyproject.toml'); d=tomllib.loads(p.read_text())['project']['dependencies']; Path('/tmp/requirements-runtime.txt').write_text('\\n'.join(d)+'\\n')" \
-    && uv pip install --system -r /tmp/requirements-runtime.txt
+    uv sync --frozen --no-dev --no-install-project
 COPY src /app/src
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system --no-deps -e /app
+    uv pip install --python /app/.venv/bin/python --no-deps -e /app
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app/src
 CMD ["python", "-m", "nexarag_mcp.main"]

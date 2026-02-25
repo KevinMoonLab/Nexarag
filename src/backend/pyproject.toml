@@ -25,7 +25,7 @@ dependencies = [
   "langchain-ollama",
   "marshmallow",
   "matplotlib",
-  "mcp[server]",
+  "mcp",
   "neo4j==5.26.0",
   "neomodel==5.4.0",
   "numpy",
