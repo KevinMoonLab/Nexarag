@@ -26,7 +26,7 @@ bibliography: paper.bib
 
 # Summary
 
-Large language models (LLMs) are widely used in research workflows but struggle with hallucinations, short context windows, and weak reproducibility in literature reviews [@Ji2023; @Huang2025]. Nexarag is a modular, open‑source platform that lets researchers curate, visualize, and share custom knowledge graphs (KGs) from academic sources stored in Neo4j [@neo4j2024database]. Through native support for the Model Context Protocol (MCP), any MCP‑compatible LLM can access these curated KGs for controllable, reproducible context injection [@anthropic2024mcp; @mcp2024github]—including fully private, air‑gapped deployments via containers [@boettiger2015docker]—so teams can explore literature more deeply and transparently. Nexarag provides interactive graph/semantic visualizations using Cytoscape.js and D3 [@franz2023cytoscape; @bostock2011d3].
+Large language models (LLMs) are widely used in research workflows but struggle with hallucinations, short context windows, and weak reproducibility in literature reviews [@Ji2023; @Huang2025]. Nexarag is a modular, open‑source platform that lets researchers curate, visualize, and share custom knowledge graphs (KGs) from academic sources stored in Neo4j [@neo4j2024database]. Through native support for the Model Context Protocol (MCP), any MCP‑compatible LLM can access these curated KGs for controllable, reproducible context injection [@anthropic2024mcp; @mcp2024github]—including fully private, air‑gapped deployments via containersr [@boettiger2015docker]—so teams can explore literature more deeply and transparently. Nexarag provides interactive graph/semantic visualizations using Cytoscape.js and D3 [@franz2023cytoscape; @bostock2011d3].
 
 # Statement of need
 
@@ -74,7 +74,7 @@ ollama pull nomic-embed-text:v1.5
 ollama pull gemma3:1b
 ```
 
-**Repository:** [https://github.com/REPLACE-WITH-YOUR-ORG/nexarag](https://github.com/KevinMoonLab/Nexarag)
+**Repository:** [https://github.com/KevinMoonLab/Nexarag](https://github.com/KevinMoonLab/Nexarag)
 
 **License:** GNU General Public License v3.0.
 
