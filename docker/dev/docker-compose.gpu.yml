@@ -43,7 +43,7 @@ services:
     container_name: nexarag.api
     restart: unless-stopped
     ports:
-      - ${API_PORT:-8000}:8000
+      - "127.0.0.1:${API_PORT:-8000}:8000"
     environment:
       NEO4J_URI: bolt://nexarag.neo4j:7687
       NEO4J_USERNAME: ${NEO4J_USERNAME:-neo4j}
@@ -73,7 +73,7 @@ services:
     container_name: nexarag.frontend
     restart: unless-stopped
     ports:
-      - ${FRONTEND_PORT:-5000}:80
+      - "127.0.0.1:${FRONTEND_PORT:-5000}:80"
     depends_on:
       - nexarag.api
 
@@ -84,7 +84,7 @@ services:
       context: ../../src/backend/src
       dockerfile: nexarag_mcp/Dockerfile
     ports:
-      - "${MCP_PORT:-9000}:9000"
+      - "127.0.0.1:${MCP_PORT:-9000}:9000"
     environment:
       NEO4J_URI: bolt://nexarag.neo4j:7687
       NEO4J_USERNAME: ${NEO4J_USERNAME:-neo4j}
@@ -132,7 +132,7 @@ services:
     image: ollama/ollama
     container_name: nexarag.ollama
     ports:
-      - "${OLLAMA_PORT:-11434}:11434"
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama_data:/root/.ollama
     deploy:
