@@ -1,0 +1,13 @@
+.git
+.gitignore
+node_modules/
+dist/
+coverage/
+.angular/
+.nx/
+.cache/
+.vscode/
+.idea/
+.env
+.env.*
+*.log

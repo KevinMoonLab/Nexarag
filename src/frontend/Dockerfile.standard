@@ -1,25 +1,25 @@
+# syntax=docker/dockerfile:1.7
 # Build stage - Using standard node image instead of alpine for better compatibility
 FROM node:18 AS build
 WORKDIR /app
 
 # Set npm configurations for better compatibility
-RUN npm config set fund false
-RUN npm config set audit false
+RUN npm config set fund false \
+ && npm config set audit false
 
 # Copy package files first for better caching
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --verbose
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --verbose
 
 # Copy application source
 COPY . .
 
-# Install nx globally
-RUN npm install -g nx
-
 # Build application
-RUN nx build litreview -c production --verbose
+RUN --mount=type=cache,target=/root/.npm \
+    npx nx build litreview -c production --verbose
 
 # Production stage with NGINX
 FROM nginx:alpine

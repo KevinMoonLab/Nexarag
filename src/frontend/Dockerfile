@@ -1,25 +1,27 @@
+# syntax=docker/dockerfile:1.7
 # Build stage
 FROM node:18-alpine AS build
 WORKDIR /app
 
 # Set npm to skip optional dependencies and use legacy peer deps
-RUN npm config set fund false
-RUN npm config set audit false
-RUN npm config set legacy-peer-deps true
+RUN npm config set fund false \
+ && npm config set audit false \
+ && npm config set legacy-peer-deps true
 
 # Copy package files first for better caching
 COPY package*.json ./
 
 # Install dependencies with specific flags for compatibility
-RUN npm ci --only=production=false --platform=linux --arch=x64 || npm install --platform=linux --arch=x64
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --only=production=false --platform=linux --arch=x64 \
+    || npm install --platform=linux --arch=x64
 
 # Copy application source
 COPY . .
 
-RUN npm install -g nx
-
 # Build application
-RUN nx build litreview -c production --verbose
+RUN --mount=type=cache,target=/root/.npm \
+    npx nx build litreview -c production --verbose
 
 # Production stage with NGINX
 FROM nginx:alpine

@@ -2,7 +2,7 @@
 name = "lit-review"
 version = "0.1.0"
 description = ""
-authors = ["Tom Kerby <46465501+tjkerby@users.noreply.github.com>"]
+authors = ["Tom Kerby <tkerby@stat.byu.edu>", "Ben Fuller <ben.fuller@conexusinc.net>", "Kevin Moon <kevin.moon@usu.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
