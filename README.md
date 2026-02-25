@@ -12,9 +12,17 @@ See also:
 
 # Feedback
 
-We are actively seeking feedback for Nexarag, including feature requests, issue reports, training material, etc. Please submit to `nexarag.ai@gmail.com`.
+We’d love your feedback on Nexarag, including bug reports, feature requests, documentation fixes, and tutorial or training-material ideas.
 
-Please submit any bugs to the [issues page](https://github.com/KevinMoonLab/Nexarag/issues).
+- **Bugs and feature requests:** open an issue on GitHub: https://github.com/KevinMoonLab/Nexarag/issues  
+  Please include:
+  - what you expected vs. what happened
+  - steps to reproduce (or a minimal example)
+  - OS + Docker version (and GPU details if relevant)
+  - relevant logs or screenshots
+
+- **Private or security-sensitive reports:** email us at `nexarag.ai@gmail.com`  
+  If possible, include the same details as above and note why it should not be posted publicly.
 
 # Test Coverage
 - [Test Coverage Report](https://conexusinc.testpad.com/project/13/folder/f0/report/?auth=ebe0b54cd8fa170ad052b6ae8bc4ca41)
