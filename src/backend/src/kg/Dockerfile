@@ -1,15 +1,21 @@
+# syntax=docker/dockerfile:1.7
 FROM python:3.11-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR /app
+ENV UV_SYSTEM_PYTHON=1
+ENV UV_PROJECT_ENVIRONMENT=/app/.venv
+ENV PATH="/app/.venv/bin:${PATH}"
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pyproject.toml uv.lock /app/
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
 
-COPY . /app
+COPY src /app/src
 
-RUN pip install -e /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --python /app/.venv/bin/python --no-deps -e /app
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app/src
 
-CMD ["python", "kg/main.py"]
+CMD ["python", "-m", "kg.main"]

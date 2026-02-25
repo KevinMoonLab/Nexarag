@@ -1,29 +1,63 @@
-[tool.poetry]
-name = "lit-review"
-version = "0.1.0"
-description = ""
-authors = ["Tom Kerby <46465501+tjkerby@users.noreply.github.com>"]
-readme = "README.md"
-
-[tool.poetry.dependencies]
-python = ">=3.10,<4.0"
-ipykernel = ">=6.27,<7.0"
-requests = ">=1.0"
-pandas = ">=2.0"
-neo4j = ">=5.0"
-tqdm = ">=4.56"
-pymupdf4llm = ">=0.0.15,<0.0.18"
-langchain = ">=0.3.14,<0.4.0"
-python-dotenv = ">=1.0.1,<2.0.0"
-langchain-neo4j = ">=0.2.0,<0.3.0"
-transformers = ">=4.48.0,<5.0.0"
-torch = ">=2.5.1,<3.0.0"
-sentence-transformers = ">=3.3.1,<4.0.0"
-accelerate = ">=1.3.0,<2.0.0"
-bitsandbytes = ">=0.45.0,<0.46.0"
-ipywidgets = ">=8.1.5,<9.0.0"
-jupyter = ">=1.1.1,<2.0.0"
-
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nexarag-backend"
+version = "0.1.0"
+description = "NexaRAG backend services and notebook tooling"
+requires-python = ">=3.11"
+authors = [
+  { name = "Tom Kerby", email = "tkerby@stat.byu.edu" },
+  { name = "Ben Fuller", email = "ben.fuller@conexusinc.net" },
+  { name = "Kevin Moon", email = "kevin.moon@usu.edu" },
+]
+dependencies = [
+  "aio-pika==9.5.4",
+  "bibtexparser",
+  "dataclasses-json==0.6.7",
+  "fastapi==0.115.7",
+  "httpx==0.28.1",
+  "langchain==0.3.15",
+  "langchain-community",
+  "langchain-core==0.3.31",
+  "langchain-neo4j==0.3.0",
+  "langchain-ollama",
+  "marshmallow",
+  "matplotlib",
+  "mcp",
+  "neo4j==5.26.0",
+  "neomodel==5.4.0",
+  "numpy",
+  "ollama",
+  "pandas==2.2.0",
+  "pydantic==2.10.6",
+  "pymupdf4llm==0.0.17",
+  "python-multipart==0.0.20",
+  "requests==2.32.3",
+  "scikit-learn",
+  "SQLAlchemy==2.0.37",
+  "tqdm==4.67.1",
+  "uvicorn==0.34.0",
+  "websockets==15.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest==8.4.1",
+  "pytest-asyncio==0.24.0",
+]
+notebook = [
+  "accelerate>=1.3.0,<2.0.0",
+  "bitsandbytes>=0.45.0,<0.46.0",
+  "ipykernel>=6.27,<7.0",
+  "ipywidgets>=8.1.5,<9.0.0",
+  "jupyter>=1.1.1,<2.0.0",
+  "python-dotenv>=1.0.1,<2.0.0",
+  "sentence-transformers>=3.3.1,<4.0.0",
+  "torch>=2.5.1,<3.0.0",
+  "transformers>=4.48.0,<5.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

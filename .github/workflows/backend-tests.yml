@@ -1,0 +1,39 @@
+name: Backend Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/backend/**'
+      - '.github/workflows/backend-tests.yml'
+  pull_request:
+    paths:
+      - 'src/backend/**'
+      - '.github/workflows/backend-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.7.0"
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: |
+          uv sync --frozen --extra test
+
+      - name: Run backend unit tests
+        env:
+          PYTHONPATH: src
+        run: uv run pytest

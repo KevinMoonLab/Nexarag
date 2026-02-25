@@ -1,10 +1,8 @@
-from llm.paper_similarity import Neo4jPaperVectorStore
+from kg.llm.paper_similarity import Neo4jPaperVectorStore
 import numpy as np
 import matplotlib.colors as mcolors
 import pandas as pd
 from sklearn.decomposition import PCA
-from kg.db.util import load_default_kg
-from kg.llm.chat import NomicEmbeddingAdapter
 from kg.db.util import load_default_kg
 from kg.llm.adapter import NomicEmbeddingAdapter
         
@@ -110,7 +108,6 @@ def generate_plot_from_query(
         return reduced_embeddings, dates, all_paper_ids
     else:
         raise Exception(f'color_var must be one of: labels, citationCount, dates. Current value is {color_var}')
-
 
 
 
