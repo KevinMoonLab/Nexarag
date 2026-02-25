@@ -30,7 +30,7 @@ from .types import BibTexPaper, BibTexRequest
 from ollama import Client
 from langchain_ollama.llms import OllamaLLM
 import os
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 default_model = os.environ.get("DEFAULT_MODEL", "gemma3:1b")
 
@@ -81,8 +81,6 @@ async def lifespan(app: FastAPI):
     manager.disconnect_all()
 
 app = FastAPI(title="Nexarag API", description="API for managing the Nexarag knowledge graph", lifespan=lifespan)
-
-app.mount("/documents", StaticFiles(directory="/docs"), name="docs")
 
 @app.websocket("/ws/events/")
 async def websocket_endpoint(websocket: WebSocket, manager: ConnectionManager = Depends(get_connection_manager)):
@@ -212,6 +210,18 @@ def get_default_prefix():
     return cleaned
 
 ######################## Documents ########################
+
+@app.get("/documents/{filename:path}", tags=["Documents"])
+async def get_document(filename: str):
+    # Sanitize filename to prevent path traversal
+    safe_filename = os.path.basename(filename)
+    file_path = os.path.realpath(f"/docs/{safe_filename}")
+
+    # Verify the resolved path is within /docs/
+    if not file_path.startswith("/docs/") or not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    return FileResponse(file_path)
 
 @app.post("/docs/upload/{paper_id}", tags=["Documents"])
 async def upload_docs(paper_id:str, docs: List[UploadFile] = File(...)):
