@@ -1,0 +1,39 @@
+name: Backend Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/backend/**'
+      - '.github/workflows/backend-tests.yml'
+  pull_request:
+    paths:
+      - 'src/backend/**'
+      - '.github/workflows/backend-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-test.txt
+
+      - name: Run backend unit tests
+        env:
+          PYTHONPATH: src
+        run: pytest
