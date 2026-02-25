@@ -22,7 +22,7 @@ jobs:
       matrix:
         service:
           - name: nexarag.api
-            context: src/backend/src
+            context: src/backend
             dockerfile: src/backend/src/api/Dockerfile
 
           - name: nexarag.frontend
@@ -30,11 +30,11 @@ jobs:
             dockerfile: src/frontend/Dockerfile
 
           - name: nexarag.mcp
-            context: src/backend/src
+            context: src/backend
             dockerfile: src/backend/src/nexarag_mcp/Dockerfile
 
           - name: nexarag.kg
-            context: src/backend/src
+            context: src/backend
             dockerfile: src/backend/src/kg/Dockerfile
 
     steps:
