@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nexarag-backend"
+version = "0.1.0"
+description = "NexaRAG backend services"
+requires-python = ">=3.11"
+dependencies = [
+  "aio-pika==9.5.4",
+  "bibtexparser",
+  "dataclasses-json==0.6.7",
+  "fastapi==0.115.7",
+  "httpx==0.28.1",
+  "langchain==0.3.15",
+  "langchain-community",
+  "langchain-core==0.3.31",
+  "langchain-neo4j==0.3.0",
+  "langchain-ollama",
+  "marshmallow",
+  "matplotlib",
+  "mcp[server]",
+  "neo4j==5.26.0",
+  "neomodel==5.4.0",
+  "numpy",
+  "ollama",
+  "pandas==2.2.0",
+  "pydantic==2.10.6",
+  "pymupdf4llm==0.0.17",
+  "python-multipart==0.0.20",
+  "requests==2.32.3",
+  "scikit-learn",
+  "SQLAlchemy==2.0.37",
+  "tqdm==4.67.1",
+  "uvicorn==0.34.0",
+  "websockets==15.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest==8.4.1",
+  "pytest-asyncio==0.24.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
