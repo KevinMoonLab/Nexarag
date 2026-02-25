@@ -38,8 +38,8 @@ services:
   nexarag.api:
     image: nexarag.api:latest
     build:
-      context: ../../src/backend/src
-      dockerfile: api/Dockerfile
+      context: ../../src/backend
+      dockerfile: src/api/Dockerfile
     container_name: nexarag.api
     restart: unless-stopped
     ports:
@@ -81,8 +81,8 @@ services:
     image: nexarag.mcp:latest
     container_name: nexarag.mcp
     build:
-      context: ../../src/backend/src
-      dockerfile: nexarag_mcp/Dockerfile
+      context: ../../src/backend
+      dockerfile: src/nexarag_mcp/Dockerfile
     ports:
       - "127.0.0.1:${MCP_PORT:-9000}:9000"
     environment:
@@ -101,8 +101,8 @@ services:
   nexarag.kg:
     image: nexarag.kg:latest
     build:
-      context: ../../src/backend/src
-      dockerfile: kg/Dockerfile
+      context: ../../src/backend
+      dockerfile: src/kg/Dockerfile
     container_name: nexarag.kg
     restart: unless-stopped
     environment:
