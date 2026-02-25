@@ -8,6 +8,7 @@
 
 See also:
 * [Usage and Development Guides](https://kevinmoonlab.github.io/Nexarag/)
+* [Contribution Guidelines](https://github.com/KevinMoonLab/Nexarag/blob/main/CONTRIBUTING.md)
 
 # Feedback
 
