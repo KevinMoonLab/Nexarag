@@ -34,6 +34,10 @@ We’d love your feedback on Nexarag, including bug reports, feature requests, d
 - **(Optional)** [Claude Desktop (for MCP)](https://claude.ai/download)
 
 # Quick Start
+Follow the instructions below or visit [our YouTube channel](https://www.youtube.com/@Nexarag) for detailed tutorials:
+
+* [MacOS Deployment and MCP Configuration](https://youtu.be/TUsjcp7Wasw?si=xBOjMZgpoW28_6vv)
+* [WSL + GPU Deployment](https://youtu.be/H8a53zMtmXg?si=FMjR0pauZlwKvvwc)
 
 ## 1. Download Docker compose file
 Choose a Dockerfile compatible with your OS and hardware:
