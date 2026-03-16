@@ -140,8 +140,16 @@
 <h3 id="running-the-development-server">Running the Development Server</h3>
 <ol>
 <li>Run the application stack from the root using <code>docker compose</code>. The API will be served at <code>http://localhost:8000</code></li>
+<li><strong>[First-Time Deployment]</strong> Install npm dependencies with <code>npm i</code>.</li>
 <li>In <code>Nexarag/frontend</code>, run <code>npx nx s</code>. The application will be available (with live reloads) at <code>http://localhost:4200</code></li>
-</ol></div>
+</ol>
+<h3 id="running-tests">Running Tests</h3>
+<p>Unit tests use <a href="https://jestjs.io/">Jest</a> with <a href="https://thymikee.github.io/jest-preset-angular/">jest-preset-angular</a>. From <code>Nexarag/src/frontend</code>:</p>
+<pre><code class="language-bash">npx nx test litreview
+</code></pre>
+<p>To run in watch mode during development:</p>
+<pre><code class="language-bash">npx nx test litreview --watch
+</code></pre></div>
             </div>
         </div>
 
