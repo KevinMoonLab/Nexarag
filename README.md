@@ -26,7 +26,8 @@ We’d love your feedback on Nexarag, including bug reports, feature requests, d
 
 # Test Coverage
 - [Manual Test Coverage Report](https://conexusinc.testpad.com/project/13/folder/f0/report/?auth=ebe0b54cd8fa170ad052b6ae8bc4ca41)
-- [Automated Testing](https://github.com/KevinMoonLab/Nexarag/actions/workflows/backend-tests.yml)
+- [Backend Automated Testing](https://github.com/KevinMoonLab/Nexarag/actions/workflows/backend-tests.yml)
+- [Frontend Automated Testing](https://github.com/KevinMoonLab/Nexarag/actions/workflows/frontend-tests.yml)
 
 # Pre-Requisites
 - [Docker](https://docs.docker.com/engine/install/)
