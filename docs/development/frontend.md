@@ -11,4 +11,19 @@ Frontend Angular application that provides [Cytoscape.js](https://js.cytoscape.o
 ### Running the Development Server
 
 1. Run the application stack from the root using `docker compose`. The API will be served at `http://localhost:8000`
+2. **[First-Time Deployment]** Install npm dependencies with `npm i`.
 2. In `Nexarag/frontend`, run `npx nx s`. The application will be available (with live reloads) at `http://localhost:4200`
+
+### Running Tests
+
+Unit tests use [Jest](https://jestjs.io/) with [jest-preset-angular](https://thymikee.github.io/jest-preset-angular/). From `Nexarag/src/frontend`:
+
+```bash
+npx nx test litreview
+```
+
+To run in watch mode during development:
+
+```bash
+npx nx test litreview --watch
+```
