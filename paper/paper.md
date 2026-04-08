@@ -57,6 +57,7 @@ Nexarag was designed around four principles: ease of use, flexibility, modularit
 
 
 Nexarag brings these design choices together in a research platform that offers:
+
 * Automated KG construction from BibTeX, paper lists, search queries, and citation expansion (Semantic Scholar integration) [@Kinney2023TheSS; @semanticscholar2024api].
 * Interactive graph and semantic visualizations (Cytoscape.js and D3.js) [@franz2023cytoscape; @bostock2011d3].
 * An AI “Talk To Your Data” interface that supports both simple retrieve‑and‑generate and ReAct‑style agentic workflows [@yao2022react].
