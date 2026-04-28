@@ -2,6 +2,12 @@
   <a href="https://github.com/KevinMoonLab/Nexarag"><img src="nexarag.png" alt="Nexarag" width="400"></a>
 </p>
 
+<p align="center">
+  <a href="https://doi.org/10.21105/joss.09910">
+    <img src="https://joss.theoj.org/papers/10.21105/joss.09910/status.svg" alt="DOI badge">
+  </a>
+</p>
+
 # Overview
 
 **Nexarag** is an open-source platform for building knowledge graphs from research papers and querying them with AI, enabling transparent and reproducible literature analysis without the hallucinations of traditional RAG systems. Deploy locally with full privacy control or integrate with any LLM via the standardized Model Context Protocol (MCP).
