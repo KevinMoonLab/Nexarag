@@ -8,6 +8,8 @@ import {
   } from 'cytoscape';
 import { ToastService } from "../toast/toast.service";
 import { EventService } from "../events.service";
+import { MenuItem } from "primeng/api";
+import { GraphLayoutAlgorithm } from "./graph-layout.service";
 
 
 @Injectable({
@@ -61,7 +63,27 @@ export class GraphStore {
     readonly plotResize = this.plotResizeSubject.asObservable();
   
     showPlot = signal(false);
-  
+
+    // Which renderer the viewport uses. Cytoscape is the default; Foblex is the
+    // experimental alternative. Both read this same store, so toggling preserves
+    // selection, filters, search and plot mode.
+    graphRenderer = signal<'cytoscape' | 'foblex'>('cytoscape');
+
+    toggleRenderer() {
+      this.graphRenderer.update((r) => (r === 'cytoscape' ? 'foblex' : 'cytoscape'));
+    }
+
+    // ELK layout algorithm used by the Foblex renderer. Each gives a different
+    // arrangement of the same graph; the user picks one in settings.
+    graphLayoutAlgorithm = signal<GraphLayoutAlgorithm>('mrtree');
+    graphLayoutOptions = signal([
+      { label: 'Force', value: 'force' },
+      { label: 'Stress', value: 'stress' },
+      { label: 'Radial', value: 'radial' },
+      { label: 'Layered', value: 'layered' },
+      { label: 'Tree', value: 'mrtree' },
+    ] as { label: string; value: GraphLayoutAlgorithm }[]);
+
     emitPlotResize() {
       this.plotResizeSubject.next();
     }
@@ -140,6 +162,22 @@ export class GraphStore {
         }
     ];
 
+    // PrimeNG-shaped versions of the menu arrays above, consumed by the Foblex
+    // renderer's <p-contextMenu>. The actions stay single-sourced: these just
+    // remap the cytoscape-context-menus item shape onto PrimeNG's MenuItem.
+    private toPrimeMenuItems(items: typeof this.nodeMenuItems): MenuItem[] {
+        return items
+            .filter((item) => item.show)
+            .map((item) => ({
+                id: item.id,
+                label: item.content,
+                command: () => item.onClickFunction(),
+            }));
+    }
+
+    nodeMenuItemsPng = computed<MenuItem[]>(() => this.toPrimeMenuItems(this.nodeMenuItems));
+    canvasMenuItemsPng = computed<MenuItem[]>(() => this.toPrimeMenuItems(this.canvasMenuItems));
+
     showAddDocuments() {
         this.showDocumentDialog.set(true);
     }
@@ -183,6 +221,32 @@ export class GraphStore {
         }
     }
 
+    getNodeColor(n: KnowledgeNode): string {
+        if (n.label === 'Author') {
+            return '#D72638';
+        } else if (n.label === 'Paper') {
+            return '#3E92CC';
+        } else if (n.label === 'Journal') {
+            return '#6BBF59';
+        } else if (n.label === 'PublicationVenue') {
+            return '#F4A261';
+        } else if (n.label === 'Document') {
+            return '#8E44AD';
+        } else {
+            return '#4A4A4A';
+        }
+    }
+
+    truncateName(name: string, maxLength = 30): string {
+        if (!name) {
+            return '';
+        }
+        if (name.length > maxLength) {
+            return name.substring(0, maxLength) + '...';
+        }
+        return name;
+    }
+
     showNodeDialog = signal(false);
     showDocumentDialog = signal(false);
     selectedNodeKey = signal('');
@@ -222,7 +286,7 @@ export class GraphStore {
         this.graph.update((prevGraph) => ({ ...prevGraph, nodes: [...prevGraph.nodes, ...nodes] }));
     }
 
-    nodeRepulsion = signal(9);
+    nodeRepulsion = signal(20);
 
     graphNodeRepresentations = computed(() => {
         const nodeMap = new Map<string, KnowledgeNode>();

@@ -8,12 +8,13 @@ import { MenuComponent } from "../menu/menu.component";
 import { KgSelectorComponent } from "../kg/kg-selector.component";
 import { SplitterModule } from 'primeng/splitter';
 import { GraphComponent } from "../graph/graph.component";
+import { FoblexGraphComponent } from "../graph/foblex-graph.component";
 import { PlotComponent } from "../plot/plot.component";
 import { GraphStore } from '../graph/graph.store';
 
 @Component({
   selector: 'app-viewport',
-  imports: [CommonModule, InputTextModule, FormsModule, ButtonModule, SplitterModule, ChatMenuComponent, MenuComponent, KgSelectorComponent, GraphComponent, PlotComponent],
+  imports: [CommonModule, InputTextModule, FormsModule, ButtonModule, SplitterModule, ChatMenuComponent, MenuComponent, KgSelectorComponent, GraphComponent, FoblexGraphComponent, PlotComponent],
   template: `
         <div class="relative h-screen w-full flex">
           <!-- Knowledge Graph Selector at the top -->
@@ -33,11 +34,19 @@ import { GraphStore } from '../graph/graph.store';
                 <app-plot class="flex-grow h-screen w-full" />
               </ng-template>
               <ng-template #panel>
-                <app-graph class="flex-grow h-screen w-full" />
+                @if (viewportStore.graphRenderer() === 'cytoscape') {
+                  <app-graph class="flex-grow h-screen w-full" />
+                } @else {
+                  <app-foblex-graph class="flex-grow h-screen w-full" />
+                }
               </ng-template>
             </p-splitter>
           } @else {
-            <app-graph class="flex-grow h-screen w-full" />
+            @if (viewportStore.graphRenderer() === 'cytoscape') {
+              <app-graph class="flex-grow h-screen w-full" />
+            } @else {
+              <app-foblex-graph class="flex-grow h-screen w-full" />
+            }
           }
         </div>
         
