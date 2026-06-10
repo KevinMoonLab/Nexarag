@@ -66,6 +66,7 @@ import { DocumentDialogComponent } from './doc-dialog.component';
                     </div>
                 }
             </f-canvas>
+            <f-minimap [fNodeRenderLimit]="2000" />
         </f-flow>
 
         <app-node-dialog />
@@ -73,6 +74,7 @@ import { DocumentDialogComponent } from './doc-dialog.component';
     `,
     styles: [`
         :host {
+            position: relative;
             display: block;
             width: 100%;
             height: 100%;
@@ -80,6 +82,23 @@ import { DocumentDialogComponent } from './doc-dialog.component';
         }
         :host ::ng-deep f-flow,
         :host ::ng-deep f-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        :host ::ng-deep f-minimap {
+            position: absolute;
+            right: 16px;
+            bottom: 16px;
+            width: 220px;
+            height: 150px;
+            background-color: rgba(255, 255, 255, 0.92);
+            border: 1px solid #d8dce1;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.15);
+            overflow: hidden;
+            z-index: 10;
+        }
+        :host ::ng-deep f-minimap svg {
             width: 100%;
             height: 100%;
         }
